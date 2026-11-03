@@ -42,6 +42,34 @@ semanales, testigo externo elaborado, WebAuthn). Nunca la matriz ni los controle
 
 ---
 
+## Cambios acordados después de la Parte 1
+
+Tres ajustes que el diseño entregado no tenía, o no tenía así de explícitos. Cada uno tiene sus
+tareas, sus casos de prueba nuevos (T-38 a T-41) y su lugar en el informe.
+
+- [ ] **K-1 El límite de 20 fincas se refiere a asignaciones activas.** Un técnico tiene como máximo
+  20 asignaciones activas a la vez, sumando las ordinarias y las temporales vigentes. Las vencidas,
+  las terminadas y las de períodos cerrados no cuentan. El límite tampoco tiene que ver con cuántas
+  fincas consulta al día (eso es H1: 40, 60 y 80). Si SUP intenta crear la asignación 21, el servidor
+  la rechaza; es una condición más de C19. Va como parámetro con valor inicial 20 que aprueba GER, no
+  como constante, para no contradecir la respuesta del cliente a P-02 («sin cantidades fijas»). Es un
+  cambio respecto a la Parte 1: desviación D-06. Tareas 2.6, 4.8 y 5.5; casos T-38 y T-39.
+- [ ] **K-2 Quien registra no aprueba, validado por ID de usuario.** C3 compara el identificador de la
+  cuenta (UUID), no el nombre, el rol ni la sesión. Se aprueba solo si el `usuario_id` de quien aprueba
+  no está entre los `usuario_id` de los autores de **todas** las versiones de la medición. Así ni un
+  cambio de rol ni una habilitación temporal lo evaden (T-06, T-26). El ID sale de la sesión en el
+  servidor, nunca de un campo que mande el navegador. Se comprueba en OPA y otra vez en la base.
+  Tareas 2.6, 4.2 y 5.6; casos T-05, T-06, T-26 y T-40.
+- [ ] **K-3 Si OPA deja de responder, el sistema se frena.** Fallo cerrado, sin excepciones. Si el
+  motor no contesta dentro del tiempo límite (1 a 2 segundos), devuelve un error o una respuesta que no
+  se entiende, la petición se detiene ahí y no se ejecuta. No hay decisión por omisión que conceda, no
+  se reutiliza una decisión anterior guardada y no hay un camino alterno «mientras vuelve». El usuario
+  recibe «servicio no disponible» (503) y la bitácora registra la denegación con la causa «motor sin
+  respuesta». Si el contenedor de OPA no arranca, la instancia no recibe tráfico. Tareas 4.5 y 4.6;
+  caso T-41; criterio de aceptación 6.
+
+---
+
 ## Del diseño de la Parte 1 al despliegue
 
 La Parte 1 suponía un servidor virtual propio con Podman. El enunciado de la Parte 2 fija Cloud Run,
@@ -78,7 +106,11 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
 - [ ] **D-04 Respaldos.** Los da Neon; se pierde el «respaldo en otro proveedor con llave propia».
 - [ ] **D-05 Cloud Run en vez de un servidor virtual.** Lo exige el enunciado. Se pierde SELinux y se
   gana el aislamiento de Cloud Run; el contenedor sigue sin root.
-- [ ] D-06… (las que aparezcan: segundo factor, testigo externo, versión de Python, etc.)
+- [ ] **D-06 Máximo de 20 asignaciones activas por técnico (K-1).** La Parte 1 no limitaba cuántas
+  fincas puede tener asignadas un técnico. Se agrega para acotar cuánto alcanza una sola cuenta: un
+  técnico comprometido o un error de asignación llega a 20 fincas, no a todo el catálogo. Es un
+  parámetro, no una constante, por P-02.
+- [ ] D-07… (las que aparezcan: segundo factor, testigo externo, versión de Python, etc.)
 
 ---
 
@@ -96,7 +128,7 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
 - [ ] **0.4 Segundo factor en las cuentas de prueba.** POL-AU-05 lo exige para todos los roles, pero
   el profesor tiene que poder entrar con cada rol. Recomendado: TOTP en todas las cuentas de prueba y
   entregar la semilla de cada una **en el informe**, nunca en el repositorio. WebAuthn queda como
-  mejora si da el tiempo (si no, desviación D-06).
+  mejora si da el tiempo (si no, desviación D-07).
 - [ ] **0.5 Cómo se construyen las imágenes.** Recomendado para empezar: un script `infra/deploy.sh`
   con `gcloud builds submit` (Cloud Build). Mejora: GitHub Actions con Workload Identity Federation.
   Nunca una llave JSON de cuenta de servicio guardada como secreto del repositorio si se puede evitar.
@@ -205,7 +237,10 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 - [ ] 2.6 Restricciones del segundo candado:
   - Índice único parcial: un solo certificado `vigente` por parcela y período (C4).
   - Disparador que rechaza cambios de mediciones con el período `cerrado` y fechas fuera del período (C2, C14).
-  - Restricción de que quien decide no figura en un paso anterior (C3, C8, C10).
+  - Restricción de que quien decide no figura en un paso anterior (C3, C8, C10), comparando
+    `usuario_id` contra los autores de todas las versiones (K-2).
+  - Máximo de asignaciones activas por técnico: un disparador cuenta las vigentes del técnico y
+    rechaza la que pase del parámetro, 20 al inicio (K-1).
   - Rechazo de parcelas traslapadas con PostGIS (C11). Un `EXCLUDE` con `&&` solo compara rectángulos:
     usar un disparador con `ST_Overlaps` o `ST_Intersects` sobre el interior.
   - Un rol por persona e identificación única (C12, sección 4 de la matriz).
@@ -259,14 +294,18 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 - [ ] 4.4 ⚠ Dockerfile de `politica`: imagen oficial de OPA fijada por huella, con la política
   incluida, sin root. Publicar como `opa:v…`.
 - [ ] 4.5 Sidecar en `verdeazul-app`: OPA escucha en `localhost:8181`, no se expone fuera de la
-  instancia (frontera F3). Arranque ordenado con sonda de inicio.
+  instancia (frontera F3). Arranque ordenado con sonda de inicio: si OPA no está listo, la instancia
+  no recibe tráfico (K-3).
 - [ ] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
-  pregunta al motor. Si OPA no responde o tarda, se deniega (criterio de aceptación 6).
+  pregunta al motor. ⚠ **Si OPA no responde, tarda más que el límite o contesta algo inválido, la
+  petición se frena** (K-3, criterio de aceptación 6): 503, registro en la bitácora y nada más. Sin
+  decisión por omisión, sin caché de decisiones y sin `try/except` que deje seguir.
 - [ ] 4.7 Decorador o *middleware* `@protegida(accion, objeto)` en toda ruta, y una prueba que recorre
   todas las URL y falla si alguna no lo declara (criterio de aceptación 2).
 - [ ] 4.8 Historial (H1 a H3): eventos de lectura, fincas vistas por sujeto en 90 días, umbrales por rol
   en una tabla que aprueba GER (40, 60 y 80 por día; jornada de lunes a viernes, 6:00 a 19:00, hora de
-  Costa Rica). Para la demostración, umbrales bajos en un rol de prueba.
+  Costa Rica). En la misma tabla va el máximo de asignaciones activas por técnico, 20 (K-1). Para la
+  demostración, umbrales bajos en un rol de prueba.
 - [ ] 4.9 Respuesta graduada: conceder; conceder y avisar; pedir segundo factor y motivo; restringir las
   fincas nuevas hasta el siguiente día hábil.
 - [ ] 4.10 La interfaz pregunta al motor qué botones mostrar, solo por comodidad: lo que protege es la
@@ -288,9 +327,11 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 - [ ] 5.4 Períodos: ADM registra apertura y cierre con las fechas de la coordinación; GER aprueba. No
   existe reabrir. Al cerrar, los borradores nunca enviados pasan a `excluida` (C14, T-22).
 - [ ] 5.5 Asignaciones: SUP crea ordinarias y temporales (motivo y fecha de fin, 15 días máximo,
-  renovable); nadie se asigna a sí mismo; vencen solas (C19, T-27, T-28).
+  renovable); nadie se asigna a sí mismo; vencen solas (C19, T-27, T-28). Un técnico tiene como máximo
+  20 asignaciones activas; la pantalla muestra cuántas lleva (K-1, T-38, T-39).
 - [ ] 5.6 Mediciones: TEC crea, modifica (versión nueva) y envía; fecha de medición declarada y fecha
-  de registro del servidor (C2, T-30). VER aprueba o devuelve con observaciones (C3). Más de cinco días
+  de registro del servidor (C2, T-30). VER aprueba o devuelve con observaciones (C3); el formulario de
+  aprobación no lleva ningún campo de aprobador, que sale de la sesión (K-2, T-40). Más de cinco días
   hábiles entre las dos fechas pide motivo.
 - [ ] 5.7 Enmiendas: solicitar (TEC, VER o GER, C7), corregir en 10 días hábiles como versión propuesta
   (C9), revisión técnica independiente con cálculo de materialidad (C10), autorización final de GER que
@@ -349,13 +390,23 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 ## 8 · Pruebas de la matriz (continuo; cerrar el 15 nov)
 
-- [ ] 8.1 Los 37 casos T-01 a T-37 como pruebas automáticas, con el mismo identificador.
+- [ ] 8.1 Los 37 casos T-01 a T-37 como pruebas automáticas, con el mismo identificador, más los
+  cuatro de los cambios K-1 a K-3:
+  - T-38: SUP intenta dar a un técnico con 20 asignaciones activas la número 21. Deniega (K-1, C19).
+  - T-39: el técnico tiene 20 asignaciones, una temporal vence y SUP crea otra. Concede: las vencidas
+    no cuentan (K-1).
+  - T-40: B, que figura entre los autores de una medición, intenta aprobarla enviando en la petición
+    el `aprobador_id` de otro verificador. Deniega: el campo se ignora y C3 compara el ID de la sesión
+    (K-2).
+  - T-41: con OPA detenido, cualquier rol pide cualquier acción. Se frena con 503, no se ejecuta nada
+    y queda en la bitácora (K-3).
 - [ ] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
 - [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
 - [ ] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
   restricciones): las dos copias de la regla no pueden divergir (RR-10).
-- [ ] 8.5 Pruebas de sistema: el motor caído deniega; con la bitácora sin poder escribir, la operación se
-  rechaza; un registro alterado rompe la cadena.
+- [ ] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una
+  respuesta inválida); con la bitácora sin poder escribir, la operación se rechaza; un registro
+  alterado rompe la cadena.
 - [ ] 8.6 Cambio de identificador con cada rol (IDOR), a mano o con OWASP ZAP (criterio de aceptación 3).
 - [ ] 8.7 Generar la tabla de cobertura del informe a partir de `matriz.json` y del resultado de las
   pruebas: permiso, dónde está (regla Rego, vista, restricción de base) y qué prueba lo comprueba.
@@ -439,7 +490,8 @@ implementación **y** prueba.
 - [ ] **VER (10).** Fincas: leer (H). Períodos: leer. Mediciones: leer (H), aprobar y devolver (C3).
   Enmiendas: leer, solicitar (C7), revisar (C10). Certificados: leer (H). Cuentas: modificar (C13).
   Denegadas: datos del dueño, asignaciones, bitácora, alertas.
-- [ ] **SUP (10).** Fincas: leer (H). Períodos: leer. Asignaciones: leer, crear y modificar (C19).
+- [ ] **SUP (10).** Fincas: leer (H). Períodos: leer. Asignaciones: leer, crear y modificar (C19,
+  máximo 20 activas por técnico).
   Mediciones: leer solo estado y fechas (H). Enmiendas: leer solo estado. Cuentas: modificar (C13).
   Alertas: leer y resolver (C15). Denegadas: datos del dueño, certificados, bitácora.
 - [ ] **GER (18).** Fincas: leer (H), aprobar (C11). Datos del dueño: leer (H). Períodos: leer, abrir y
@@ -463,7 +515,7 @@ implementación **y** prueba.
 
 - [ ] C1 asignación vigente: T-01, T-02, T-27
 - [ ] C2 edición solo en borrador: T-01, T-03, T-04, T-21, T-30
-- [ ] C3 quien registró no aprueba: T-05, T-06, T-17, T-26
+- [ ] C3 quien registró no aprueba, por ID de usuario: T-05, T-06, T-17, T-26, T-40
 - [ ] C4 emisión única: T-07, T-25
 - [ ] C5 solo lo suyo: T-08
 - [ ] C6 ventana de auditoría: T-09
@@ -479,13 +531,14 @@ implementación **y** prueba.
 - [ ] C16 supresión condicionada: T-37
 - [ ] C17 abstención por vínculo: T-29
 - [ ] C18 exportar evidencia: T-31
-- [ ] C19 asignar con vigencia: T-27, T-28
+- [ ] C19 asignar con vigencia y máximo de 20 activas: T-27, T-28, T-38, T-39
 - [ ] C20 comprobación pública: T-32
 - [ ] H1 frecuencia: T-02, T-18
 - [ ] H2 tiempo: T-34
 - [ ] H3 combinada: T-19, T-33
 - [ ] H4 secuencia (C3, C8, C10): T-06, T-14, T-24
 - [ ] Filas sin acceso: T-10 (AUD no escribe), T-20 (OPE no entra)
+- [ ] Fallo cerrado del motor (K-3): T-41
 
 ### Políticas que deben tener reflejo técnico
 
