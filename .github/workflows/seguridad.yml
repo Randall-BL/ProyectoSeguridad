@@ -1,0 +1,42 @@
+# Revisiones que corren en cada push a main y en cada PR, aunque alguien no tenga los ganchos locales.
+name: seguridad
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  secretos:
+    name: gitleaks sobre toda la historia
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+      GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Instalar gitleaks (versión y huella fijas)
+        run: |
+          archivo="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$archivo" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archivo}"
+          echo "${GITLEAKS_SHA256}  ${archivo}" | sha256sum -c -
+          tar -xzf "$archivo" gitleaks
+      - name: Buscar secretos
+        run: ./gitleaks git --redact --no-banner --verbose --config .gitleaks.toml
+
+  autores:
+    name: sin co-autores ajenos al equipo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Revisar los mensajes de todos los commits
+        run: |
+          git log --format=%B > "$RUNNER_TEMP/mensajes.txt"
+          sh .githooks/commit-msg "$RUNNER_TEMP/mensajes.txt"

@@ -165,12 +165,17 @@ demás es agregar funcionalidad encima.
   Recomendado: un solo código Django con ajustes y rutas distintas por componente, y una imagen por
   componente que copia solo lo que necesita.
 - [ ] 1.2 Copiar los PDF de la Parte 1 a `docs/parte1/`, para que los cuatro trabajen con el mismo diseño.
-- [ ] 1.3 ⚠ `.gitignore` con `.env`, `*.pem`, `*.key`, `credenciales*`, `.venv/`. Un `.env.example` con
-  los nombres de las variables y valores vacíos.
-- [ ] 1.4 ⚠ gitleaks: gancho *pre-commit* y paso en CI. Activar *secret scanning* y *push protection*
-  en GitHub (gratis en repos públicos).
-- [ ] 1.5 Dependabot: activar alertas y actualizaciones de seguridad en *Settings → Code security*, y
+- [x] 1.3 ⚠ `.gitignore` con `.env`, `*.pem`, `*.key`, `credenciales*`, `.venv/`. Un `.env.example` con
+  los nombres de las variables y valores vacíos. También `.gitattributes`, que deja todo en LF.
+- [x] 1.4 ⚠ gitleaks: gancho *pre-commit* (`.githooks/`) y paso en CI (`.github/workflows/seguridad.yml`),
+  con reglas propias en `.gitleaks.toml` para cadenas de Neon y semillas TOTP. *Secret scanning* y
+  *push protection* activos en GitHub.
+- [x] 1.5 Dependabot: alertas y actualizaciones de seguridad activas en *Settings → Code security*, y
   `.github/dependabot.yml` con los ecosistemas `pip`, `docker` y `github-actions`.
+- [x] 1.5b Reglas en GitHub: `main` sin force push ni borrado; etiquetas `v*` inmutables. Gancho
+  `commit-msg` y revisión en CI que rechazan co-autores ajenos al equipo.
+- [ ] 1.5c Invitar a Javier, Julio y Axel como colaboradores. Cada uno sigue «Configuración del
+  repositorio» del README: instalar gitleaks, `git config core.hooksPath .githooks` y su identidad.
 - [ ] 1.6 Entorno local: `docker compose` con PostGIS y OPA, solo para desarrollar (lo que se evalúa es
   la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización.
 

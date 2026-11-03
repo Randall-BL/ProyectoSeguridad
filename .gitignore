@@ -1,0 +1,56 @@
+# --- Secretos: nunca al repositorio (las credenciales viven en Secret Manager) ---
+.env
+.env.*
+!.env.example
+*.pem
+!**/*publica*.pem
+*.key
+*.p12
+*.pfx
+*_privada*
+*-privada*
+credenciales*
+# Llaves JSON de cuentas de servicio de Google
+*service-account*.json
+*-sa-key*.json
+gcloud-*.json
+application_default_credentials.json
+# Semillas TOTP y contraseñas de las cuentas de prueba (van en el informe, no aquí)
+cuentas_prueba*
+semillas*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Django ---
+staticfiles/
+media/
+*.sqlite3
+
+# --- LaTeX (el informe se versiona como .tex y .pdf) ---
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# --- Editores y sistema ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*

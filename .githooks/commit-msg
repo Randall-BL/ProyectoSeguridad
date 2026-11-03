@@ -1,0 +1,23 @@
+#!/bin/sh
+# Cada commit lo firma quien lo hace. Se rechazan los co-autores que no son del equipo
+# (correo de estudiantec.cr o el noreply de GitHub de cada integrante), las cuentas [bot]
+# y los pies «Generated with [...]» que agregan algunas herramientas.
+# El CI lo corre también sobre toda la historia: sh .githooks/commit-msg archivo_con_mensajes
+
+mensaje="$1"
+if [ ! -r "$mensaje" ]; then
+  echo "commit-msg: no se pudo leer el mensaje ($mensaje)." >&2
+  exit 1
+fi
+
+ajenos=$(grep -iE '^co-authored-by:' "$mensaje" \
+  | grep -viE '<[^>]+@(estudiantec\.cr|users\.noreply\.github\.com)>' )
+bots=$(grep -iE '^co-authored-by:.*\[bot\]' "$mensaje")
+pie=$(grep -iE 'generated with \[' "$mensaje")
+
+if [ -n "$ajenos$bots$pie" ]; then
+  echo "commit-msg: el mensaje trae un co-autor que no es del equipo o un pie «Generated with»:" >&2
+  printf '%s\n' "$ajenos" "$bots" "$pie" | grep -v '^$' >&2
+  echo "Quítenlo y repitan el commit." >&2
+  exit 1
+fi

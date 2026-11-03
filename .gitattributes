@@ -1,0 +1,12 @@
+# Fin de línea LF en todo el texto, también en Windows: las imágenes se construyen
+# para Linux y un script con CRLF no arranca dentro del contenedor.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.zip binary
+*.rar binary
+*.pptx binary
+*.docx binary

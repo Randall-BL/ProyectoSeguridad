@@ -1,0 +1,39 @@
+# Dependabot revisa cada lunes las dependencias de cada componente y abre un PR por actualización.
+# Las alertas y los PR de seguridad se activan aparte, en Settings → Code security.
+# Mientras una carpeta no tenga su requirements.txt o su Dockerfile, Dependabot avisa que no
+# encontró el archivo; desaparece cuando el componente exista (fase 1 del todo.md).
+
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directories:
+      - "/app"
+      - "/emision"
+      - "/publico"
+      - "/trabajos"
+      - "/verificador"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "America/Costa_Rica"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/app"
+      - "/politica"
+      - "/emision"
+      - "/publico"
+      - "/trabajos"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "America/Costa_Rica"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "America/Costa_Rica"

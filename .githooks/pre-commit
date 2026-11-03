@@ -1,0 +1,9 @@
+#!/bin/sh
+# Busca secretos en lo que está preparado para el commit. Si encuentra uno, el commit no se hace.
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: falta gitleaks. Instálenlo (README, «Configuración del repositorio») y repitan el commit." >&2
+  exit 1
+fi
+
+exec gitleaks git --pre-commit --staged --redact --no-banner --config .gitleaks.toml

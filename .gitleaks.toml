@@ -1,0 +1,23 @@
+# Reglas de gitleaks: todas las que trae por omisión más las propias del proyecto.
+# Las usan el gancho pre-commit (.githooks/pre-commit) y el flujo de CI (.github/workflows/seguridad.yml).
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "cadena-conexion-postgres"
+description = "Cadena de conexión de PostgreSQL con contraseña, como la de Neon"
+regex = '''postgres(?:ql)?://[^:/\s]+:[^@\s]+@[^/\s]+'''
+keywords = ["postgres://", "postgresql://"]
+
+[[rules]]
+id = "llave-api-neon"
+description = "Llave de la API de Neon"
+regex = '''napi_[A-Za-z0-9]{40,}'''
+keywords = ["napi_"]
+
+[[rules]]
+id = "semilla-totp"
+description = "URI otpauth con la semilla de un segundo factor"
+regex = '''otpauth://totp/[^\s]*secret=[A-Z2-7]{16,}'''
+keywords = ["otpauth://"]
