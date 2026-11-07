@@ -286,13 +286,19 @@ demás es agregar funcionalidad encima.
 
 El segundo candado de la arquitectura (F4): la base no confía en la aplicación.
 
-- [ ] 2.1 Modelo de datos de los diez objetos de la matriz: fincas y parcelas (geometría), datos
+- [x] 2.1 Modelo de datos de los diez objetos de la matriz: fincas y parcelas (geometría), datos
   personales del dueño, períodos, asignaciones, mediciones con todas sus versiones, enmiendas con sus
   cuatro pasos, certificados, cuentas y roles (con vínculos declarados y habilitaciones temporales),
   bitácora y alertas. Identificadores UUID, no consecutivos.
-- [ ] 2.2 Estados tal como en la Parte 1: medición (`borrador`, `enviada`, `devuelta`, `aprobada`,
+- [x] 2.2 Estados tal como en la Parte 1: medición (`borrador`, `enviada`, `devuelta`, `aprobada`,
   `excluida`, `sustituida`), período (`planificado`, `abierto`, `cerrado`), certificado (`vigente`,
   `revocado`), y `propuesto` o `aprobado` en catálogo y roles.
+  Hecho en `app/cuentas` y `app/negocio` (migraciones 0001, aplicadas en compose y en la rama `dev`).
+  La geometría es una columna PostGIS `geometry(Polygon,4326)` sin GeoDjango (`negocio/campos.py`),
+  para no meter GDAL en la imagen. Ya quedan en la base: un solo certificado vigente por parcela y
+  período (C4), nadie se asigna a sí mismo (C19), nadie resuelve su propia alerta (C15), la fecha de
+  medición no es posterior al registro (C2), la temporal lleva motivo y fin (C19) y las fechas del
+  período van en orden. `ParametroRol` guarda los umbrales de H1 a H3 y el máximo de 20 asignaciones (K-1).
 - [ ] 2.3 Usuarios de base, uno por componente, ninguno dueño de las tablas:
   - `va_migraciones`: dueño del esquema; solo para migrar, nunca en ejecución.
   - `va_app`: lo que la matriz permite; sin `DELETE` en mediciones, enmiendas, certificados, cuentas ni

@@ -52,7 +52,11 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.sessions",
     "nucleo",
+    "cuentas",
+    "negocio",
 ]
+
+AUTH_USER_MODEL = "cuentas.Usuario"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
