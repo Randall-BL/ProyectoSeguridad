@@ -13,6 +13,25 @@ T-37, POL-xx-nn, F1 a F5.
 
 ---
 
+## Sprints
+
+Cada sprint cierra con una versión desplegada y etiquetada: siempre hay algo funcionando en la nube.
+Cada tarea terminada es un commit con su número («2.7: …») y se sube en el momento; la casilla del
+todo se marca en el mismo commit. Al cerrar un sprint, la etiqueta de git y la de la imagen en
+Artifact Registry son la misma, y se anota en «Versiones publicadas» del README.
+
+| Sprint | Fechas | Fases | Versión | Listo cuando… |
+|---|---|---|---|---|
+| 0 · Arranque | 6–7 nov | 0, cuentas de Neon y Google Cloud | — | Cuentas, proyecto y facturación listos |
+| 1 · «Hola» en la nube | 7–9 nov | 1 | `v0.1.0` | La URL `*.run.app` abre por HTTPS, lee Neon con la cadena que llega desde Secret Manager, y la imagen corre sin root |
+| 2 · Base, identidad y motor | 9–11 nov | 2, 3, 4 | `v0.2.0` | Usuarios de base, seguridad por fila, bitácora encadenada, Argon2id y TOTP; OPA como sidecar decidiendo; OPA caído frena todo (T-41) |
+| 3 · Flujos y matriz completa | 11–13 nov | 5, y 8.1 a 8.4 a la par | `v0.3.0` | Los 102 permisos se ejercitan desde la interfaz; T-01 a T-40 pasan |
+| 4 · Certificados y trabajos | 13–15 nov | 6, 7 | `v0.4.0` | Emitir, verificar, el alterado falla, comprobación pública, verificador de consola, trabajos programados |
+| 5 · Endurecimiento | 16–17 nov | 9, y 8.5 a 8.9 | **`v1.0.0`** | Trivy, ZAP, gitleaks sobre la historia, alerta de Dependabot atendida, tabla de cobertura |
+| 6 · Informe y defensa | 17–19 nov | 10, 11 | — | Informe, capturas, anexo de credenciales fuera del repo, ensayo, prueba desde otra red |
+
+---
+
 ## Qué se evalúa (para decidir qué recortar)
 
 | Criterio | Pts | Lo mínimo para no perderlo |
