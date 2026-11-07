@@ -15,6 +15,7 @@ Se corre con el usuario dueño de la base, una sola vez por base:
 import os
 import secrets
 from datetime import date, timedelta
+from decimal import Decimal
 from pathlib import Path
 
 from django.conf import settings
@@ -25,8 +26,9 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from bitacora.registro import anexar
-from cuentas.models import EstadoPropuesta, PropuestaRol, Rol, Usuario
+from cuentas.models import Declaracion, EstadoPropuesta, PropuestaRol, Rol, Usuario
 from negocio.models import (
+    Asignacion,
     DatosPersonales,
     EstadoCatalogo,
     EstadoMedicion,
@@ -39,6 +41,8 @@ from negocio.models import (
     PropuestaPeriodo,
     Representacion,
     Titular,
+    VersionMedicion,
+    Vinculo,
 )
 
 DOMINIO = "verdeazul.example"
@@ -137,14 +141,18 @@ class Command(BaseCommand):
             claves = self._personas(compartida)
             self._catalogo()
             self._periodos()
+            self._primer_periodo()
             self._cerrar_periodo("2026-I")
-            self._carla_pasa_a_verificadora()
+            self._segundo_periodo()
+            self._declaraciones()
             resumen = {
                 "usuarios": len(PERSONAS),
                 "titulares": len(self.titulares),
                 "fincas": len(self.fincas),
                 "parcelas": Parcela.objects.count(),
                 "periodos": len(self.periodos),
+                "asignaciones": Asignacion.objects.count(),
+                "mediciones": Medicion.objects.count(),
             }
             anexar(
                 accion="sembrar",
@@ -330,6 +338,135 @@ class Command(BaseCommand):
             aprobada_por=self.u["ger.gabriela"],
             aprobada_en=self.ahora,
         )
+
+    # --- Asignaciones y mediciones ------------------------------------------------------------
+
+    def _primer_periodo(self):
+        """2026-I, antes del cierre: una medición aprobada y otra enviada que nadie alcanzó a
+        revisar. Esa la aprueba B después del cierre (P-06, T-17)."""
+        self._asignar("tec.ana", "F-001", "2026-I")
+        self._asignar("tec.ana", "F-004", "2026-I")
+        self._medicion(
+            "F-001", "P-1", "2026-I", [("tec.ana", date(2026, 3, 18), 118, "24.60", "13.80")],
+            estado=EstadoMedicion.APROBADA, aprobada_por="ver.bruno",
+        )
+        self._medicion(
+            "F-004", "P-1", "2026-I", [("tec.ana", date(2026, 6, 2), 164, "21.30", "12.40")],
+            estado=EstadoMedicion.ENVIADA,
+        )
+
+    def _segundo_periodo(self):
+        # T-06: C midió F-003 como técnica (versión 1), pasó a verificadora y A completó la
+        # medición (versión 2). Al intentar aprobarla, C figura entre los autores.
+        asignacion_de_carla = self._asignar("ver.carla", "F-003", "2026-II")
+        asignacion_de_carla.terminada_en = self.ahora
+        asignacion_de_carla.save(update_fields=["terminada_en"])
+        self._carla_pasa_a_verificadora()
+
+        self._asignar("tec.ana", "F-001", "2026-II")
+        self._asignar("tec.ana", "F-004", "2026-II")
+        self._asignar("tec.ana", "F-003", "2026-II", desde=date(2026, 8, 3))
+        # T-27: S le dio a A tres días en F-002 y ya vencieron. F-002 no tiene otra asignación (T-02).
+        self._asignar(
+            "tec.ana", "F-002", "2026-II",
+            desde=self.hoy - timedelta(days=3), hasta=self.hoy - timedelta(days=1),
+            motivo="Visita extraordinaria pedida por el titular",
+        )
+        # T-38: T llega al máximo de 20 asignaciones activas (K-1). F-025 queda libre para la 21.
+        for numero in range(5, 25):
+            self._asignar("tec.tomas", f"F-{numero:03d}", "2026-II")
+
+        # T-05 y T-03: enviada por A; B la puede aprobar y A ya no la puede cambiar.
+        self._medicion(
+            "F-001", "P-1", "2026-II", [("tec.ana", date(2026, 9, 15), 121, "25.10", "14.20")],
+            estado=EstadoMedicion.ENVIADA,
+        )
+        # T-01 y T-04: un borrador de A en el período abierto.
+        self._medicion("F-001", "P-2", "2026-II", [("tec.ana", date(2026, 10, 20), 96, "22.80", "13.10")])
+        self._medicion(
+            "F-003", "P-1", "2026-II",
+            [
+                ("ver.carla", date(2026, 7, 21), 140, "23.40", "12.90"),
+                ("tec.ana", date(2026, 8, 12), 143, "23.50", "13.00"),
+            ],
+            estado=EstadoMedicion.ENVIADA,
+        )
+        # T-29: medición de F-005, cuyo titular es pariente de B.
+        self._medicion(
+            "F-005", "P-1", "2026-II", [("tec.tomas", date(2026, 9, 30), 133, "26.20", "15.10")],
+            estado=EstadoMedicion.ENVIADA,
+        )
+
+    def _asignar(self, tecnico, finca, periodo, *, desde=None, hasta=None, motivo=""):
+        """C19: la crea SUP, nunca el mismo técnico; la temporal lleva motivo y fecha de fin."""
+        return Asignacion.objects.create(
+            tecnico=self.u[tecnico],
+            finca=self.fincas[finca],
+            periodo=self.periodos[periodo],
+            tipo=Asignacion.Tipo.TEMPORAL if hasta else Asignacion.Tipo.ORDINARIA,
+            motivo=motivo,
+            desde=desde or self.periodos[periodo].inicio,
+            hasta=hasta,
+            creada_por=self.u["sup.sofia"],
+        )
+
+    def _medicion(self, finca, parcela, periodo, versiones, *, estado=EstadoMedicion.BORRADOR, aprobada_por=None):
+        """Crea la medición con sus versiones (autor, fecha de medición, árboles, DAP y altura) y la
+        lleva al estado pedido por el mismo camino que la aplicación: los disparadores de C2, C3 y
+        K-2 revisan cada paso."""
+        medicion = Medicion.objects.create(
+            parcela=Parcela.objects.get(finca=self.fincas[finca], codigo=parcela, activa=True),
+            periodo=self.periodos[periodo],
+            creada_por=self.u[versiones[0][0]],
+        )
+        for numero, (autor, fecha, arboles, dap, altura) in enumerate(versiones, start=1):
+            version = VersionMedicion.objects.create(
+                medicion=medicion,
+                numero=numero,
+                autor=self.u[autor],
+                fecha_medicion=fecha,
+                arboles=arboles,
+                dap_promedio_cm=Decimal(dap),
+                altura_promedio_m=Decimal(altura),
+                toneladas_co2=_toneladas_referencia(arboles, Decimal(dap), Decimal(altura)),
+            )
+        medicion.version_vigente = version
+        medicion.save(update_fields=["version_vigente"])
+        if estado in (EstadoMedicion.ENVIADA, EstadoMedicion.APROBADA):
+            medicion.estado = EstadoMedicion.ENVIADA
+            medicion.save(update_fields=["estado"])
+        if estado == EstadoMedicion.APROBADA:
+            medicion.estado = EstadoMedicion.APROBADA
+            medicion.aprobada_por = self.u[aprobada_por]
+            medicion.aprobada_en = self.ahora
+            medicion.save(update_fields=["estado", "aprobada_por", "aprobada_en"])
+        return medicion
+
+    # --- Declaraciones de vínculos ------------------------------------------------------------
+
+    def _declaraciones(self):
+        """POL-CA-14: el personal declara sus vínculos. B declara que el titular de F-005 es
+        pariente suyo, así que se abstiene de decidir sobre esa finca (C17, T-29)."""
+        for persona in self.u.values():
+            if persona.rol == Rol.DUE:
+                continue
+            tiene_vinculo = persona.username == "ver.bruno"
+            Declaracion.objects.create(usuario=persona, sin_vinculos=not tiene_vinculo)
+        Vinculo.objects.create(
+            usuario=self.u["ver.bruno"], titular=self.titulares["T-004"], tipo=Vinculo.Tipo.FAMILIAR
+        )
+
+
+# --- Datos de campo -----------------------------------------------------------------------------
+
+
+def _toneladas_referencia(arboles, dap_cm, altura_m):
+    """Solo para que los datos de prueba sean verosímiles: biomasa aérea por árbol con la ecuación
+    pantropical de Chave et al. (2014), densidad de madera 0,6 g/cm³, 47 % de carbono y 44/12 para
+    pasar a CO₂. La aplicación no calcula toneladas: las registra el técnico."""
+    biomasa_kg = 0.0673 * (0.6 * float(dap_cm) ** 2 * float(altura_m)) ** 0.976
+    co2_t = arboles * biomasa_kg * 0.47 * 44 / 12 / 1000
+    return Decimal(str(round(co2_t, 3)))
 
 
 # --- Geometría ----------------------------------------------------------------------------------
