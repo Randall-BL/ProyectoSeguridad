@@ -299,7 +299,7 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   período (C4), nadie se asigna a sí mismo (C19), nadie resuelve su propia alerta (C15), la fecha de
   medición no es posterior al registro (C2), la temporal lleva motivo y fin (C19) y las fechas del
   período van en orden. `ParametroRol` guarda los umbrales de H1 a H3 y el máximo de 20 asignaciones (K-1).
-- [ ] 2.3 Usuarios de base, uno por componente, ninguno dueño de las tablas:
+- [x] 2.3 Usuarios de base, uno por componente, ninguno dueño de las tablas:
   - `va_migraciones`: dueño del esquema; solo para migrar, nunca en ejecución.
   - `va_app`: lo que la matriz permite; sin `DELETE` en mediciones, enmiendas, certificados, cuentas ni
     bitácora; sin `INSERT` en certificados.
@@ -308,6 +308,11 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     toneladas, período, código del reemplazo; nada del titular, C20).
   - `va_trabajos`: vencimientos, alertas y lectura de la bitácora para verificar la cadena.
   - Opcional: `va_auditor`, conexión de solo lectura para las peticiones de AUD (lo dice la Parte 1).
+  Hecho: `nucleo/migrations/0001` crea `va_app`, `va_emision`, `va_publico` y `va_trabajos` sin LOGIN
+  (la clave la pone `infra/crear-secretos.sh`); `negocio/sql/0002_permisos.sql` da los permisos tabla
+  por tabla. Comprobado como `va_app`: no puede cambiar una versión de medición, emitir un
+  certificado ni borrar una medición.
+
 - [ ] 2.4 Un secreto `db-url-*` por usuario, cada uno accesible solo por su cuenta de servicio.
 - [ ] 2.5 Seguridad por fila: el técnico solo ve filas de sus fincas asignadas (C1) y el dueño solo las
   de su titular (C5). El sujeto se pasa con `SET LOCAL app.usuario = …` dentro de cada transacción
@@ -323,12 +328,16 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     usar un disparador con `ST_Overlaps` o `ST_Intersects` sobre el interior.
   - Un rol por persona e identificación única (C12, sección 4 de la matriz).
   - No borrar un titular con certificados dentro del plazo (C16).
-- [ ] 2.7 Bitácora encadenada (POL-BT-01 a 06):
+- [x] 2.7 Bitácora encadenada (POL-BT-01 a 06):
   - Campos de POL-BT-02 y de la arquitectura §4.5, incluida la huella SHA-256 del registro anterior.
   - Se escribe solo con una función `bitacora_anexar(...)` (`SECURITY DEFINER`) que toma un candado,
     calcula la huella y añade. `va_app` tiene `EXECUTE` sobre la función y nada más sobre la tabla.
   - Disparador que rechaza `UPDATE` y `DELETE` incluso al dueño.
   - La acción y su registro se confirman en la misma transacción (POL-BT-06: sin registro no hay acción).
+  Hecho en `bitacora/sql/0001_bitacora.sql` y `bitacora/registro.py`. Comprobado: `va_app` no puede
+  insertar, cambiar ni borrar directo; el dueño choca con el disparador; un registro alterado con el
+  disparador apagado lo detecta `bitacora_verificar()` (criterio de aceptación 4).
+
 - [ ] 2.8 Datos de prueba con los personajes de los casos T-01 a T-37: técnicos A y otro; verificadores
   B, C (ex técnica, autora de una versión) y uno más; supervisor S; dos gerentes (G y otro, para T-24);
   un administrador; la auditora E con ventana vigente; dos dueños (D persona física y un representante
