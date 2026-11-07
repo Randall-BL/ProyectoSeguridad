@@ -180,12 +180,21 @@ demás es agregar funcionalidad encima.
   la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización.
 
 **Neon**
-- [ ] 1.7 Crear el proyecto y la base `verdeazul`, en la región elegida. Activar la extensión PostGIS.
-- [ ] 1.8 Rama `main` para producción y rama `dev` para desarrollo y pruebas (va al informe: «entornos separados»).
-- [ ] 1.9 Conexión con `sslmode=verify-full` (o como mínimo `require`) y `channel_binding=require`.
-  Anotar por qué se eligió y qué se descartó.
-- [ ] 1.10 Comprobar si el plan gratuito permite restringir direcciones de origen. Lo esperable es que
+- [x] 1.7 Crear el proyecto y la base `verdeazul`, en la región elegida. Activar la extensión PostGIS.
+  Hecho: proyecto `verdeazul` (`wild-grass-32431323`) en la organización TEC, plan gratuito, AWS
+  us-east-1, PostgreSQL 18.6 y PostGIS 3.6.4. El repo está enlazado con `neon init`: las cadenas
+  quedan en `.env.local` y el enlace en `.neon`, los dos ignorados por git.
+- [x] 1.8 Rama `main` para producción y rama `dev` para desarrollo y pruebas (va al informe: «entornos
+  separados»). Hecho: `dev` sale de `main` y ya trae PostGIS.
+- [x] 1.9 Conexión con `sslmode=verify-full` (o como mínimo `require`) y `channel_binding=require`.
+  Anotar por qué se eligió y qué se descartó. Comprobado: Neon entrega `sslmode=require` y
+  `channel_binding=require`. Con `verify-full` y un paquete de CA la conexión entra, y con un CA
+  equivocado se rechaza. En los contenedores se usa `verify-full` con el paquete de CA de la imagen.
+  `require` se descarta porque cifra pero no comprueba con quién se habla. Para el informe (10.4): el
+  TLS lo termina el proxy de Neon; desde la base, `pg_stat_ssl` no ve la conexión cifrada.
+- [x] 1.10 Comprobar si el plan gratuito permite restringir direcciones de origen. Lo esperable es que
   no, y además Cloud Run no tiene IP de salida fija sin pagar Cloud NAT: documentarlo como riesgo propio.
+  Comprobado: el plan gratuito admite 0 direcciones (`neon ip-allow add` responde «max: 0»).
 
 **Google Cloud**
 - [ ] 1.11 Proyecto, APIs (Run, Artifact Registry, Secret Manager, Cloud Build, Scheduler) y **alerta
