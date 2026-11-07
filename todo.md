@@ -255,16 +255,26 @@ demás es agregar funcionalidad encima.
   `app/`. Probado contra la rama `dev`: HTTP → 301 a HTTPS, HTTPS → 200 con HSTS, host ajeno →
   400, POST → 405, y `check --deploy` sin avisos (se silencia solo el de precarga de HSTS, que no
   aplica a `run.app`).
-- [ ] 1.16 ⚠ Publicar como `app:v0.1.0` y con el hash corto del commit. Nunca solo `latest`. Crear el tag
-  de git `v0.1.0` en el mismo commit.
-- [ ] 1.17 Desplegar `verdeazul-app` desde `infra/service.yaml` (versionado), con `sa-app`, los
-  secretos inyectados como variables de entorno, `min-instances=0` y `max-instances=2`.
-- [ ] 1.18 La página «hola» lee algo de Neon y lo muestra: prueba de que la cadena de conexión llega
-  por Secret Manager.
-- [ ] 1.19 Django detrás del proxy de Google: `SECURE_PROXY_SSL_HEADER`, `SECURE_SSL_REDIRECT`, HSTS,
-  cookies `Secure`, `HttpOnly` y `SameSite`. `manage.py check --deploy` sin avisos.
-- [ ] 1.20 Abrir la URL desde un teléfono con datos móviles, no desde la red de la casa.
-- [ ] 1.21 README: cómo desplegar y tabla de etiquetas publicadas (versión, commit, fecha, qué trae).
+- [x] 1.16 ⚠ Publicar como `app:v0.1.0` y con el hash corto del commit. Nunca solo `latest`. Crear el tag
+  de git `v0.1.0` en el mismo commit. Hecho con `infra/publicar.sh`, que construye en Cloud Build con
+  `sa-build`: `app:v0.1.0` y `app:git-6a0a1f8` apuntan al mismo digest (`sha256:813075e6…`), y la
+  etiqueta de git `v0.1.0` apunta a `6a0a1f8`. En el registro, la imagen declara el usuario `10001`
+  y lleva la versión y el commit en sus etiquetas OCI. A Cloud Build solo sube `app/`
+  (`.gcloudignore`).
+- [x] 1.17 Desplegar `verdeazul-app` desde `infra/service.yaml` (versionado), con `sa-app`, los
+  secretos inyectados como variables de entorno, `min-instances=0` y `max-instances=2`. Hecho con
+  `infra/app.service.yaml` e `infra/desplegar.sh`; los secretos van en versión fija («1»). Revisión
+  `verdeazul-app-00002`.
+- [x] 1.18 La página «hola» lee algo de Neon y lo muestra: prueba de que la cadena de conexión llega
+  por Secret Manager. Hecho: muestra «conectada · PostgreSQL 18 · PostGIS 3.6.4», leído como `va_app`.
+- [x] 1.19 Django detrás del proxy de Google: `SECURE_PROXY_SSL_HEADER`, `SECURE_SSL_REDIRECT`, HSTS,
+  cookies `Secure`, `HttpOnly` y `SameSite`. `manage.py check --deploy` sin avisos. Comprobado sobre
+  la URL pública: HSTS, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy` y COOP. HTTP → 302 a
+  HTTPS, que hace el frente de Google antes de llegar a Django (evidencia de D-01). TLS 1.3 por
+  omisión, acepta 1.2 y rechaza 1.1. POST sin token CSRF → 403. Host ajeno → 400.
+- [ ] 1.20 Abrir la URL desde un teléfono con datos móviles, no desde la red de la casa. Ya se probó
+  desde esta máquina; falta el teléfono.
+- [x] 1.21 README: cómo desplegar y tabla de etiquetas publicadas (versión, commit, fecha, qué trae).
 
 ---
 

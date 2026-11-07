@@ -61,10 +61,37 @@ push a `main` y en cada PR, por si alguien no instaló los ganchos.
 
 ## Despliegue
 
-Pendiente: fase 1 del [todo.md](todo.md).
+**URL pública:** https://verdeazul-app-708901712393.us-east1.run.app
+
+Proyecto de Google Cloud `verdeazul-ce1115-g6`, región `us-east1`. Base de datos en Neon, proyecto
+`verdeazul`. Hace falta gcloud con sesión en una cuenta con acceso al proyecto, y Git Bash o Cloud
+Shell para correr los scripts.
+
+**Una sola vez** (ya está hecho; los scripts solo crean lo que falta):
+
+```
+sh infra/preparar-gcp.sh     # registro de imágenes, cuentas de servicio, bucket de Cloud Build
+sh infra/crear-secretos.sh   # secretos en Secret Manager y usuario de base va_app
+```
+
+**Cada versión:**
+
+1. Commit y push a `main`.
+2. `sh infra/publicar.sh app vX.Y.Z`: Cloud Build construye la imagen y la publica como
+   `app:vX.Y.Z` y `app:git-<commit>`, y pone la etiqueta `vX.Y.Z` en git, en el mismo commit.
+3. `sh infra/desplegar.sh app vX.Y.Z`: aplica `infra/app.service.yaml` con esa imagen.
+
+**Volver a una versión anterior:** `sh infra/desplegar.sh app vX.Y.Z` con la versión a la que se
+quiere volver. El registro conserva las últimas cinco versiones de cada imagen y todas las `v1.x`.
+
+**Dependencias:** se editan en `app/requirements.in` y se fijan con
+`sh infra/fijar-dependencias.sh app` (requiere `pip install uv`).
 
 ## Versiones publicadas
 
+Cada etiqueta de git corresponde a la imagen con la misma etiqueta en
+`us-east1-docker.pkg.dev/verdeazul-ce1115-g6/verdeazul`.
+
 | Versión | Commit | Fecha | Qué trae |
 |---|---|---|---|
-| | | | |
+| `v0.1.0` | `6a0a1f8` | 2026-11-06 | «Hola»: Django por HTTPS en Cloud Run, que lee Neon con la cadena de Secret Manager; imagen sin root |
