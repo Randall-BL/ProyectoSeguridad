@@ -1,0 +1,17 @@
+# Construye la imagen de un componente y la publica con dos etiquetas: la versión (v0.1.0) y el
+# commit del que salió (git-1a2b3c4). Nunca latest. Lo llama infra/publicar.sh.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=${_COMPONENTE}/Dockerfile
+      - --build-arg=APP_VERSION=${_VERSION}
+      - --build-arg=APP_COMMIT=${_COMMIT}
+      - --tag=${_REGISTRO}/${_COMPONENTE}:${_VERSION}
+      - --tag=${_REGISTRO}/${_COMPONENTE}:git-${_COMMIT}
+      - .
+images:
+  - ${_REGISTRO}/${_COMPONENTE}:${_VERSION}
+  - ${_REGISTRO}/${_COMPONENTE}:git-${_COMMIT}
+options:
+  logging: CLOUD_LOGGING_ONLY

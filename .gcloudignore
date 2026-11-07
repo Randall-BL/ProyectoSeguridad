@@ -1,0 +1,6 @@
+# Lo que gcloud builds submit sube a Cloud Build. Lista de permitidos: nunca viajan .env.local,
+# .neon, .git ni los documentos.
+/*
+!/app/
+!/.dockerignore
+**/__pycache__/
