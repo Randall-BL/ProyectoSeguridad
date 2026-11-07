@@ -1,9 +1,10 @@
-# Revisiones que corren en cada push a main y en cada PR, aunque alguien no tenga los ganchos locales.
+# Revisiones que corren en cada push a main y a las ramas development-*, y en cada PR, aunque
+# alguien no tenga los ganchos locales.
 name: seguridad
 
 on:
   push:
-    branches: [main]
+    branches: [main, "development-*"]
   pull_request:
 
 permissions:

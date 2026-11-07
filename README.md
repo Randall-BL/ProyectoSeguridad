@@ -47,6 +47,14 @@ Con eso, cada commit pasa por dos revisiones antes de crearse:
 El flujo `.github/workflows/seguridad.yml` repite las dos revisiones sobre toda la historia en cada
 push a `main` y en cada PR, por si alguien no instaló los ganchos.
 
+## Ramas
+
+- Cada integrante trabaja en su rama `development-<nombre>` (por ejemplo, `development-yitan`) y
+  hace un commit por tarea del [todo.md](todo.md), con su número al inicio del mensaje («2.7: …»).
+- A `main` se llega por PR desde esa rama, fusionando con **merge commit**, no con squash: así los
+  commits etiquetados (`v0.2.0`, …) siguen en la historia de `main`.
+- El CI corre en cada push a `main` y a las ramas `development-*`, y en cada PR.
+
 ## Reglas del repositorio
 
 - **Ningún secreto en el repositorio, nunca.** El repositorio es público. Las credenciales viven en
@@ -76,7 +84,7 @@ sh infra/crear-secretos.sh   # secretos en Secret Manager y usuario de base va_a
 
 **Cada versión:**
 
-1. Commit y push a `main`.
+1. Commit y push (a `main` o a la rama `development-<nombre>`).
 2. `sh infra/publicar.sh app vX.Y.Z`: Cloud Build construye la imagen y la publica como
    `app:vX.Y.Z` y `app:git-<commit>`, y pone la etiqueta `vX.Y.Z` en git, en el mismo commit.
 3. `sh infra/desplegar.sh app vX.Y.Z`: aplica `infra/app.service.yaml` con esa imagen.

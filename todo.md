@@ -16,8 +16,9 @@ T-37, POL-xx-nn, F1 a F5.
 ## Sprints
 
 Cada sprint cierra con una versión desplegada y etiquetada: siempre hay algo funcionando en la nube.
-Cada tarea terminada es un commit con su número («2.7: …») y se sube en el momento; la casilla del
-todo se marca en el mismo commit. Al cerrar un sprint, la etiqueta de git y la de la imagen en
+Cada tarea terminada es un commit con su número («2.7: …») y se sube en el momento a la rama
+`development-<nombre>` de quien la hace (Randall: `development-yitan`); la casilla del todo se marca
+en el mismo commit. A `main` se fusiona por PR con merge commit. Al cerrar un sprint, la etiqueta de git y la de la imagen en
 Artifact Registry son la misma, y se anota en «Versiones publicadas» del README.
 
 | Sprint | Fechas | Fases | Versión | Listo cuando… |
