@@ -1,0 +1,22 @@
+[
+  {
+    "name": "conservar-ultimas-5",
+    "action": {"type": "Keep"},
+    "mostRecentVersions": {"keepCount": 5}
+  },
+  {
+    "name": "conservar-v1",
+    "action": {"type": "Keep"},
+    "condition": {"tagState": "tagged", "tagPrefixes": ["v1."]}
+  },
+  {
+    "name": "borrar-sin-etiqueta",
+    "action": {"type": "Delete"},
+    "condition": {"tagState": "untagged", "olderThan": "7d"}
+  },
+  {
+    "name": "borrar-viejas",
+    "action": {"type": "Delete"},
+    "condition": {"tagState": "tagged", "olderThan": "30d"}
+  }
+]

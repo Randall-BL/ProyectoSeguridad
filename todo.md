@@ -224,9 +224,12 @@ demás es agregar funcionalidad encima.
   Budgets). La alerta salta al 1 %, 50 % y 100 % de 1 USD y cuenta el costo **antes** de créditos,
   así que avisa aunque un crédito lo esté cubriendo. Ojo: el presupuesto solo avisa, no detiene el
   gasto; lo que lo limita son `max-instances` y la limpieza del registro.
-- [ ] 1.12 Artifact Registry: repositorio Docker `verdeazul` con **etiquetas inmutables** (así nadie
+- [x] 1.12 Artifact Registry: repositorio Docker `verdeazul` con **etiquetas inmutables** (así nadie
   puede mover una versión publicada) y política de limpieza que conserve las últimas versiones (la
-  capa gratuita es de 0,5 GB).
+  capa gratuita es de 0,5 GB). Hecho con `infra/preparar-gcp.sh`: `us-east1-docker.pkg.dev/
+  verdeazul-ce1115-g6/verdeazul`. La limpieza (`infra/registro-limpieza.json`) conserva las últimas
+  cinco versiones de cada imagen y todas las `v1.x`, y borra lo que tenga más de 30 días o lleve 7
+  sin etiqueta.
 - [ ] 1.13 Una cuenta de servicio por componente: `sa-app`, `sa-emision`, `sa-publico`, `sa-trabajos`.
   **No usar la cuenta de servicio por omisión de Compute**, que tiene rol de editor del proyecto.
 - [ ] 1.14 ⚠ Secret Manager: crear `django-secret-key` y `db-url-app`, y dar `secretAccessor` solo a
