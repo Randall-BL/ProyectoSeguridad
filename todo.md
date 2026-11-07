@@ -116,9 +116,11 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
 
 ## 0 · Decisiones que hay que tomar ya (3–4 nov)
 
-- [ ] **0.1 Cuenta de Google Cloud.** Cloud Run exige una cuenta de facturación con tarjeta. El
+- [x] **0.1 Cuenta de Google Cloud.** Cloud Run exige una cuenta de facturación con tarjeta. El
   enunciado pide **avisar al profesor antes de registrar una tarjeta**: hay créditos educativos.
   Preguntarle hoy. Definir quién es el dueño del proyecto e invitar a los otros tres.
+  Hecho: la cuenta de facturación es de Randall, con un prepago de activación de 30 USD que queda
+  como saldo y se recupera al final (tarea 12.2). Falta dar acceso a los otros tres al proyecto.
 - [ ] **0.2 Región.** Una región de Cloud Run cercana a la de Neon (por ejemplo `us-east1` con Neon en
   AWS `us-east-1`). Confirmar que la región elegida entra en la capa gratuita.
 - [ ] **0.3 Formato del certificado.** Recomendado: **JSON canónico firmado con Ed25519** (claves
@@ -197,8 +199,12 @@ demás es agregar funcionalidad encima.
   Comprobado: el plan gratuito admite 0 direcciones (`neon ip-allow add` responde «max: 0»).
 
 **Google Cloud**
-- [ ] 1.11 Proyecto, APIs (Run, Artifact Registry, Secret Manager, Cloud Build, Scheduler) y **alerta
-  de presupuesto** de 1 USD para enterarse de cualquier cobro.
+- [x] 1.11 Proyecto, APIs (Run, Artifact Registry, Secret Manager, Cloud Build, Scheduler) y **alerta
+  de presupuesto** de 1 USD para enterarse de cualquier cobro. Hecho: proyecto
+  `verdeazul-ce1115-g6`, región por omisión `us-east1`, APIs activas (más IAM Credentials y
+  Budgets). La alerta salta al 1 %, 50 % y 100 % de 1 USD y cuenta el costo **antes** de créditos,
+  así que avisa aunque un crédito lo esté cubriendo. Ojo: el presupuesto solo avisa, no detiene el
+  gasto; lo que lo limita son `max-instances` y la limpieza del registro.
 - [ ] 1.12 Artifact Registry: repositorio Docker `verdeazul` con **etiquetas inmutables** (así nadie
   puede mover una versión publicada) y política de limpieza que conserve las últimas versiones (la
   capa gratuita es de 0,5 GB).
@@ -489,6 +495,18 @@ En LaTeX, con la misma plantilla de los entregables de la Parte 1. Capturas en `
   primera petición tarda).
 - [ ] 11.5 Prueba completa desde una red distinta la noche anterior.
 - [ ] 11.6 Cada integrante explica una parte que no escribió: ensayo cruzado.
+
+---
+
+## 12 · Después de la nota (no antes)
+
+- [ ] 12.1 Mantener el sistema en línea hasta que el profesor publique la nota.
+- [ ] 12.2 **Recuperar el prepago de 30 USD.** En la consola: *Facturación → Descripción general de
+  pagos → Solicitar reembolso*, **antes** de cerrar la cuenta. Si es una cuenta *Prepay*, el saldo se
+  pierde al cerrarla; pidiendo primero el reembolso, el orden cubre los dos casos. Vuelve a la
+  tarjeta original.
+- [ ] 12.3 Cerrar la cuenta de facturación y borrar el proyecto `verdeazul-ce1115-g6`.
+- [ ] 12.4 Borrar el proyecto de Neon o dejarlo en el plan gratuito.
 
 ---
 
