@@ -340,10 +340,15 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 
 ## 3 · Autenticación y sesión (meta: 10 nov)
 
-- [ ] 3.1 ⚠ Argon2id como primer *hasher* de Django (`argon2-cffi`), con sal por usuario (POL-AU-09).
+- [x] 3.1 ⚠ Argon2id como primer *hasher* de Django (`argon2-cffi`), con sal por usuario (POL-AU-09).
   Comprobar en la base que el campo empieza con `argon2$argon2id$`.
-- [ ] 3.2 Contraseñas: mínimo 12 caracteres, sin reglas de composición, lista de bloqueo de filtradas
+  Hecho: `argon2$argon2id$v=19$m=102400,t=2,p=8$…` (100 MiB, 2 iteraciones, sal propia); PBKDF2
+  queda solo para leer resúmenes viejos. `argon2-cffi` 25.1 fijado con huella e instalado en la imagen.
+- [x] 3.2 Contraseñas: mínimo 12 caracteres, sin reglas de composición, lista de bloqueo de filtradas
   y que no contenga el nombre de la persona, de la empresa ni de una finca (POL-AU-01 a 03).
+  Hecho: longitud mínima 12, lista de comunes de Django, parecido con los datos del usuario y
+  `cuentas/validadores.py` contra nombres de la persona, de la empresa y de las fincas. Falta la
+  consulta de filtraciones (HIBP por k-anonimato): se decide en el sprint 5.
 - [ ] 3.3 Segundo factor con django-allauth (TOTP y códigos de recuperación; WebAuthn si da el tiempo).
   Sin SMS ni correo (POL-AU-05).
 - [ ] 3.4 Reautenticación con segundo factor en los cinco minutos previos a aprobar, devolver,

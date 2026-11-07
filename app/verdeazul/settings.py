@@ -58,6 +58,25 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "cuentas.Usuario"
 
+# --- Contraseñas (POL-AU-01 a 03 y 09) --------------------------------------------------------
+# Argon2id con sal por usuario: lento y con mucha memoria a propósito (Morris y Thompson, 1979).
+# Los demás quedan solo para leer resúmenes viejos y convertirlos al iniciar sesión.
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
+# Longitud mínima de 12 y sin reglas de composición: se rechazan las comunes y las que contienen
+# nombres propios, no las que «les falta un símbolo».
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 12},
+    },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "cuentas.validadores.SinNombresPropios"},
+]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
