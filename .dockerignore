@@ -1,0 +1,6 @@
+# Lista de permitidos: al contexto de construcción solo entra lo que las imágenes copian.
+# Así nunca viajan .env.local, .neon, .git ni los documentos.
+*
+!app/
+**/__pycache__/
+**/*.pyc

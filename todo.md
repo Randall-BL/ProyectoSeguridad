@@ -171,7 +171,8 @@ El consejo del enunciado: desplegar algo mínimo la primera semana. Aquí se arm
 demás es agregar funcionalidad encima.
 
 **Repositorio**
-- [ ] 1.1 Estructura del repositorio:
+- [x] 1.1 Estructura del repositorio (hecho: existen `app/` e `infra/`; las demás carpetas se crean
+  en el sprint que las usa, y el README describe la estructura):
   ```
   app/          Django: la aplicación y su Dockerfile
   politica/     OPA: matriz.json, reglas .rego, pruebas y Dockerfile
@@ -185,7 +186,9 @@ demás es agregar funcionalidad encima.
   ```
   Recomendado: un solo código Django con ajustes y rutas distintas por componente, y una imagen por
   componente que copia solo lo que necesita.
-- [ ] 1.2 Copiar los PDF de la Parte 1 a `docs/parte1/`, para que los cuatro trabajen con el mismo diseño.
+- [x] 1.2 Copiar los PDF de la Parte 1 a `docs/parte1/`, para que los cuatro trabajen con el mismo
+  diseño. Cambio: no se copian. Ya están en el repo público de la Parte 1
+  (`Randall-BL/CE1115-Proyecto-P1-Verdeazul`), y el README enlaza ahí para no duplicar los PDF.
 - [x] 1.3 ⚠ `.gitignore` con `.env`, `*.pem`, `*.key`, `credenciales*`, `.venv/`. Un `.env.example` con
   los nombres de las variables y valores vacíos. También `.gitattributes`, que deja todo en LF.
 - [x] 1.4 ⚠ gitleaks: gancho *pre-commit* (`.githooks/`) y paso en CI (`.github/workflows/seguridad.yml`),
@@ -240,9 +243,14 @@ demás es agregar funcionalidad encima.
   `sa-app` sobre esos dos. Cada secreto, solo a quien lo usa.
 
 **Primera imagen y primer despliegue**
-- [ ] 1.15 ⚠ Dockerfile de `app`: imagen base delgada fijada por huella, usuario sin privilegios
+- [x] 1.15 ⚠ Dockerfile de `app`: imagen base delgada fijada por huella, usuario sin privilegios
   (`USER 10001`), sin secretos en ninguna capa, servidor gunicorn. Comprobar con
-  `docker run --rm IMAGEN id -u` que no devuelve 0.
+  `docker run --rm IMAGEN id -u` que no devuelve 0. Hecho: `python:3.14-slim` fijada por huella;
+  dependencias instaladas con `--require-hashes` (`infra/fijar-dependencias.sh`); el código queda
+  de root y la app corre como 10001. El `.dockerignore` es una lista de permitidos: solo entra
+  `app/`. Probado contra la rama `dev`: HTTP → 301 a HTTPS, HTTPS → 200 con HSTS, host ajeno →
+  400, POST → 405, y `check --deploy` sin avisos (se silencia solo el de precarga de HSTS, que no
+  aplica a `run.app`).
 - [ ] 1.16 ⚠ Publicar como `app:v0.1.0` y con el hash corto del commit. Nunca solo `latest`. Crear el tag
   de git `v0.1.0` en el mismo commit.
 - [ ] 1.17 Desplegar `verdeazul-app` desde `infra/service.yaml` (versionado), con `sa-app`, los

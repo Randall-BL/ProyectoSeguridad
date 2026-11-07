@@ -1,0 +1,5 @@
+# Dependencias directas de la aplicación. requirements.txt sale de aquí, con la versión y la
+# huella de cada paquete fijadas: sh infra/fijar-dependencias.sh app
+django>=5.2,<5.3
+gunicorn
+psycopg[binary]

@@ -4,7 +4,21 @@ CE-1115 Seguridad de la Información, TEC · Grupo 6: Randall Bolaños, Javier T
 Axel Flores. Implementación y despliegue en Google Cloud Run y Neon del sistema de control de acceso
 diseñado en la Parte 1. Entrega: 19 de noviembre de 2026.
 
-El plan de trabajo, tarea por tarea, está en [todo.md](todo.md).
+El plan de trabajo, tarea por tarea, está en [todo.md](todo.md). Los documentos del diseño (Parte 1)
+están en [Randall-BL/CE1115-Proyecto-P1-Verdeazul](https://github.com/Randall-BL/CE1115-Proyecto-P1-Verdeazul).
+
+## Estructura
+
+| Carpeta | Componente de la Parte 1 | Estado |
+|---|---|---|
+| `app/` | Aplicación Django, punto de cumplimiento | Sprint 1 |
+| `politica/` | Motor de decisión OPA: la matriz como política | Sprint 2 |
+| `db/` | Usuarios de base, permisos, seguridad por fila, bitácora | Sprint 2 |
+| `emision/` | Servicio de emisión de certificados (SIS) | Sprint 4 |
+| `publico/` | Comprobación pública de certificados (PUB) | Sprint 4 |
+| `trabajos/` | Trabajos programados | Sprint 4 |
+| `verificador/` | Verificador de certificados sin acceso al sistema | Sprint 4 |
+| `infra/` | Scripts de Google Cloud, Cloud Build y Cloud Run (sin secretos) | Sprint 1 |
 
 ## Configuración del repositorio (una vez por clon)
 
