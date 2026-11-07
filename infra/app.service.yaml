@@ -28,8 +28,9 @@ spec:
             - name: http1
               containerPort: 8080
           env:
+            # Las dos direcciones que Cloud Run le da al servicio; cualquier otro Host recibe 400.
             - name: DJANGO_ALLOWED_HOSTS
-              value: verdeazul-app-708901712393.us-east1.run.app
+              value: verdeazul-app-708901712393.us-east1.run.app,verdeazul-app-3jui2vuggq-ue.a.run.app
             - name: DJANGO_CSRF_TRUSTED_ORIGINS
               value: https://verdeazul-app-708901712393.us-east1.run.app
             # Los secretos llegan de Secret Manager, en una versión fija: rotarlos es un cambio
