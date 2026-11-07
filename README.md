@@ -67,6 +67,17 @@ push a `main` y en cada PR, por si alguien no instaló los ganchos.
 - **Dependabot** revisa cada lunes las dependencias de pip, las imágenes base de Docker y las acciones
   de GitHub (`.github/dependabot.yml`), y abre PR de seguridad cuando hay una alerta.
 
+## Desarrollo local
+
+Con Docker Desktop abierto:
+
+```
+DJANGO_SECRET_KEY=<cualquier valor largo> docker compose up --build
+```
+
+La app queda en http://127.0.0.1:8000 y la base (PostGIS 18, sin contraseña, solo local) en
+`127.0.0.1:55432`. La llave se puede poner en `.env`, que git ignora.
+
 ## Despliegue
 
 **URL pública:** https://verdeazul-app-708901712393.us-east1.run.app

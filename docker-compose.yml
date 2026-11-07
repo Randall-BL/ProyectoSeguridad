@@ -1,0 +1,37 @@
+# Entorno local para desarrollar y probar rápido. Lo que se evalúa es la nube, no esto.
+# Uso: DJANGO_SECRET_KEY=<cualquier valor largo> docker compose up --build
+#      (o ponerla en .env, que git ignora) y abrir http://127.0.0.1:8000
+services:
+  db:
+    image: postgis/postgis:18-3.6@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+    environment:
+      POSTGRES_DB: verdeazul
+      # Sin contraseña solo aquí: el puerto escucha únicamente en 127.0.0.1 y no hay datos reales.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      # 55432 para no chocar con un PostgreSQL instalado en la máquina.
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - datos:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "verdeazul"]
+      interval: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Defínala en el entorno o en .env}
+      DJANGO_DEBUG: "True"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: postgresql://postgres@db:5432/verdeazul?sslmode=disable
+    ports:
+      - "127.0.0.1:8000:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  datos:

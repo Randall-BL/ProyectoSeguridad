@@ -201,8 +201,11 @@ demás es agregar funcionalidad encima.
   `commit-msg` y revisión en CI que rechazan co-autores ajenos al equipo.
 - [ ] 1.5c Invitar a Javier, Julio y Axel como colaboradores. Cada uno sigue «Configuración del
   repositorio» del README: instalar gitleaks, `git config core.hooksPath .githooks` y su identidad.
-- [ ] 1.6 Entorno local: `docker compose` con PostGIS y OPA, solo para desarrollar (lo que se evalúa es
-  la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización.
+- [x] 1.6 Entorno local: `docker compose` con PostGIS y OPA, solo para desarrollar (lo que se evalúa es
+  la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización. Hecho:
+  `docker-compose.yml` con PostGIS 18 (fijada por huella) y la app; OPA se agrega en el sprint 2.
+  Los puertos escuchan solo en 127.0.0.1 (la base en el 55432). Comprobado: la app corre como
+  `uid=10001` y no puede escribir en `/srv/app`.
 
 **Neon**
 - [x] 1.7 Crear el proyecto y la base `verdeazul`, en la región elegida. Activar la extensión PostGIS.
