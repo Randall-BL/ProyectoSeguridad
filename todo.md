@@ -314,10 +314,15 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   certificado ni borrar una medición.
 
 - [ ] 2.4 Un secreto `db-url-*` por usuario, cada uno accesible solo por su cuenta de servicio.
-- [ ] 2.5 Seguridad por fila: el técnico solo ve filas de sus fincas asignadas (C1) y el dueño solo las
+- [x] 2.5 Seguridad por fila: el técnico solo ve filas de sus fincas asignadas (C1) y el dueño solo las
   de su titular (C5). El sujeto se pasa con `SET LOCAL app.usuario = …` dentro de cada transacción
   (cuidado: con el *pooler* de Neon solo funciona `SET LOCAL` dentro de la transacción).
-- [ ] 2.6 Restricciones del segundo candado:
+  Hecho en `negocio/sql/0003_seguridad_por_fila.sql`: con `app.usuario` y `app.rol` de la
+  transacción, TEC ve solo sus fincas asignadas (y lo que él registró), DUE solo lo de su titular y
+  sus mediciones aprobadas, sin rol no se ve nada, y AUD y DUE no escriben en ninguna tabla del
+  negocio. La bitácora la leen solo GER y AUD.
+
+- [x] 2.6 Restricciones del segundo candado:
   - Índice único parcial: un solo certificado `vigente` por parcela y período (C4).
   - Disparador que rechaza cambios de mediciones con el período `cerrado` y fechas fuera del período (C2, C14).
   - Restricción de que quien decide no figura en un paso anterior (C3, C8, C10), comparando
@@ -328,6 +333,11 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     usar un disparador con `ST_Overlaps` o `ST_Intersects` sobre el interior.
   - Un rol por persona e identificación única (C12, sección 4 de la matriz).
   - No borrar un titular con certificados dentro del plazo (C16).
+  Hecho en `negocio/sql/0004_reglas_en_la_base.sql`. Además: C19 (solo a quien tiene TEC vigente;
+  temporal de 15 días como máximo), C8 y C10 en la enmienda, segunda firma de C11, C12 y C14, y los
+  valores iniciales de `ParametroRol`. Escenario de prueba en `db/pruebas/reglas.sql`: todas las
+  reglas niegan donde deben. Aplicado en compose y en la rama `dev`.
+
 - [x] 2.7 Bitácora encadenada (POL-BT-01 a 06):
   - Campos de POL-BT-02 y de la arquitectura §4.5, incluida la huella SHA-256 del registro anterior.
   - Se escribe solo con una función `bitacora_anexar(...)` (`SECURITY DEFINER`) que toma un candado,
