@@ -230,8 +230,12 @@ demás es agregar funcionalidad encima.
   verdeazul-ce1115-g6/verdeazul`. La limpieza (`infra/registro-limpieza.json`) conserva las últimas
   cinco versiones de cada imagen y todas las `v1.x`, y borra lo que tenga más de 30 días o lleve 7
   sin etiqueta.
-- [ ] 1.13 Una cuenta de servicio por componente: `sa-app`, `sa-emision`, `sa-publico`, `sa-trabajos`.
+- [x] 1.13 Una cuenta de servicio por componente: `sa-app`, `sa-emision`, `sa-publico`, `sa-trabajos`.
   **No usar la cuenta de servicio por omisión de Compute**, que tiene rol de editor del proyecto.
+  Hecho en `infra/preparar-gcp.sh`. Las cuatro nacen sin roles. Hay una quinta, `sa-build`, para
+  Cloud Build: escribe solo en el repositorio `verdeazul`, escribe registros y lee su bucket de
+  código (`gs://verdeazul-ce1115-g6_cloudbuild`, en us-east1, que borra el código a los 7 días). A la
+  cuenta de Compute se le quitó el rol de editor.
 - [ ] 1.14 ⚠ Secret Manager: crear `django-secret-key` y `db-url-app`, y dar `secretAccessor` solo a
   `sa-app` sobre esos dos. Cada secreto, solo a quien lo usa.
 
