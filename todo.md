@@ -239,8 +239,12 @@ demás es agregar funcionalidad encima.
   Cloud Build: escribe solo en el repositorio `verdeazul`, escribe registros y lee su bucket de
   código (`gs://verdeazul-ce1115-g6_cloudbuild`, en us-east1, que borra el código a los 7 días). A la
   cuenta de Compute se le quitó el rol de editor.
-- [ ] 1.14 ⚠ Secret Manager: crear `django-secret-key` y `db-url-app`, y dar `secretAccessor` solo a
-  `sa-app` sobre esos dos. Cada secreto, solo a quien lo usa.
+- [x] 1.14 ⚠ Secret Manager: crear `django-secret-key` y `db-url-app`, y dar `secretAccessor` solo a
+  `sa-app` sobre esos dos. Cada secreto, solo a quien lo usa. Hecho con `infra/crear-secretos.sh`:
+  los valores se generan y viajan por la entrada estándar, sin archivo ni pantalla; los secretos se
+  replican solo en us-east1. `db-url-app` usa el usuario nuevo `va_app` (`db/roles/va_app.sql`): sin
+  superusuario, sin BYPASSRLS, fuera de `neon_superuser` y sin permiso para crear tablas. Entra por
+  el pooler con `verify-full` y channel binding.
 
 **Primera imagen y primer despliegue**
 - [x] 1.15 ⚠ Dockerfile de `app`: imagen base delgada fijada por huella, usuario sin privilegios
