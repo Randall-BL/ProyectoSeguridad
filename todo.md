@@ -348,12 +348,19 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   insertar, cambiar ni borrar directo; el dueño choca con el disparador; un registro alterado con el
   disparador apagado lo detecta `bitacora_verificar()` (criterio de aceptación 4).
 
-- [ ] 2.8 Datos de prueba con los personajes de los casos T-01 a T-37: técnicos A y otro; verificadores
+- [x] 2.8 Datos de prueba con los personajes de los casos T-01 a T-37: técnicos A y otro; verificadores
   B, C (ex técnica, autora de una versión) y uno más; supervisor S; dos gerentes (G y otro, para T-24);
   un administrador; la auditora E con ventana vigente; dos dueños (D persona física y un representante
   de sociedad). Fincas en Pérez Zeledón con geometría, un período abierto y uno cerrado.
-- [ ] 2.9 ⚠ El script de carga lee las contraseñas de una variable de entorno o las genera e imprime
+  - `manage.py sembrar`: 12 cuentas (`tec.ana`, `tec.tomas`, `ver.bruno`, `ver.carla`, `ver.diego`,
+    `sup.sofia`, `ger.gabriela`, `ger.gerardo`, `adm.alberto`, `aud.elena`, `due.daniel`, `due.rosa`),
+    8 titulares, 25 fincas con 50 parcelas sin traslapes, 2026-I cerrado y 2026-II abierto.
+  - Deja listos T-01 a T-06, T-17, T-27, T-29 y T-38 (T tiene 20 asignaciones activas). Lo comprueba
+    `db/pruebas/semilla.sql`.
+- [x] 2.9 ⚠ El script de carga lee las contraseñas de una variable de entorno o las genera e imprime
   una sola vez. Ninguna contraseña de prueba en el repositorio.
+  - `SEMILLA_CONTRASENA`, `--salida` a un archivo nuevo fuera del repositorio, o impresión solo si la
+    salida es una terminal (nunca en los registros de Cloud Run o de CI). Se niega a correr como `va_*`.
 
 ---
 

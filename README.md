@@ -78,6 +78,18 @@ DJANGO_SECRET_KEY=<cualquier valor largo> docker compose up --build
 La app queda en http://127.0.0.1:8000 y la base (PostGIS 18, sin contraseña, solo local) en
 `127.0.0.1:55432`. La llave se puede poner en `.env`, que git ignora.
 
+Para crear las tablas y cargar los personajes de los casos de prueba (una sola vez por base):
+
+```
+docker compose exec app python manage.py migrate
+docker compose exec app python manage.py sembrar
+```
+
+`sembrar` genera una contraseña por cuenta y la imprime una sola vez en la terminal. Con
+`--salida RUTA` la escribe en un archivo nuevo, que no puede quedar dentro del repositorio, y con la
+variable `SEMILLA_CONTRASENA` todas las cuentas usan esa. `db/pruebas/semilla.sql` comprueba que los
+datos cargados dejan listos los casos de la matriz. `docker compose down -v` borra la base local.
+
 ## Despliegue
 
 **URL pública:** https://verdeazul-app-708901712393.us-east1.run.app
