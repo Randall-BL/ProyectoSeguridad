@@ -509,8 +509,11 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     `Alerta` con su control y nivel (con motivo, «verificación»); pedir motivo exige primero el
     código reciente y después un motivo que viaja con la misma petición (`motivo.html`); restringir
     responde 403 «hasta el siguiente día hábil». 5 pruebas en `RespuestaGraduada`.
-- [ ] 4.10 La interfaz pregunta al motor qué botones mostrar, solo por comodidad: lo que protege es la
+- [x] 4.10 La interfaz pregunta al motor qué botones mostrar, solo por comodidad: lo que protege es la
   decisión en el servidor.
+  - El inicio pide al motor las celdas del rol activo (`/v1/data/matriz/celdas/<rol>`) y las
+    muestra con sus reglas; sin motor, también responde 503 (K-3). Los botones de cada pantalla de
+    la fase 5 harán lo mismo. Las pruebas de `cuentas` no dependen del motor (lo simulan).
 - [ ] 4.11 `opa test` con cobertura, `opa check --strict` y Regal en CI.
 
 ---

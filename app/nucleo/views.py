@@ -8,9 +8,36 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
+from autorizacion import motor, respuestas
 from cuentas.models import Rol
 from cuentas.roles import QUE_HACE, habilitacion_vigente
 from cuentas.sesiones import INICIO
+
+
+# Orden de los objetos como en la matriz de la Parte 1.
+ORDEN_OBJETOS = [
+    "fincas", "datos_personales", "periodos", "asignaciones", "mediciones",
+    "enmiendas", "certificados", "cuentas", "bitacora", "alertas",
+]
+
+
+def _permisos(rol):
+    """Lo que el rol puede hacer, preguntado al motor (4.10). Es solo para mostrarlo: cada acción
+    vuelve a preguntar en su propia petición."""
+    celdas = motor.permisos_del_rol(rol)
+    nombres = motor.objetos()
+    permisos = []
+    for clave in ORDEN_OBJETOS:
+        verbos = [
+            {
+                "nombre": permiso["verbo"],
+                "condiciones": ["H1–H3" if c == "H" else c for c in permiso.get("condiciones", [])],
+            }
+            for permiso in celdas.get(clave, [])
+        ]
+        if verbos:
+            permisos.append({"objeto": nombres.get(clave, clave), "verbos": verbos})
+    return permisos
 
 
 def _estado_de_la_base():
@@ -54,6 +81,11 @@ def inicio(request):
     contexto = {"postgres": postgres, "postgis": postgis}
     if not request.user.is_authenticated:
         return render(request, "nucleo/portada.html", contexto)
+    try:
+        contexto["permisos"] = _permisos(request.rol_activo)
+    except motor.MotorSinRespuesta as error:
+        # Sin motor no hay sistema (K-3): ni siquiera la lista de lo que el rol puede hacer.
+        return respuestas.sin_motor(request, "leer", {"tipo": "matriz"}, str(error))
     contexto.update(_sesion(request))
     return render(request, "nucleo/inicio.html", contexto)
 

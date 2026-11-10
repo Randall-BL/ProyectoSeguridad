@@ -1,13 +1,16 @@
 """Pruebas del núcleo: el contexto de base de cada petición (tarea 2.5)."""
 
 import secrets
+from unittest import mock
 from datetime import date
 
 from django.contrib.auth.models import AnonymousUser
 from django.db import connection
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 
+from autorizacion import motor
 from cuentas.models import Rol, Usuario
 from negocio.models import Periodo
 from nucleo.basedatos import ContextoDeBase
@@ -46,3 +49,33 @@ class ContextoDeLaPeticion(TestCase):
                 cursor.execute("SELECT count(*) FROM negocio_periodo")
                 vistos.append(cursor.fetchone()[0])
         self.assertEqual(vistos, [0, 1])
+
+
+class InicioPorRol(TestCase):
+    """Tarea 4.10: el inicio muestra lo que el rol puede hacer según el motor; sin motor, 503."""
+
+    def setUp(self):
+        from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
+
+        self.persona = Usuario.objects.create_user(
+            username="ver.prueba", password=secrets.token_urlsafe(18), rol=Rol.VER, identificacion="v"
+        )
+        TOTP.activate(self.persona, generate_totp_secret())
+        self.client.force_login(self.persona)
+
+    def test_lo_que_puede_hacer_el_rol(self):
+        celdas = {"mediciones": [{"verbo": "aprobar", "condiciones": ["C3"]}], "bitacora": []}
+        nombres = {"mediciones": "Mediciones", "bitacora": "Bitácora"}
+        with mock.patch.object(motor, "permisos_del_rol", return_value=celdas), mock.patch.object(
+            motor, "objetos", return_value=nombres
+        ):
+            respuesta = self.client.get(reverse("inicio"))
+        self.assertContains(respuesta, "Mediciones")
+        self.assertContains(respuesta, "aprobar · C3")
+        self.assertNotContains(respuesta, "Bitácora")
+
+    def test_t41_sin_motor_el_inicio_tambien_se_frena(self):
+        with mock.patch.object(motor, "permisos_del_rol", side_effect=motor.MotorSinRespuesta("x")):
+            respuesta = self.client.get(reverse("inicio"))
+        self.assertEqual(respuesta.status_code, 503)
+        self.assertContains(respuesta, "Servicio no disponible", status_code=503)

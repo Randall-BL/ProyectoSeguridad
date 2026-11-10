@@ -33,6 +33,9 @@ from negocio.models import Asignacion, Finca, Periodo, Titular
 # Contraseña de las cuentas de prueba: se genera en cada corrida, no vive en el repositorio.
 CLAVE = secrets.token_urlsafe(18)
 
+# El inicio le pregunta al motor de decisión qué puede hacer el rol; estas pruebas no lo necesitan.
+motor_de_prueba = mock.patch("autorizacion.motor._pedir", new=lambda ruta, cuerpo=None: {"result": {}})
+
 
 def _persona(usuario="tec.prueba", rol=Rol.TEC, **campos):
     return Usuario.objects.create_user(
@@ -40,6 +43,7 @@ def _persona(usuario="tec.prueba", rol=Rol.TEC, **campos):
     )
 
 
+@motor_de_prueba
 class SegundoFactorObligatorio(TestCase):
     def test_sin_totp_solo_puede_activarlo(self):
         self.client.force_login(_persona())
@@ -146,6 +150,7 @@ class ReautenticacionEnDecisiones(TestCase):
         self.assertTrue(respuesta["Location"].startswith(reverse("account_login")))
 
 
+@motor_de_prueba
 class SesionDeServidor(TestCase):
     """POL-AU-08: la sesión vive en la base, cambia de identificador al entrar, vence a los 30
     minutos sin actividad y a las 12 horas de iniciada."""
@@ -335,6 +340,7 @@ class IntentosFallidos(TestCase):
         self.assertIsInstance(caches["default"], DatabaseCache)
 
 
+@motor_de_prueba
 class RolActivoTecVer(TestCase):
     """Tarea 3.8: con una habilitación temporal, la verificadora entra como técnica o como
     verificadora, nunca como ambas en la misma sesión."""
@@ -403,6 +409,7 @@ class RolActivoTecVer(TestCase):
         self.assertNotIn("_auth_user_id", self.client.session)
 
 
+@motor_de_prueba
 class VentanaDeLaCuenta(TestCase):
     """Tarea 3.9: AUD fuera de su ventana no inicia sesión (C6, T-09) y OPE no tiene cuenta (T-20)."""
 

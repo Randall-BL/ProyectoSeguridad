@@ -14,7 +14,7 @@
     <section class="tarjeta">
       <h2>Lo que puede hacer su rol</h2>
       {% if permisos %}
-        <p class="suave">Sale de la matriz de acceso, la misma que aplica el motor de decisión en cada petición. Las marcadas en azul tienen una condición.</p>
+        <p class="suave">Se lo pregunta al motor de decisión, que aplica la misma matriz en cada petición. Las marcadas en azul dependen de una regla; H1–H3 son lecturas vigiladas por el historial.</p>
         <ul class="permisos">
           {% for permiso in permisos %}
             <li>
