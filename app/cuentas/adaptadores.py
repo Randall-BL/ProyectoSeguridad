@@ -26,8 +26,16 @@ class AdaptadorCuentas(DefaultAccountAdapter):
 
     def authenticate(self, request, **credenciales):
         usuario = super().authenticate(request, **credenciales)
-        if usuario is not None:
-            intentos.olvidar(credenciales.get("username", ""))
+        if usuario is None:
+            return None
+        if usuario.is_active and not usuario.puede_entrar():
+            # Contraseña correcta, pero fuera de su ventana o sin rol: AUD una semana después de
+            # su ventana (C6, T-09). allauth devolvería la cuenta igual; aquí se corta.
+            self._anotar_fallo(request, credenciales, "C6" if usuario.rol == "AUD" else "POL-CA-07")
+            raise forms.ValidationError(
+                "Su cuenta no está vigente en esta fecha. Si cree que es un error, consulte al administrador."
+            )
+        intentos.olvidar(credenciales.get("username", ""))
         return usuario
 
     def authentication_failed(self, request, **credenciales):

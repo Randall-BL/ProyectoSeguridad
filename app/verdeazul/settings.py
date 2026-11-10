@@ -64,7 +64,8 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = "cuentas.Usuario"
-AUTHENTICATION_BACKENDS = ["allauth.account.auth_backends.AuthenticationBackend"]
+# El de allauth, más la ventana de la cuenta y el rol (tarea 3.9).
+AUTHENTICATION_BACKENDS = ["cuentas.autenticacion.Autenticacion"]
 LOGIN_URL = "account_login"
 LOGIN_REDIRECT_URL = "hola"
 

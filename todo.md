@@ -428,7 +428,11 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   - `cuentas/roles.py`: `request.rol_activo` sale de la sesión; con un rol posible se fija solo, con
     dos se elige en `/cuentas/rol/` una vez por sesión (queda en la bitácora). Si la habilitación
     vence a mitad de la sesión, se cierra. La semilla le da a C la habilitación para T-26.
-- [ ] 3.9 AUD fuera de su ventana no puede iniciar sesión (C6, T-09). OPE no tiene cuenta (T-20).
+- [x] 3.9 AUD fuera de su ventana no puede iniciar sesión (C6, T-09). OPE no tiene cuenta (T-20).
+  - `Usuario.puede_entrar()`: activa, con un rol de la matriz y dentro de su ventana; AUD siempre
+    con ventana. Lo usa el *backend* (`cuentas.autenticacion`), así que una sesión abierta muere al
+    terminar la ventana, y el adaptador, que corta el inicio con contraseña correcta y lo anota con
+    C6. OPE no existe como rol. 43 pruebas en `cuentas/tests.py`.
 
 ---
 

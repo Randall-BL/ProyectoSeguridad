@@ -387,3 +387,50 @@ class RolActivoTecVer(TestCase):
         respuesta = self.client.get(reverse("hola"))
         self.assertRedirects(respuesta, reverse("account_login"), fetch_redirect_response=False)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+
+class VentanaDeLaCuenta(TestCase):
+    """Tarea 3.9: AUD fuera de su ventana no inicia sesión (C6, T-09) y OPE no tiene cuenta (T-20)."""
+
+    def _auditora(self, desde, hasta):
+        persona = _persona("aud.prueba", Rol.AUD, vigente_desde=desde, vigente_hasta=hasta)
+        TOTP.activate(persona, generate_totp_secret())
+        return persona
+
+    def _entrar(self, usuario):
+        return self.client.post(reverse("account_login"), {"login": usuario, "password": CLAVE})
+
+    def test_t09_una_semana_despues_de_su_ventana(self):
+        ahora = timezone.now()
+        self._auditora(ahora - timedelta(days=37), ahora - timedelta(days=7))
+        respuesta = self._entrar("aud.prueba")
+        self.assertContains(respuesta, "no está vigente")
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertTrue(Registro.objects.filter(accion="iniciar_sesion", resultado="denegado", regla="C6").exists())
+
+    def test_dentro_de_su_ventana_pasa_al_segundo_factor(self):
+        ahora = timezone.now()
+        self._auditora(ahora - timedelta(days=1), ahora + timedelta(days=30))
+        respuesta = self._entrar("aud.prueba")
+        self.assertRedirects(respuesta, reverse("mfa_authenticate"), fetch_redirect_response=False)
+
+    def test_auditora_sin_ventana_no_entra(self):
+        self._auditora(None, None)
+        self.assertContains(self._entrar("aud.prueba"), "no está vigente")
+
+    def test_la_sesion_termina_con_la_ventana(self):
+        ahora = timezone.now()
+        auditora = self._auditora(ahora - timedelta(days=1), ahora + timedelta(days=30))
+        self.client.force_login(auditora)
+        self.assertEqual(self.client.get(reverse("hola")).context["user"], auditora)
+        Usuario.objects.filter(pk=auditora.pk).update(vigente_hasta=ahora - timedelta(minutes=1))
+        self.assertFalse(self.client.get(reverse("hola")).context["user"].is_authenticated)
+
+    def test_t20_ope_no_es_un_rol_de_la_aplicacion(self):
+        self.assertNotIn("OPE", Rol.values)
+        _persona("ope.prueba", "OPE")
+        self.assertContains(self._entrar("ope.prueba"), "no está vigente")
+
+    def test_cuenta_sin_rol_no_entra(self):
+        _persona("sin.rol", "")
+        self.assertContains(self._entrar("sin.rol"), "no está vigente")

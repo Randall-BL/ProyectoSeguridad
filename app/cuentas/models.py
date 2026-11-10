@@ -6,6 +6,7 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 from django.contrib.sessions.base_session import AbstractBaseSession
 from django.db import models
+from django.utils import timezone
 
 
 class Rol(models.TextChoices):
@@ -45,6 +46,18 @@ class Usuario(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.rol or 'sin rol'})"
+
+    def puede_entrar(self, ahora=None):
+        """Cuenta activa, con un rol de la matriz y dentro de su ventana (tarea 3.9). AUD siempre
+        tiene ventana (C6, POL-CA-07). OPE no es un rol de la aplicación: no tiene cuenta (T-20)."""
+        ahora = ahora or timezone.now()
+        if not self.is_active or self.rol not in Rol.values:
+            return False
+        if self.rol == Rol.AUD and not (self.vigente_desde and self.vigente_hasta):
+            return False
+        if self.vigente_desde and ahora < self.vigente_desde:
+            return False
+        return not (self.vigente_hasta and ahora > self.vigente_hasta)
 
 
 class PropuestaRol(models.Model):
