@@ -441,9 +441,12 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 
 ## 4 · Motor de decisión: la matriz en OPA (meta: 11 nov)
 
-- [ ] 4.1 `politica/matriz.json`: la matriz transcrita, una entrada por rol, objeto y verbo, con las
+- [x] 4.1 `politica/matriz.json`: la matriz transcrita, una entrada por rol, objeto y verbo, con las
   condiciones de cada celda. Es la fuente única: de aquí salen la política, las pruebas y la tabla de
   cobertura del informe.
+  - Diez sujetos por diez objetos; cada celda es la lista de verbos con sus condiciones (C1–C20, H) y
+    la nota de alcance («solo contacto», «solo aprobadas»…). Suma 102 permisos y 38 celdas vacías,
+    lo mismo que el inventario. También trae los verbos que piden reautenticación y el alcance de C17.
 - [ ] 4.2 Reglas Rego con el mismo identificador que en la Parte 1: una regla por condición (C1 a C20) y
   por control de historial (H1 a H4). Niega por omisión. La respuesta incluye la decisión (`conceder`,
   `conceder_con_restriccion`, `denegar`) y la regla que la determinó.
