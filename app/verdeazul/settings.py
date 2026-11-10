@@ -151,6 +151,7 @@ MIDDLEWARE = [
     "cuentas.sesiones.LimitarSesion",
     "cuentas.middleware.ExigirSegundoFactor",
     "cuentas.roles.FijarRolActivo",
+    "nucleo.basedatos.ContextoDeBase",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"

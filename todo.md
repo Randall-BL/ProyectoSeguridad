@@ -333,6 +333,9 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   transacción, TEC ve solo sus fincas asignadas (y lo que él registró), DUE solo lo de su titular y
   sus mediciones aprobadas, sin rol no se ve nada, y AUD y DUE no escriben en ninguna tabla del
   negocio. La bitácora la leen solo GER y AUD.
+  - Del lado de la aplicación (10 nov): `nucleo.basedatos.ContextoDeBase` corre cada petición en una
+    transacción que empieza con `set_config('app.usuario'/'app.rol', …, true)`, el id de la sesión y
+    el rol activo; si la respuesta es un 500, la transacción se deshace. Pruebas en `nucleo/tests.py`.
 
 - [x] 2.6 Restricciones del segundo candado:
   - Índice único parcial: un solo certificado `vigente` por parcela y período (C4).
