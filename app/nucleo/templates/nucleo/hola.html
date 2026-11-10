@@ -20,6 +20,16 @@
   <dl>
     <dt>Versión</dt><dd><code>{{ version }}</code>{% if commit %} (commit <code>{{ commit }}</code>){% endif %}</dd>
     <dt>Base de datos</dt><dd>conectada · PostgreSQL {{ postgres }} · PostGIS {{ postgis }}</dd>
+    <dt>Sesión</dt>
+    <dd>
+      {% if user.is_authenticated %}
+        <code>{{ user.username }}</code> ({{ user.get_rol_display }}) ·
+        <a href="{% url 'mfa_index' %}">segundo factor</a> ·
+        <form method="post" action="{% url 'account_logout' %}" style="display:inline">{% csrf_token %}<button type="submit">salir</button></form>
+      {% else %}
+        <a href="{% url 'account_login' %}">iniciar sesión</a>
+      {% endif %}
+    </dd>
   </dl>
 </body>
 </html>

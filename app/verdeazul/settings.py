@@ -1,6 +1,8 @@
 """Ajustes de la aplicación. Todo lo sensible llega por variables de entorno: en Cloud Run las
 inyecta Secret Manager; en local salen de .env, que git ignora."""
 
+import base64
+import hashlib
 import os
 from pathlib import Path
 from urllib.parse import parse_qsl, unquote, urlsplit
@@ -51,6 +53,10 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
+    "django.contrib.messages",
+    "allauth",
+    "allauth.account",
+    "allauth.mfa",
     "nucleo",
     "cuentas",
     "negocio",
@@ -58,6 +64,29 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = "cuentas.Usuario"
+AUTHENTICATION_BACKENDS = ["allauth.account.auth_backends.AuthenticationBackend"]
+LOGIN_URL = "account_login"
+LOGIN_REDIRECT_URL = "hola"
+
+# --- Inicio de sesión y segundo factor (POL-AU-05, POL-AU-06, POL-AU-10) ----------------------
+# Se entra con el nombre de usuario; el correo no sirve para entrar ni para recuperar la cuenta.
+ACCOUNT_ADAPTER = "cuentas.adaptadores.AdaptadorCuentas"
+ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_SIGNUP_FIELDS = ["username*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_REAUTHENTICATION_TIMEOUT = 5 * 60
+# Segundo factor obligatorio: código temporal (TOTP) con códigos de recuperación de respaldo. Sin
+# SMS ni correo. Las llaves de acceso (WebAuthn) quedan para después (desviación D-07).
+MFA_ADAPTER = "cuentas.adaptadores.AdaptadorSegundoFactor"
+MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+MFA_TOTP_ISSUER = "Verdeazul Carbono"
+# Clave Fernet con la que se cifran los secretos TOTP en la base. En Cloud Run llega de Secret
+# Manager; en local, sin la variable, se deriva de la llave de Django.
+MFA_CLAVE = os.environ.get("MFA_CLAVE") or (
+    base64.urlsafe_b64encode(hashlib.sha256(f"mfa:{SECRET_KEY}".encode()).digest()).decode()
+    if DEBUG
+    else _entorno("MFA_CLAVE")
+)
 
 # --- Contraseñas (POL-AU-01 a 03 y 09) --------------------------------------------------------
 # Argon2id con sal por usuario: lento y con mucha memoria a propósito (Morris y Thompson, 1979).
@@ -84,8 +113,11 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 ROOT_URLCONF = "verdeazul.urls"
 WSGI_APPLICATION = "verdeazul.wsgi.application"
@@ -93,9 +125,16 @@ WSGI_APPLICATION = "verdeazul.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        # Plantillas propias que reemplazan las de allauth.
+        "DIRS": [BASE_DIR / "plantillas"],
         "APP_DIRS": True,
-        "OPTIONS": {"context_processors": ["django.template.context_processors.request"]},
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ]
+        },
     }
 ]
 
