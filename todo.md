@@ -130,7 +130,14 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
   fincas puede tener asignadas un técnico. Se agrega para acotar cuánto alcanza una sola cuenta: un
   técnico comprometido o un error de asignación llega a 20 fincas, no a todo el catálogo. Es un
   parámetro, no una constante, por P-02.
-- [ ] D-07… (las que aparezcan: segundo factor, testigo externo, versión de Python, etc.)
+- [ ] **D-07 Segundo factor por código temporal para todos, por ahora.** POL-AU-05 prefiere llaves de
+  acceso (WebAuthn) y las exige para GER, ADM y AUD. La versión entregada usa TOTP con códigos de
+  recuperación para todos los roles: las cuentas de prueba tienen que poder usarse desde cualquier
+  equipo, y una llave de acceso queda atada al dispositivo de quien la registra. Implicación: el código
+  temporal se puede pedir en una página falsa (*phishing*), cosa que la llave de acceso evita; queda
+  como mejora si da el tiempo (allauth ya la soporta). El secreto TOTP se guarda cifrado con una clave
+  de Secret Manager, y nadie puede quitarse el segundo factor.
+- [ ] D-08… (las que aparezcan: testigo externo, versión de Python, etc.)
 
 ---
 
@@ -151,6 +158,8 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
   el profesor tiene que poder entrar con cada rol. Recomendado: TOTP en todas las cuentas de prueba y
   entregar la semilla de cada una **en el informe**, nunca en el repositorio. WebAuthn queda como
   mejora si da el tiempo (si no, desviación D-07).
+  - 9-nov: pendiente antes de sembrar Neon: que `sembrar` active el TOTP de cada cuenta y escriba
+    su semilla (URI `otpauth://`) en el archivo de `--salida`, junto a la contraseña.
 - [ ] **0.5 Cómo se construyen las imágenes.** Recomendado para empezar: un script `infra/deploy.sh`
   con `gcloud builds submit` (Cloud Build). Mejora: GitHub Actions con Workload Identity Federation.
   Nunca una llave JSON de cuenta de servicio guardada como secreto del repositorio si se puede evitar.
@@ -378,10 +387,22 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   Hecho: longitud mínima 12, lista de comunes de Django, parecido con los datos del usuario y
   `cuentas/validadores.py` contra nombres de la persona, de la empresa y de las fincas. Falta la
   consulta de filtraciones (HIBP por k-anonimato): se decide en el sprint 5.
-- [ ] 3.3 Segundo factor con django-allauth (TOTP y códigos de recuperación; WebAuthn si da el tiempo).
+- [x] 3.3 Segundo factor con django-allauth (TOTP y códigos de recuperación; WebAuthn si da el tiempo).
   Sin SMS ni correo (POL-AU-05).
-- [ ] 3.4 Reautenticación con segundo factor en los cinco minutos previos a aprobar, devolver,
+  - allauth 65.21.1: usuario, contraseña y TOTP; 10 códigos de recuperación de respaldo. Secreto TOTP
+    y semilla de los códigos cifrados con Fernet (`MFA_CLAVE`, secreto `mfa-clave`; falta crearlo en
+    Secret Manager al desplegar v0.2.0).
+  - `cuentas.middleware.ExigirSegundoFactor`: sin TOTP solo se puede activarlo o salir. Nadie lo
+    desactiva desde su sesión (POL-AU-10), y no hay registro abierto ni recuperación por correo.
+  - En la base, `va_app` solo puede borrar la fila de códigos de recuperación (RLS en
+    `mfa_authenticator`); el TOTP no se borra desde la aplicación.
+  - WebAuthn no: desviación D-07. Pendiente para 3.7: la protección contra reuso del código y los
+    límites de intentos de allauth usan la caché, que hoy es local a cada instancia.
+- [x] 3.4 Reautenticación con segundo factor en los cinco minutos previos a aprobar, devolver,
   revisar, autorizar, abrir, cerrar, resolver y exportar (leyenda de la matriz, POL-AU-06).
+  - `cuentas.decisiones.requiere_segundo_factor`: solo cuenta un código usado en esta sesión hace menos
+    de cinco minutos; la contraseña sola no basta, y un POST sin código reciente no se ejecuta. Cada
+    vista de decisión de la fase 5 lo lleva. Pruebas en `cuentas/tests.py` (12 en total con las de 3.3).
 - [ ] 3.5 Sesión de servidor en PostgreSQL; identificador nuevo al iniciar sesión; 30 minutos de
   inactividad y 12 horas como máximo (POL-AU-08).
 - [ ] 3.6 Revocación inmediata: al cambiar rol, asignaciones, contraseña o al dar de baja, se borran
