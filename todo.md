@@ -464,9 +464,13 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     y las reglas (las pruebas no entran), usuario 1000, sin telemetría. Se publica con el mismo
     `infra/publicar.sh politica vX.Y.Z`, así que la imagen se llama `politica:v…`. Probada en local:
     `/health` responde y T-06 sale «denegar, C3».
-- [ ] 4.5 Sidecar en `verdeazul-app`: OPA escucha en `localhost:8181`, no se expone fuera de la
+- [x] 4.5 Sidecar en `verdeazul-app`: OPA escucha en `localhost:8181`, no se expone fuera de la
   instancia (frontera F3). Arranque ordenado con sonda de inicio: si OPA no está listo, la instancia
   no recibe tráfico (K-3).
+  - `infra/app.service.yaml`: contenedor `politica` sin puertos declarados (solo la aplicación
+    recibe tráfico), sondas de inicio y de vida en `/health`, y `container-dependencies` para que la
+    aplicación arranque después. La aplicación lo encuentra en `OPA_URL`. Se comprueba al desplegar
+    v0.2.0: hay que publicar `politica:v0.2.0` junto con `app:v0.2.0`.
 - [ ] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
   pregunta al motor. ⚠ **Si OPA no responde, tarda más que el límite o contesta algo inválido, la
   petición se frena** (K-3, criterio de aceptación 6): 503, registro en la bitácora y nada más. Sin
