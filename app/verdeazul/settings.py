@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "cuentas",
     "negocio",
     "bitacora",
+    "autorizacion",
 ]
 
 AUTH_USER_MODEL = "cuentas.Usuario"
@@ -175,6 +176,12 @@ TEMPLATES = [
         },
     }
 ]
+
+# --- Motor de decisión (fase 4) ---------------------------------------------------------------
+# OPA corre en la misma instancia (contenedor auxiliar en Cloud Run). Si no contesta en el límite,
+# la petición se frena (K-3): 1,5 segundos, dentro de los 1 a 2 que fija el diseño.
+OPA_URL = os.environ.get("OPA_URL", "http://localhost:8181")
+OPA_LIMITE = float(os.environ.get("OPA_LIMITE", "1.5"))
 
 # --- Archivos estáticos -----------------------------------------------------------------------
 # Estilos e imágenes propios (y los de allauth), servidos por WhiteNoise desde la misma imagen:

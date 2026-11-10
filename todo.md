@@ -474,10 +474,19 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     recibe tráfico), sondas de inicio y de vida en `/health`, y `container-dependencies` para que la
     aplicación arranque después. La aplicación lo encuentra en `OPA_URL`. Se comprueba al desplegar
     v0.2.0: hay que publicar `politica:v0.2.0` junto con `app:v0.2.0`.
-- [ ] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
+- [x] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
   pregunta al motor. ⚠ **Si OPA no responde, tarda más que el límite o contesta algo inválido, la
   petición se frena** (K-3, criterio de aceptación 6): 503, registro en la bitácora y nada más. Sin
   decisión por omisión, sin caché de decisiones y sin `try/except` que deje seguir.
+  - Hecho en la aplicación `autorizacion`: `hechos.py` arma la entrada con funciones de la base
+    (`sql/0001_hechos.sql`, SECURITY DEFINER, solo para `va_app`) que ven las filas reales aunque la
+    seguridad por fila se las esconda a quien pregunta: fincas asignadas, representados, vínculos,
+    técnicos a cargo, historial H1–H3, umbrales y, del objeto, estado y autores de todas las
+    versiones. El id y el rol salen de la sesión.
+  - `motor.py`: límite de 1,5 s, sin proxies; cualquier error, respuesta inválida o resultado
+    desconocido es `MotorSinRespuesta`. `respuestas.sin_motor` responde 503 y anota «K-3 motor sin
+    respuesta» en la bitácora. 16 pruebas: un OPA falso lento, caído, con error, con basura o sin
+    decisión, y una prueba de punta a punta contra el OPA real (`OPA_PRUEBAS=1`) con T-05 y T-06.
 - [ ] 4.7 Decorador o *middleware* `@protegida(accion, objeto)` en toda ruta, y una prueba que recorre
   todas las URL y falla si alguna no lo declara (criterio de aceptación 2).
 - [ ] 4.8 Historial (H1 a H3): eventos de lectura, fincas vistas por sujeto en 90 días, umbrales por rol
