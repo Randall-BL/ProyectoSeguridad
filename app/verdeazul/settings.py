@@ -88,6 +88,19 @@ MFA_CLAVE = os.environ.get("MFA_CLAVE") or (
     else _entorno("MFA_CLAVE")
 )
 
+# --- Sesión (POL-AU-08, tarea 3.5) ------------------------------------------------------------
+# En PostgreSQL, con la cuenta a la que pertenece (cuentas.Sesion). Vence a los 30 minutos sin
+# actividad (la fecha se corre en cada petición) y a las 12 horas de iniciada (LimitarSesion). La
+# cookie muere al cerrar el navegador: no hay «recordarme».
+SESSION_ENGINE = "cuentas.sesiones"
+SESSION_COOKIE_AGE = 30 * 60
+SESSION_SAVE_EVERY_REQUEST = True
+SESION_MAXIMA = 12 * 60 * 60
+ACCOUNT_SESSION_REMEMBER = False
+# El prefijo __Host- obliga al navegador a aceptarla solo por HTTPS, sin dominio y para todo el
+# sitio. En local, sin HTTPS, no se puede usar.
+SESSION_COOKIE_NAME = "sesion" if DEBUG else "__Host-sesion"
+
 # --- Contraseñas (POL-AU-01 a 03 y 09) --------------------------------------------------------
 # Argon2id con sal por usuario: lento y con mucha memoria a propósito (Morris y Thompson, 1979).
 # Los demás quedan solo para leer resúmenes viejos y convertirlos al iniciar sesión.
@@ -115,6 +128,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "cuentas.sesiones.LimitarSesion",
     "cuentas.middleware.ExigirSegundoFactor",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

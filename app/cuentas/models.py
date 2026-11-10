@@ -4,6 +4,7 @@ que aprueba GER (regla C12). Los vínculos declarados con titulares viven en neg
 import uuid
 
 from django.contrib.auth.models import AbstractUser
+from django.contrib.sessions.base_session import AbstractBaseSession
 from django.db import models
 
 
@@ -83,3 +84,19 @@ class Declaracion(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name="declaraciones")
     fecha = models.DateTimeField(auto_now_add=True)
     sin_vinculos = models.BooleanField()
+
+
+class Sesion(AbstractBaseSession):
+    """Sesión de servidor en PostgreSQL (POL-AU-08). Reemplaza a django_session para saber de quién
+    es cada sesión y poder cerrarlas todas de una vez al cambiar rol, asignaciones o contraseña, o
+    al dar de baja la cuenta (POL-CA-04, POL-CA-05)."""
+
+    usuario = models.ForeignKey(
+        Usuario, null=True, blank=True, on_delete=models.CASCADE, related_name="+", db_index=True
+    )
+
+    @classmethod
+    def get_session_store_class(cls):
+        from cuentas.sesiones import SessionStore
+
+        return SessionStore

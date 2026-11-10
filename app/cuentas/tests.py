@@ -1,6 +1,9 @@
-"""Pruebas del segundo factor (tareas 3.3 y 3.4: POL-AU-05, POL-AU-06 y POL-AU-10)."""
+"""Pruebas de autenticación y sesión (fase 3): segundo factor, reautenticación, sesión de servidor,
+revocación, intentos fallidos, rol activo y ventana de la cuenta."""
 
+import secrets
 import time
+from datetime import timedelta
 from unittest import mock
 from urllib.parse import parse_qs, urlsplit
 
@@ -8,18 +11,27 @@ from allauth.account.internal.flows.login import record_authentication
 from allauth.mfa.adapter import get_adapter
 from allauth.mfa.models import Authenticator
 from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from django.urls import NoReverseMatch, reverse
+from django.utils import timezone
 
+from bitacora.models import Registro
 from cuentas.decisiones import requiere_segundo_factor
-from cuentas.models import Rol, Usuario
+from cuentas.models import Rol, Sesion, Usuario
+from cuentas.sesiones import INICIO
+
+# Contraseña de las cuentas de prueba: se genera en cada corrida, no vive en el repositorio.
+CLAVE = secrets.token_urlsafe(18)
 
 
-def _persona(usuario="tec.prueba", rol=Rol.TEC):
-    return Usuario.objects.create_user(username=usuario, rol=rol, identificacion=usuario)
+def _persona(usuario="tec.prueba", rol=Rol.TEC, **campos):
+    return Usuario.objects.create_user(
+        username=usuario, password=CLAVE, rol=rol, identificacion=usuario, **campos
+    )
 
 
 class SegundoFactorObligatorio(TestCase):
@@ -121,3 +133,52 @@ class ReautenticacionEnDecisiones(TestCase):
         respuesta = _decidir(peticion)
         self.assertEqual(respuesta.status_code, 302)
         self.assertTrue(respuesta["Location"].startswith(reverse("account_login")))
+
+
+class SesionDeServidor(TestCase):
+    """POL-AU-08: la sesión vive en la base, cambia de identificador al entrar, vence a los 30
+    minutos sin actividad y a las 12 horas de iniciada."""
+
+    def setUp(self):
+        self.persona = _persona()
+
+    def _clave_de_sesion(self):
+        return self.client.cookies[settings.SESSION_COOKIE_NAME].value
+
+    def test_identificador_nuevo_al_entrar(self):
+        antes = self.client.session.session_key
+        self.client.post(reverse("account_login"), {"login": "tec.prueba", "password": CLAVE})
+        despues = self._clave_de_sesion()
+        self.assertNotEqual(antes, despues)
+        self.assertFalse(Sesion.objects.filter(pk=antes).exists())
+        self.assertEqual(Sesion.objects.get(pk=despues).usuario_id, self.persona.pk)
+
+    def test_vence_a_los_30_minutos_sin_actividad(self):
+        self.client.force_login(self.persona)
+        vence = Sesion.objects.get(pk=self._clave_de_sesion()).expire_date
+        self.assertAlmostEqual((vence - timezone.now()).total_seconds(), 30 * 60, delta=60)
+
+    def test_cada_peticion_corre_el_vencimiento(self):
+        self.client.force_login(self.persona)
+        clave = self._clave_de_sesion()
+        Sesion.objects.filter(pk=clave).update(expire_date=timezone.now() + timedelta(minutes=5))
+        self.client.get(reverse("salud"))
+        vence = Sesion.objects.get(pk=clave).expire_date
+        self.assertGreater((vence - timezone.now()).total_seconds(), 29 * 60)
+
+    def test_doce_horas_como_maximo(self):
+        self.client.force_login(self.persona)
+        sesion = self.client.session
+        sesion[INICIO] = int(time.time()) - settings.SESION_MAXIMA - 1
+        sesion.save()
+        respuesta = self.client.get(reverse("hola"))
+        self.assertRedirects(respuesta, reverse("account_login"), fetch_redirect_response=False)
+        self.assertFalse(Sesion.objects.filter(usuario=self.persona).exists())
+
+    def test_entrada_y_salida_quedan_en_la_bitacora(self):
+        self.client.force_login(self.persona)
+        self.client.post(reverse("account_logout"))
+        acciones = set(
+            Registro.objects.filter(usuario_id=self.persona.pk).values_list("accion", flat=True)
+        )
+        self.assertEqual(acciones, {"iniciar_sesion", "cerrar_sesion"})

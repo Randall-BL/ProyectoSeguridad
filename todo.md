@@ -403,8 +403,12 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   - `cuentas.decisiones.requiere_segundo_factor`: solo cuenta un código usado en esta sesión hace menos
     de cinco minutos; la contraseña sola no basta, y un POST sin código reciente no se ejecuta. Cada
     vista de decisión de la fase 5 lo lleva. Pruebas en `cuentas/tests.py` (12 en total con las de 3.3).
-- [ ] 3.5 Sesión de servidor en PostgreSQL; identificador nuevo al iniciar sesión; 30 minutos de
+- [x] 3.5 Sesión de servidor en PostgreSQL; identificador nuevo al iniciar sesión; 30 minutos de
   inactividad y 12 horas como máximo (POL-AU-08).
+  - `cuentas.Sesion` reemplaza a `django_session` y guarda de quién es cada sesión (para 3.6). El
+    vencimiento se corre en cada petición; `cuentas.sesiones.LimitarSesion` corta a las 12 horas.
+    Sin «recordarme»; la cookie se llama `__Host-sesion` en la nube. Entrada y salida van a la
+    bitácora con la huella del identificador de sesión. Pendiente para 7.2: `clearsessions`.
 - [ ] 3.6 Revocación inmediata: al cambiar rol, asignaciones, contraseña o al dar de baja, se borran
   todas las sesiones de la persona (POL-CA-04, POL-CA-05: «baja el mismo día»).
 - [ ] 3.7 Intentos fallidos: demora creciente desde el quinto y bloqueo de 15 minutos al décimo (POL-AU-07).

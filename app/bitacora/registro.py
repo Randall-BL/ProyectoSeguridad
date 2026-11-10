@@ -60,3 +60,12 @@ def verificar_cadena():
     with connection.cursor() as cursor:
         cursor.execute("SELECT bitacora_verificar()")
         return cursor.fetchone()[0]
+
+
+def origen_de(request):
+    """Dirección desde la que llegó la petición. En Cloud Run el frente de Google agrega al final de
+    X-Forwarded-For la dirección que vio; lo que venga antes lo pudo escribir el cliente."""
+    reenviada = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if reenviada:
+        return reenviada.split(",")[-1].strip()
+    return request.META.get("REMOTE_ADDR", "")
