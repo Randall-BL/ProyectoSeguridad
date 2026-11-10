@@ -409,8 +409,13 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     vencimiento se corre en cada petición; `cuentas.sesiones.LimitarSesion` corta a las 12 horas.
     Sin «recordarme»; la cookie se llama `__Host-sesion` en la nube. Entrada y salida van a la
     bitácora con la huella del identificador de sesión. Pendiente para 7.2: `clearsessions`.
-- [ ] 3.6 Revocación inmediata: al cambiar rol, asignaciones, contraseña o al dar de baja, se borran
+- [x] 3.6 Revocación inmediata: al cambiar rol, asignaciones, contraseña o al dar de baja, se borran
   todas las sesiones de la persona (POL-CA-04, POL-CA-05: «baja el mismo día»).
+  - `cuentas/revocacion.py`: señales sobre la cuenta (rol, activa, contraseña, vigencia), la
+    propuesta de rol aprobada y la asignación creada o terminada; borra las filas de `cuentas_sesion`
+    en la misma transacción y lo anota en la bitácora con POL-CA-04 o POL-CA-05. Cambiar la propia
+    contraseña también cierra la sesión actual. Pendiente para 7.2: el trabajo de vencimientos usa
+    `update()`, que no dispara señales, así que `va_trabajos` necesitará borrar sesiones él mismo.
 - [ ] 3.7 Intentos fallidos: demora creciente desde el quinto y bloqueo de 15 minutos al décimo (POL-AU-07).
 - [ ] 3.8 Exclusión dinámica TEC–VER: con una habilitación temporal, la persona entra como técnico o
   como verificador, nunca como ambos en la misma sesión.

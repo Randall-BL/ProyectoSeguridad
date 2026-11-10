@@ -6,4 +6,4 @@ class CuentasConfig(AppConfig):
     verbose_name = "Cuentas y roles"
 
     def ready(self):
-        from cuentas import senales  # noqa: F401  (conecta los receptores)
+        from cuentas import revocacion, senales  # noqa: F401  (conectan los receptores)

@@ -97,6 +97,8 @@ SESSION_COOKIE_AGE = 30 * 60
 SESSION_SAVE_EVERY_REQUEST = True
 SESION_MAXIMA = 12 * 60 * 60
 ACCOUNT_SESSION_REMEMBER = False
+# Cambiar la contraseña cierra todas las sesiones, también la actual (tarea 3.6).
+ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True
 # El prefijo __Host- obliga al navegador a aceptarla solo por HTTPS, sin dominio y para todo el
 # sitio. En local, sin HTTPS, no se puede usar.
 SESSION_COOKIE_NAME = "sesion" if DEBUG else "__Host-sesion"

@@ -21,8 +21,9 @@ from django.utils import timezone
 
 from bitacora.models import Registro
 from cuentas.decisiones import requiere_segundo_factor
-from cuentas.models import Rol, Sesion, Usuario
+from cuentas.models import EstadoPropuesta, PropuestaRol, Rol, Sesion, Usuario
 from cuentas.sesiones import INICIO
+from negocio.models import Asignacion, Finca, Periodo, Titular
 
 # Contraseña de las cuentas de prueba: se genera en cada corrida, no vive en el repositorio.
 CLAVE = secrets.token_urlsafe(18)
@@ -182,3 +183,77 @@ class SesionDeServidor(TestCase):
             Registro.objects.filter(usuario_id=self.persona.pk).values_list("accion", flat=True)
         )
         self.assertEqual(acciones, {"iniciar_sesion", "cerrar_sesion"})
+
+
+class RevocacionInmediata(TestCase):
+    """POL-CA-04 y POL-CA-05: al cambiar lo que la persona puede hacer, se cierran todas sus
+    sesiones, en todos los equipos."""
+
+    def setUp(self):
+        self.persona = _persona()
+        self.gerente = _persona("ger.prueba", Rol.GER)
+        self.admin = _persona("adm.prueba", Rol.ADM)
+
+    def _abrir_sesiones(self, cuantas=2):
+        for _ in range(cuantas):
+            self.client_class().force_login(self.persona)
+        self.assertEqual(Sesion.objects.filter(usuario=self.persona).count(), cuantas)
+
+    def _sin_sesiones(self):
+        self.assertFalse(Sesion.objects.filter(usuario=self.persona).exists())
+
+    def test_cambio_de_rol(self):
+        self._abrir_sesiones()
+        self.persona.rol = Rol.VER
+        self.persona.save()
+        self._sin_sesiones()
+        self.assertTrue(Registro.objects.filter(accion="cerrar_sesiones", regla="POL-CA-04").exists())
+
+    def test_baja(self):
+        self._abrir_sesiones()
+        self.persona.is_active = False
+        self.persona.save(update_fields=["is_active"])
+        self._sin_sesiones()
+        self.assertTrue(Registro.objects.filter(accion="cerrar_sesiones", regla="POL-CA-05").exists())
+
+    def test_cambio_de_contrasena(self):
+        self._abrir_sesiones()
+        self.persona.set_password(secrets.token_urlsafe(18))
+        self.persona.save()
+        self._sin_sesiones()
+
+    def test_propuesta_de_rol_aprobada(self):
+        self._abrir_sesiones()
+        PropuestaRol.objects.create(
+            usuario=self.persona,
+            rol=Rol.TEC,
+            propuesta_por=self.admin,
+            estado=EstadoPropuesta.APROBADA,
+            aprobada_por=self.gerente,
+            aprobada_en=timezone.now(),
+        )
+        self._sin_sesiones()
+
+    def test_asignacion_nueva(self):
+        self._abrir_sesiones()
+        titular = Titular.objects.create(codigo="T-900", tipo=Titular.Tipo.FISICA)
+        finca = Finca.objects.create(codigo="F-900", nombre="Prueba", titular=titular)
+        hoy = timezone.localdate()
+        periodo = Periodo.objects.create(
+            nombre="P-prueba", inicio=hoy, fin_medicion=hoy, cierre_registro=hoy
+        )
+        Asignacion.objects.create(
+            tecnico=self.persona,
+            finca=finca,
+            periodo=periodo,
+            tipo=Asignacion.Tipo.ORDINARIA,
+            desde=hoy,
+            creada_por=self.gerente,
+        )
+        self._sin_sesiones()
+
+    def test_ultimo_acceso_no_revoca(self):
+        self._abrir_sesiones()
+        self.persona.last_login = timezone.now()
+        self.persona.save(update_fields=["last_login"])
+        self.assertEqual(Sesion.objects.filter(usuario=self.persona).count(), 2)
