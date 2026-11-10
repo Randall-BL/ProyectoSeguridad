@@ -494,10 +494,15 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     responde 404, igual que lo inexistente (T-08); el resto, 403 con la regla, y todo queda en la
     bitácora. `TodaRutaDeclarada` recorre las rutas: las propias declaran su protección salvo
     inicio, salud y elegir rol, y de allauth solo están las de cuenta y segundo factor.
-- [ ] 4.8 Historial (H1 a H3): eventos de lectura, fincas vistas por sujeto en 90 días, umbrales por rol
+- [x] 4.8 Historial (H1 a H3): eventos de lectura, fincas vistas por sujeto en 90 días, umbrales por rol
   en una tabla que aprueba GER (40, 60 y 80 por día; jornada de lunes a viernes, 6:00 a 19:00, hora de
   Costa Rica). En la misma tabla va el máximo de asignaciones activas por técnico, 20 (K-1). Para la
   demostración, umbrales bajos en un rol de prueba.
+  - `@protegida` anota cada lectura de un detalle con finca (`autorizacion/historial.py`); la base
+    cuenta fincas distintas en 24 h (denegadas doble), en 60 min, si la finca es nueva en 90 días y
+    si se está fuera de la jornada del rol (`va_hechos_sujeto`). Los umbrales y la jornada salen de
+    `negocio_parametrorol` (valores iniciales de 2.6). Falta la pantalla de GER para cambiarlos (5.x)
+    y bajar los umbrales de un rol de prueba para la demostración.
 - [ ] 4.9 Respuesta graduada: conceder; conceder y avisar; pedir segundo factor y motivo; restringir las
   fincas nuevas hasta el siguiente día hábil.
 - [ ] 4.10 La interfaz pregunta al motor qué botones mostrar, solo por comodidad: lo que protege es la

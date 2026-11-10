@@ -13,7 +13,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.http import urlencode
 
-from autorizacion import hechos, motor, respuestas
+from autorizacion import hechos, historial, motor, respuestas
 
 # Lecturas denegadas por alcance: se responde «no encontrado», igual que si no existiera, para no
 # revelar qué existe fuera del alcance de la persona (T-08).
@@ -47,6 +47,8 @@ def protegida(accion, tipo, *, objeto=None, cambio=None):
                 )
             except motor.MotorSinRespuesta as error:
                 return respuestas.sin_motor(request, accion, hechos_objeto, str(error))
+            if accion == "leer":
+                historial.anotar_lectura(request, hechos_objeto, decision)
 
             if decision.concedida:
                 request.decision = decision

@@ -279,7 +279,6 @@ class TodaRutaDeclarada(SimpleTestCase):
 
 
 FINCA = "00000000-0000-0000-0000-000000000001"
-AJENA = "00000000-0000-0000-0000-000000000002"
 
 
 @protegida("aprobar", "mediciones", objeto=lambda request, pk: {"id": pk, "finca": FINCA} if pk != "nada" else None)
@@ -321,8 +320,10 @@ class Decorador(TestCase):
         self.assertTrue(Registro.objects.filter(accion="aprobar", resultado="denegado", regla="C3").exists())
 
     def test_t08_lo_ajeno_responde_igual_que_lo_inexistente(self):
+        titular = Titular.objects.create(codigo="T-920", tipo=Titular.Tipo.FISICA)
+        ajena = str(Finca.objects.create(codigo="F-920", nombre="Ajena", titular=titular).pk)
         with self._con(motor.Decision("denegar", "C1")), self.assertRaises(Http404):
-            _ver_finca(self._peticion(), pk=AJENA)
+            _ver_finca(self._peticion(), pk=ajena)
         with self.assertRaises(Http404):
             _aprobar(self._peticion(), pk="nada")
 
@@ -344,3 +345,37 @@ class Decorador(TestCase):
         respuesta = _aprobar(self._peticion(AnonymousUser()), pk="7")
         self.assertEqual(respuesta.status_code, 302)
         self.assertIn("/cuentas/login/", respuesta["Location"])
+
+
+class LecturasEnElHistorial(TestCase):
+    """Tarea 4.8: cada detalle consultado queda como evento; los denegados cuentan doble en H1."""
+
+    def setUp(self):
+        self.persona = _usuario("ver.prueba", Rol.VER)
+        titular = Titular.objects.create(codigo="T-910", tipo=Titular.Tipo.FISICA)
+        self.fincas = [
+            str(Finca.objects.create(codigo=f"F-91{i}", nombre="Prueba", titular=titular).pk) for i in range(2)
+        ]
+
+    def _ver(self, finca, decision):
+        peticion = RequestFactory().get(f"/fincas/{finca}")
+        SessionMiddleware(lambda r: None).process_request(peticion)
+        peticion.user = self.persona
+        peticion.rol_activo = Rol.VER
+        with mock.patch.object(motor, "preguntar", return_value=decision):
+            try:
+                _ver_finca(peticion, pk=finca)
+            except Http404:
+                pass
+        return peticion
+
+    def test_cada_lectura_queda_y_las_denegadas_cuentan_doble(self):
+        from negocio.models import EventoLectura
+
+        self._ver(self.fincas[0], motor.Decision("conceder", "H"))
+        peticion = self._ver(self.fincas[1], motor.Decision("denegar", "C1"))
+        eventos = EventoLectura.objects.filter(usuario=self.persona).order_by("id")
+        self.assertEqual([(str(e.finca_id), e.denegado) for e in eventos], [(self.fincas[0], False), (self.fincas[1], True)])
+        _, historial_, _, _ = hechos.del_sujeto(peticion)
+        self.assertEqual(historial_["fincas_24h"], 3)
+        self.assertEqual(historial_["fincas_60min"], 2)
