@@ -243,6 +243,18 @@ class Command(BaseCommand):
         self._propuesta_rol(carla, Rol.VER, aprobada_por=self.u["ger.gabriela"])
         carla.rol = Rol.VER
         carla.save(update_fields=["rol"])
+        # T-26: además tiene una habilitación temporal de técnica, que aprobó el otro gerente. Al
+        # entrar elige con cuál de los dos roles trabaja en esa sesión (tarea 3.8).
+        PropuestaRol.objects.create(
+            usuario=carla,
+            rol=Rol.TEC,
+            es_habilitacion=True,
+            fin_habilitacion=(self.ahora + timedelta(days=VENTANA_AUDITORIA_DIAS)).date(),
+            propuesta_por=self.u["adm.alberto"],
+            estado=EstadoPropuesta.APROBADA,
+            aprobada_por=self.u["ger.gerardo"],
+            aprobada_en=self.ahora,
+        )
 
     # --- Titulares, fincas y parcelas ---------------------------------------------------------
 

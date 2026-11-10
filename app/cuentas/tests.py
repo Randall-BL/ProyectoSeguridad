@@ -25,6 +25,7 @@ from bitacora.models import Registro
 from cuentas.decisiones import requiere_segundo_factor
 from cuentas import intentos
 from cuentas.models import EstadoPropuesta, IntentosAcceso, PropuestaRol, Rol, Sesion, Usuario
+from cuentas.roles import ROL_ACTIVO
 from cuentas.sesiones import INICIO
 from negocio.models import Asignacion, Finca, Periodo, Titular
 
@@ -326,3 +327,63 @@ class IntentosFallidos(TestCase):
 
     def test_cache_compartida_entre_instancias(self):
         self.assertIsInstance(caches["default"], DatabaseCache)
+
+
+class RolActivoTecVer(TestCase):
+    """Tarea 3.8: con una habilitación temporal, la verificadora entra como técnica o como
+    verificadora, nunca como ambas en la misma sesión."""
+
+    def setUp(self):
+        self.carla = _persona("ver.prueba", Rol.VER)
+        TOTP.activate(self.carla, generate_totp_secret())
+        self.admin = _persona("adm.prueba", Rol.ADM)
+        self.gerente = _persona("ger.prueba", Rol.GER)
+
+    def _habilitar(self, dias=10):
+        return PropuestaRol.objects.create(
+            usuario=self.carla,
+            rol=Rol.TEC,
+            es_habilitacion=True,
+            fin_habilitacion=timezone.localdate() + timedelta(days=dias),
+            propuesta_por=self.admin,
+            estado=EstadoPropuesta.APROBADA,
+            aprobada_por=self.gerente,
+            aprobada_en=timezone.now(),
+        )
+
+    def test_sin_habilitacion_el_rol_queda_fijo(self):
+        self.client.force_login(self.carla)
+        self.assertEqual(self.client.get(reverse("hola")).status_code, 200)
+        self.assertEqual(self.client.session[ROL_ACTIVO], Rol.VER)
+
+    def test_con_habilitacion_tiene_que_elegir(self):
+        self._habilitar()
+        self.client.force_login(self.carla)
+        respuesta = self.client.get(reverse("hola"))
+        self.assertRedirects(respuesta, reverse("elegir_rol"), fetch_redirect_response=False)
+        self.assertContains(self.client.get(reverse("elegir_rol")), "Técnico de campo")
+
+    def test_lo_elegido_no_cambia_en_la_sesion(self):
+        self._habilitar()
+        self.client.force_login(self.carla)
+        self.client.post(reverse("elegir_rol"), {"rol": Rol.TEC})
+        self.client.post(reverse("elegir_rol"), {"rol": Rol.VER})
+        self.assertEqual(self.client.session[ROL_ACTIVO], Rol.TEC)
+        self.assertTrue(Registro.objects.filter(accion="elegir_rol", rol=Rol.TEC).exists())
+
+    def test_no_elige_un_rol_que_no_tiene(self):
+        self._habilitar()
+        self.client.force_login(self.carla)
+        self.client.post(reverse("elegir_rol"), {"rol": Rol.GER})
+        self.assertNotIn(ROL_ACTIVO, self.client.session)
+
+    def test_al_vencer_la_habilitacion_se_cierra_la_sesion(self):
+        habilitacion = self._habilitar()
+        self.client.force_login(self.carla)
+        self.client.post(reverse("elegir_rol"), {"rol": Rol.TEC})
+        PropuestaRol.objects.filter(pk=habilitacion.pk).update(
+            fin_habilitacion=timezone.localdate() - timedelta(days=1)
+        )
+        respuesta = self.client.get(reverse("hola"))
+        self.assertRedirects(respuesta, reverse("account_login"), fetch_redirect_response=False)
+        self.assertNotIn("_auth_user_id", self.client.session)

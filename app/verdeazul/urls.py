@@ -1,6 +1,7 @@
 from allauth.account import urls as rutas_de_cuenta
 from django.urls import include, path
 
+from cuentas import views as cuentas
 from nucleo import views
 
 # De allauth solo se publican estas rutas de cuenta. Quedan fuera el registro abierto (C12), la
@@ -22,4 +23,5 @@ urlpatterns = [
         include([ruta for ruta in rutas_de_cuenta.urlpatterns if getattr(ruta, "name", None) in RUTAS_DE_CUENTA]),
     ),
     path("cuentas/2fa/", include("allauth.mfa.urls")),
+    path("cuentas/rol/", cuentas.elegir_rol, name="elegir_rol"),
 ]

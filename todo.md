@@ -423,8 +423,11 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   - La caché de Django pasó a PostgreSQL (`cache_compartida`): los límites de allauth por dirección,
     los 10 intentos de código TOTP cada 15 minutos y la protección contra reusar un código valen
     igual en todas las instancias. Resuelve el pendiente que dejó 3.3.
-- [ ] 3.8 Exclusión dinámica TEC–VER: con una habilitación temporal, la persona entra como técnico o
+- [x] 3.8 Exclusión dinámica TEC–VER: con una habilitación temporal, la persona entra como técnico o
   como verificador, nunca como ambos en la misma sesión.
+  - `cuentas/roles.py`: `request.rol_activo` sale de la sesión; con un rol posible se fija solo, con
+    dos se elige en `/cuentas/rol/` una vez por sesión (queda en la bitácora). Si la habilitación
+    vence a mitad de la sesión, se cierra. La semilla le da a C la habilitación para T-26.
 - [ ] 3.9 AUD fuera de su ventana no puede iniciar sesión (C6, T-09). OPE no tiene cuenta (T-20).
 
 ---
