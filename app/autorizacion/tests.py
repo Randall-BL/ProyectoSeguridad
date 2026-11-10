@@ -228,3 +228,119 @@ class HechosDesdeLaBase(TestCase):
         self.assertIn(decision.resultado, {"conceder", "pedir_segundo_factor"})
         carla = self._peticion(self.carla, Rol.VER)
         self.assertEqual(motor.preguntar(hechos.entrada(carla, "aprobar", objeto)).regla, "C3")
+
+
+# --- Tarea 4.7: el decorador en cada ruta -------------------------------------------------------
+
+from unittest import mock  # noqa: E402
+
+from django.http import Http404, HttpResponse  # noqa: E402
+from django.test import SimpleTestCase  # noqa: E402
+from django.urls import URLResolver, get_resolver  # noqa: E402
+
+from autorizacion.proteccion import protegida  # noqa: E402
+from verdeazul.urls import RUTAS_DE_CUENTA  # noqa: E402
+
+# Rutas propias sin datos del negocio: la portada y el inicio, la sonda y la elección de rol.
+PUBLICAS = {"inicio", "salud", "elegir_rol"}
+APPS_PROPIAS = ("nucleo.", "cuentas.", "negocio.", "bitacora.", "autorizacion.")
+
+
+def _rutas(patrones, prefijo=""):
+    for patron in patrones:
+        if isinstance(patron, URLResolver):
+            yield from _rutas(patron.url_patterns, prefijo + str(patron.pattern))
+        else:
+            yield prefijo + str(patron.pattern), patron
+
+
+class TodaRutaDeclarada(SimpleTestCase):
+    """Criterio de aceptación 2: ninguna ruta propia queda sin pasar por el motor."""
+
+    def test_toda_ruta_propia_declara_su_proteccion(self):
+        sin_declarar = [
+            ruta
+            for ruta, patron in _rutas(get_resolver().url_patterns)
+            if patron.callback.__module__.startswith(APPS_PROPIAS)
+            and patron.name not in PUBLICAS
+            and not hasattr(patron.callback, "protegida")
+        ]
+        self.assertEqual(sin_declarar, [])
+
+    def test_de_allauth_solo_estan_las_rutas_de_cuenta_y_segundo_factor(self):
+        ajenas = [
+            patron.name
+            for _, patron in _rutas(get_resolver().url_patterns)
+            if patron.callback.__module__.startswith("allauth.")
+            and patron.name not in RUTAS_DE_CUENTA
+            and not (patron.name or "").startswith("mfa_")
+        ]
+        self.assertEqual(ajenas, [])
+
+
+FINCA = "00000000-0000-0000-0000-000000000001"
+AJENA = "00000000-0000-0000-0000-000000000002"
+
+
+@protegida("aprobar", "mediciones", objeto=lambda request, pk: {"id": pk, "finca": FINCA} if pk != "nada" else None)
+def _aprobar(request, pk):
+    return HttpResponse("aprobada")
+
+
+@protegida("leer", "fincas", objeto=lambda request, pk: {"id": pk, "finca": pk})
+def _ver_finca(request, pk):
+    return HttpResponse("finca")
+
+
+class Decorador(TestCase):
+    def setUp(self):
+        self.persona = _usuario("ver.prueba", Rol.VER)
+
+    def _peticion(self, usuario=None):
+        peticion = RequestFactory().post("/mediciones/7/aprobar")
+        SessionMiddleware(lambda r: None).process_request(peticion)
+        peticion.user = usuario or self.persona
+        peticion.rol_activo = Rol.VER
+        return peticion
+
+    def _con(self, decision):
+        efecto = decision if isinstance(decision, Exception) else None
+        return mock.patch.object(
+            motor, "preguntar", side_effect=efecto, return_value=None if efecto else decision
+        )
+
+    def test_conceder_ejecuta_la_vista(self):
+        with self._con(motor.Decision("conceder", "C3")):
+            self.assertEqual(_aprobar(self._peticion(), pk="7").content, b"aprobada")
+
+    def test_denegar_no_ejecuta_y_lo_anota(self):
+        with self._con(motor.Decision("denegar", "C3")):
+            respuesta = _aprobar(self._peticion(), pk="7")
+        self.assertEqual(respuesta.status_code, 403)
+        self.assertNotIn(b"aprobada", respuesta.content)
+        self.assertTrue(Registro.objects.filter(accion="aprobar", resultado="denegado", regla="C3").exists())
+
+    def test_t08_lo_ajeno_responde_igual_que_lo_inexistente(self):
+        with self._con(motor.Decision("denegar", "C1")), self.assertRaises(Http404):
+            _ver_finca(self._peticion(), pk=AJENA)
+        with self.assertRaises(Http404):
+            _aprobar(self._peticion(), pk="nada")
+
+    def test_pide_el_segundo_factor(self):
+        with self._con(motor.Decision("pedir_segundo_factor", "POL-AU-06")):
+            respuesta = _aprobar(self._peticion(), pk="7")
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertTrue(respuesta["Location"].startswith("/cuentas/2fa/reauthenticate/"))
+
+    def test_t41_sin_motor_503(self):
+        with self._con(motor.MotorSinRespuesta("TimeoutError")):
+            respuesta = _aprobar(self._peticion(), pk="7")
+        self.assertEqual(respuesta.status_code, 503)
+        self.assertNotIn(b"aprobada", respuesta.content)
+
+    def test_sin_sesion_va_a_iniciar_sesion(self):
+        from django.contrib.auth.models import AnonymousUser
+
+        respuesta = _aprobar(self._peticion(AnonymousUser()), pk="7")
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn("/cuentas/login/", respuesta["Location"])

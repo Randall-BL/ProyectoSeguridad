@@ -487,8 +487,13 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     desconocido es `MotorSinRespuesta`. `respuestas.sin_motor` responde 503 y anota «K-3 motor sin
     respuesta» en la bitácora. 16 pruebas: un OPA falso lento, caído, con error, con basura o sin
     decisión, y una prueba de punta a punta contra el OPA real (`OPA_PRUEBAS=1`) con T-05 y T-06.
-- [ ] 4.7 Decorador o *middleware* `@protegida(accion, objeto)` en toda ruta, y una prueba que recorre
+- [x] 4.7 Decorador o *middleware* `@protegida(accion, objeto)` en toda ruta, y una prueba que recorre
   todas las URL y falla si alguna no lo declara (criterio de aceptación 2).
+  - `autorizacion.proteccion.protegida(accion, tipo, objeto=…, cambio=…)`: la vista corre solo con
+    «conceder»; «pedir segundo factor» manda a reautenticarse; la lectura denegada por C1 o C5
+    responde 404, igual que lo inexistente (T-08); el resto, 403 con la regla, y todo queda en la
+    bitácora. `TodaRutaDeclarada` recorre las rutas: las propias declaran su protección salvo
+    inicio, salud y elegir rol, y de allauth solo están las de cuenta y segundo factor.
 - [ ] 4.8 Historial (H1 a H3): eventos de lectura, fincas vistas por sujeto en 90 días, umbrales por rol
   en una tabla que aprueba GER (40, 60 y 80 por día; jornada de lunes a viernes, 6:00 a 19:00, hora de
   Costa Rica). En la misma tabla va el máximo de asignaciones activas por técnico, 20 (K-1). Para la

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block head_title %}Motivo de la consulta{% endblock head_title %}
+{% block content %}
+  <div class="eleccion">
+    <span class="sobretitulo">Control de historial · {{ regla }}</span>
+    <h1>Escriba el motivo para continuar</h1>
+    <p class="suave">
+      {% if regla == "H2" %}Está tomando una decisión fuera de la jornada de su rol.
+      {% elif regla == "H3" %}Fuera de la jornada, consultó muchas fincas que no había visto en los últimos 90 días.
+      {% else %}Hoy consultó más fincas distintas que el umbral de verificación de su rol.{% endif %}
+      El motivo queda en la bitácora y su supervisor recibe un aviso.
+    </p>
+    <form method="{{ metodo|lower }}" class="tarjeta">
+      {% if metodo == "POST" %}{% csrf_token %}{% endif %}
+      {% for nombre, valor in campos %}<input type="hidden" name="{{ nombre }}" value="{{ valor }}">{% endfor %}
+      <div class="campo">
+        <label for="motivo">Motivo</label>
+        <textarea id="motivo" name="motivo" rows="3" required maxlength="500"></textarea>
+      </div>
+      <div class="acciones">
+        <button class="boton boton-primario" type="submit">Continuar</button>
+        <a class="boton boton-secundario" href="{% url 'inicio' %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock content %}

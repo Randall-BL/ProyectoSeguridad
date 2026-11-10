@@ -1,8 +1,11 @@
-"""Lo que recibe la persona cuando el motor no deja seguir."""
+"""Lo que recibe la persona cuando el motor no deja seguir, y lo que queda en la bitácora."""
 
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.http import urlencode
 
 from bitacora.registro import anexar, origen_de
+from cuentas.decisiones import segundo_factor_reciente
 
 
 def _anotar(request, accion, objeto, resultado, regla):
@@ -19,6 +22,11 @@ def _anotar(request, accion, objeto, resultado, regla):
     )
 
 
+def anotar_denegacion(request, accion, objeto, decision):
+    resultado = "restringido" if decision.resultado == "restringir" else "denegado"
+    _anotar(request, accion, objeto, resultado, decision.regla)
+
+
 def sin_motor(request, accion="", objeto=None, causa=""):
     """K-3: el motor no respondió. La petición se frena con 503 y la denegación queda en la
     bitácora con la causa «motor sin respuesta»; no se ejecuta nada más."""
@@ -27,10 +35,25 @@ def sin_motor(request, accion="", objeto=None, causa=""):
 
 
 def denegada(request, accion, objeto, decision):
-    _anotar(request, accion, objeto, "restringido" if decision.resultado == "restringir" else "denegado", decision.regla)
+    anotar_denegacion(request, accion, objeto, decision)
     return render(
         request,
         "autorizacion/denegado.html",
         {"regla": decision.regla, "restringida": decision.resultado == "restringir"},
         status=403,
+    )
+
+
+def pedir_motivo(request, accion, objeto, decision):
+    """H1 en su segundo nivel, H2 y H3: segundo factor reciente y un motivo escrito. Primero el
+    código; después, el motivo, que viaja con la misma petición."""
+    if not segundo_factor_reciente(request):
+        destino = request.get_full_path() if request.method == "GET" else request.path
+        return redirect(f"{reverse('mfa_reauthenticate')}?{urlencode({'next': destino})}")
+    _anotar(request, accion, objeto, "restringido", f"{decision.regla}: falta el motivo")
+    campos = [(k, v) for k, v in request.POST.items() if k not in {"csrfmiddlewaretoken", "motivo"}]
+    return render(
+        request,
+        "autorizacion/motivo.html",
+        {"regla": decision.regla, "metodo": request.method, "campos": campos},
     )
