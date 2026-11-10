@@ -197,6 +197,9 @@ demás es agregar funcionalidad encima.
   *push protection* activos en GitHub.
 - [x] 1.5 Dependabot: alertas y actualizaciones de seguridad activas en *Settings → Code security*, y
   `.github/dependabot.yml` con los ecosistemas `pip`, `docker` y `github-actions`.
+  - 9-nov: Dependabot abrió el PR #1 (Django 5.2.19 → 6.1.3, versión mayor). No se integra: la 5.2.19
+    ya trae el parche de seguridad del 3-nov. Django queda en 5.2 LTS y `dependabot.yml` ignora sus
+    versiones mayores; la regla rige cuando llegue a `main`. Va al informe como evidencia de 1.5.
 - [x] 1.5b Reglas en GitHub: `main` sin force push ni borrado; etiquetas `v*` inmutables. Gancho
   `commit-msg` y revisión en CI que rechazan co-autores ajenos al equipo.
 - [ ] 1.5c Invitar a Javier, Julio y Axel como colaboradores. Cada uno sigue «Configuración del
