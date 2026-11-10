@@ -14,6 +14,7 @@ from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
 from django.conf import settings
 from django.core.cache import cache, caches
 from django.core.cache.backends.db import DatabaseCache
+from django.db import connection
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
@@ -25,7 +26,7 @@ from bitacora.models import Registro
 from cuentas.decisiones import requiere_segundo_factor
 from cuentas import intentos
 from cuentas.models import EstadoPropuesta, IntentosAcceso, PropuestaRol, Rol, Sesion, Usuario
-from cuentas.roles import ROL_ACTIVO
+from cuentas.roles import ROL_ACTIVO, habilitacion_vigente
 from cuentas.sesiones import INICIO
 from negocio.models import Asignacion, Finca, Periodo, Titular
 
@@ -370,6 +371,14 @@ class RolActivoTecVer(TestCase):
         self.client.post(reverse("elegir_rol"), {"rol": Rol.VER})
         self.assertEqual(self.client.session[ROL_ACTIVO], Rol.TEC)
         self.assertTrue(Registro.objects.filter(accion="elegir_rol", rol=Rol.TEC).exists())
+
+    def test_la_aplicacion_ve_la_habilitacion_antes_de_tener_rol(self):
+        """Con los permisos reales de va_app y sin app.rol, la seguridad por fila esconde las
+        propuestas de rol; la función de la base responde igual."""
+        self._habilitar()
+        with connection.cursor() as cursor:
+            cursor.execute("SET LOCAL ROLE va_app")
+        self.assertTrue(habilitacion_vigente(self.carla))
 
     def test_no_elige_un_rol_que_no_tiene(self):
         self._habilitar()

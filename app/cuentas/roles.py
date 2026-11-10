@@ -9,10 +9,10 @@ evade la separación (K-2, T-26)."""
 
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.db import connection
 from django.shortcuts import redirect
-from django.utils import timezone
 
-from cuentas.models import EstadoPropuesta, PropuestaRol, Rol
+from cuentas.models import Rol
 
 ROL_ACTIVO = "va_rol"
 
@@ -29,13 +29,12 @@ PERMITIDAS_SIN_ROL = {
 
 
 def habilitacion_vigente(usuario):
-    return PropuestaRol.objects.filter(
-        usuario=usuario,
-        es_habilitacion=True,
-        rol=Rol.TEC,
-        estado=EstadoPropuesta.APROBADA,
-        fin_habilitacion__gte=timezone.localdate(),
-    ).exists()
+    """Si tiene una habilitación de técnico aprobada y vigente. Se pregunta a la base con una
+    función propia porque, antes de elegir el rol, la seguridad por fila no deja leer las
+    propuestas de rol (cuentas/sql/0005)."""
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT va_habilitacion_vigente(%s)", [usuario.pk])
+        return cursor.fetchone()[0]
 
 
 def roles_posibles(usuario):
