@@ -11,6 +11,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from autorizacion import motor
+from bitacora.models import Registro
 from cuentas.models import Rol, Usuario
 from negocio.models import Periodo
 from nucleo.basedatos import ContextoDeBase
@@ -79,3 +80,18 @@ class InicioPorRol(TestCase):
             respuesta = self.client.get(reverse("inicio"))
         self.assertEqual(respuesta.status_code, 503)
         self.assertContains(respuesta, "Servicio no disponible", status_code=503)
+        # La denegación queda en la bitácora aunque la respuesta sea un 503.
+        self.assertTrue(
+            Registro.objects.filter(resultado="denegado", regla__startswith="K-3", usuario_id=self.persona.pk).exists()
+        )
+
+    def test_un_error_de_la_vista_no_deja_nada_escrito(self):
+        def _falla(request):
+            Periodo.objects.create(nombre="X", inicio=date(2026, 1, 1), fin_medicion=date(2026, 1, 1), cierre_registro=date(2026, 1, 1))
+            return HttpResponse(status=500)
+
+        peticion = RequestFactory().get("/")
+        peticion.user = self.persona
+        peticion.rol_activo = Rol.VER
+        ContextoDeBase(_falla)(peticion)
+        self.assertFalse(Periodo.objects.filter(nombre="X").exists())

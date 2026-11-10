@@ -487,6 +487,10 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     desconocido es `MotorSinRespuesta`. `respuestas.sin_motor` responde 503 y anota «K-3 motor sin
     respuesta» en la bitácora. 16 pruebas: un OPA falso lento, caído, con error, con basura o sin
     decisión, y una prueba de punta a punta contra el OPA real (`OPA_PRUEBAS=1`) con T-05 y T-06.
+  - Probado en el navegador apagando el contenedor de OPA: el inicio responde 503 y la bitácora
+    anota «K-3 motor sin respuesta». Ahí apareció un error: el contexto de base deshacía la
+    transacción de todo 5xx y se llevaba esa denegación; ahora el 503 del motor la conserva y solo
+    el 500 deshace. Con prueba.
 - [x] 4.7 Decorador o *middleware* `@protegida(accion, objeto)` en toda ruta, y una prueba que recorre
   todas las URL y falla si alguna no lo declara (criterio de aceptación 2).
   - `autorizacion.proteccion.protegida(accion, tipo, objeto=…, cambio=…)`: la vista corre solo con

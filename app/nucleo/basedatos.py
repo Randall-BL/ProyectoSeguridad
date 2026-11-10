@@ -24,7 +24,8 @@ class ContextoDeBase:
                 )
             respuesta = self.get_response(request)
             # Django convierte los errores de la vista en una respuesta 500 antes de llegar aquí:
-            # lo que alcanzó a escribir esa petición no se guarda.
-            if respuesta.status_code >= 500:
+            # lo que alcanzó a escribir esa petición no se guarda. La excepción es el 503 del motor
+            # caído (K-3): la vista no corrió, y su denegación en la bitácora tiene que quedar.
+            if respuesta.status_code >= 500 and not getattr(respuesta, "conservar_bitacora", False):
                 transaction.set_rollback(True)
             return respuesta

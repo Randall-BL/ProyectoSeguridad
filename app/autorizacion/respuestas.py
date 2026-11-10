@@ -31,7 +31,10 @@ def sin_motor(request, accion="", objeto=None, causa=""):
     """K-3: el motor no respondió. La petición se frena con 503 y la denegación queda en la
     bitácora con la causa «motor sin respuesta»; no se ejecuta nada más."""
     _anotar(request, accion, objeto or {}, "denegado", f"K-3 motor sin respuesta: {causa}"[:200])
-    return render(request, "autorizacion/sin_motor.html", status=503)
+    respuesta = render(request, "autorizacion/sin_motor.html", status=503)
+    # Que el contexto de base no deshaga la transacción: lo único escrito es esta denegación.
+    respuesta.conservar_bitacora = True
+    return respuesta
 
 
 def denegada(request, accion, objeto, decision):
