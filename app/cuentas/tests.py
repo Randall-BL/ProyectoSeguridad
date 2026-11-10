@@ -12,6 +12,8 @@ from allauth.mfa.adapter import get_adapter
 from allauth.mfa.models import Authenticator
 from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
 from django.conf import settings
+from django.core.cache import cache, caches
+from django.core.cache.backends.db import DatabaseCache
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
@@ -21,7 +23,8 @@ from django.utils import timezone
 
 from bitacora.models import Registro
 from cuentas.decisiones import requiere_segundo_factor
-from cuentas.models import EstadoPropuesta, PropuestaRol, Rol, Sesion, Usuario
+from cuentas import intentos
+from cuentas.models import EstadoPropuesta, IntentosAcceso, PropuestaRol, Rol, Sesion, Usuario
 from cuentas.sesiones import INICIO
 from negocio.models import Asignacion, Finca, Periodo, Titular
 
@@ -257,3 +260,69 @@ class RevocacionInmediata(TestCase):
         self.persona.last_login = timezone.now()
         self.persona.save(update_fields=["last_login"])
         self.assertEqual(Sesion.objects.filter(usuario=self.persona).count(), 2)
+
+
+class IntentosFallidos(TestCase):
+    """POL-AU-07: demora creciente desde el quinto fallo y bloqueo de 15 minutos al décimo, igual
+    para una cuenta que existe y para una que no."""
+
+    def setUp(self):
+        _persona()
+        cache.clear()
+
+    def _entrar(self, clave, usuario="tec.prueba"):
+        return self.client.post(reverse("account_login"), {"login": usuario, "password": clave})
+
+    def _fallar(self, veces, usuario="tec.prueba"):
+        for _ in range(veces):
+            IntentosAcceso.objects.filter(pk=intentos._huella(usuario)).update(espera_hasta=None)
+            self._entrar("no-es-la-clave", usuario)
+
+    def _fila(self, usuario="tec.prueba"):
+        return IntentosAcceso.objects.get(pk=intentos._huella(usuario))
+
+    def test_cuatro_fallos_no_demoran(self):
+        self._fallar(4)
+        self.assertIsNone(self._fila().espera_hasta)
+
+    def test_desde_el_quinto_hay_que_esperar_y_la_espera_crece(self):
+        self._fallar(5)
+        primera = self._fila().espera_hasta - self._fila().ultimo_fallo
+        self._fallar(1)
+        segunda = self._fila().espera_hasta - self._fila().ultimo_fallo
+        self.assertEqual(primera, timedelta(seconds=30))
+        self.assertEqual(segunda, timedelta(seconds=60))
+
+    def test_en_espera_ni_la_clave_correcta_entra(self):
+        self._fallar(5)
+        respuesta = self._entrar(CLAVE)
+        self.assertContains(respuesta, "Demasiados intentos fallidos")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_al_decimo_bloqueo_de_15_minutos(self):
+        self._fallar(10)
+        fila = self._fila()
+        self.assertEqual(fila.espera_hasta - fila.ultimo_fallo, timedelta(minutes=15))
+
+    def test_entrar_bien_reinicia_el_conteo(self):
+        self._fallar(3)
+        self._entrar(CLAVE)
+        self.assertIn("_auth_user_id", self.client.session)
+        self.assertFalse(IntentosAcceso.objects.filter(pk=intentos._huella("tec.prueba")).exists())
+
+    def test_cuenta_inexistente_igual_trato(self):
+        self._fallar(5, "nadie.existe")
+        self.assertContains(self._entrar("otra", "nadie.existe"), "Demasiados intentos fallidos")
+
+    def test_no_guarda_el_nombre_escrito(self):
+        self._fallar(1)
+        self.assertFalse(IntentosAcceso.objects.filter(pk="tec.prueba").exists())
+
+    def test_fallos_en_la_bitacora(self):
+        self._fallar(5)
+        registros = Registro.objects.filter(accion="iniciar_sesion", resultado="denegado")
+        self.assertEqual(registros.count(), 5)
+        self.assertEqual(registros.filter(regla="POL-AU-07").count(), 1)
+
+    def test_cache_compartida_entre_instancias(self):
+        self.assertIsInstance(caches["default"], DatabaseCache)

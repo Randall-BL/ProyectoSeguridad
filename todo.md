@@ -397,7 +397,7 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   - En la base, `va_app` solo puede borrar la fila de códigos de recuperación (RLS en
     `mfa_authenticator`); el TOTP no se borra desde la aplicación.
   - WebAuthn no: desviación D-07. Pendiente para 3.7: la protección contra reuso del código y los
-    límites de intentos de allauth usan la caché, que hoy es local a cada instancia.
+    límites de intentos de allauth usan la caché, que hoy es local a cada instancia (resuelto en 3.7).
 - [x] 3.4 Reautenticación con segundo factor en los cinco minutos previos a aprobar, devolver,
   revisar, autorizar, abrir, cerrar, resolver y exportar (leyenda de la matriz, POL-AU-06).
   - `cuentas.decisiones.requiere_segundo_factor`: solo cuenta un código usado en esta sesión hace menos
@@ -416,7 +416,13 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     en la misma transacción y lo anota en la bitácora con POL-CA-04 o POL-CA-05. Cambiar la propia
     contraseña también cierra la sesión actual. Pendiente para 7.2: el trabajo de vencimientos usa
     `update()`, que no dispara señales, así que `va_trabajos` necesitará borrar sesiones él mismo.
-- [ ] 3.7 Intentos fallidos: demora creciente desde el quinto y bloqueo de 15 minutos al décimo (POL-AU-07).
+- [x] 3.7 Intentos fallidos: demora creciente desde el quinto y bloqueo de 15 minutos al décimo (POL-AU-07).
+  - `cuentas/intentos.py`: conteo en la base por huella del nombre escrito (exista o no la cuenta):
+    desde el quinto fallo, 30 s, 1, 2, 4 y 8 min de espera; al décimo, 15 min. En espera no se mira
+    ni la contraseña correcta. Se reinicia al entrar o tras un día. Cada fallo va a la bitácora.
+  - La caché de Django pasó a PostgreSQL (`cache_compartida`): los límites de allauth por dirección,
+    los 10 intentos de código TOTP cada 15 minutos y la protección contra reusar un código valen
+    igual en todas las instancias. Resuelve el pendiente que dejó 3.3.
 - [ ] 3.8 Exclusión dinámica TEC–VER: con una habilitación temporal, la persona entra como técnico o
   como verificador, nunca como ambos en la misma sesión.
 - [ ] 3.9 AUD fuera de su ventana no puede iniciar sesión (C6, T-09). OPE no tiene cuenta (T-20).

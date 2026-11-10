@@ -100,3 +100,14 @@ class Sesion(AbstractBaseSession):
         from cuentas.sesiones import SessionStore
 
         return SessionStore
+
+
+class IntentosAcceso(models.Model):
+    """Intentos fallidos de entrar con un nombre de usuario (POL-AU-07). Se cuentan por el nombre
+    escrito, exista o no la cuenta, para que la respuesta no revele cuáles existen. Se guarda la
+    huella del nombre, no el nombre: a veces la gente escribe la contraseña en ese campo."""
+
+    huella_nombre = models.CharField(max_length=64, primary_key=True)
+    fallos = models.PositiveIntegerField(default=0)
+    ultimo_fallo = models.DateTimeField(null=True, blank=True)
+    espera_hasta = models.DateTimeField(null=True, blank=True)

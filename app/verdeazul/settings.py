@@ -103,6 +103,21 @@ ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True
 # sitio. En local, sin HTTPS, no se puede usar.
 SESSION_COOKIE_NAME = "sesion" if DEBUG else "__Host-sesion"
 
+# --- Intentos fallidos y caché compartida (POL-AU-07, tarea 3.7) ------------------------------
+# El conteo de fallos por nombre de usuario, con la demora y el bloqueo, vive en la base
+# (cuentas.intentos). Además, allauth limita por dirección y, para el código del segundo factor,
+# 10 intentos por persona cada 15 minutos. Esos límites y la protección contra reusar un código TOTP
+# usan la caché, que tiene que ser la misma en todas las instancias de Cloud Run: por eso está en
+# PostgreSQL y no en la memoria de cada proceso.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "cache_compartida",
+        "OPTIONS": {"MAX_ENTRIES": 10000},
+    }
+}
+ACCOUNT_RATE_LIMITS = {"login": "30/m/ip", "login_failed": "20/m/ip,10/15m/key"}
+
 # --- Contraseñas (POL-AU-01 a 03 y 09) --------------------------------------------------------
 # Argon2id con sal por usuario: lento y con mucha memoria a propósito (Morris y Thompson, 1979).
 # Los demás quedan solo para leer resúmenes viejos y convertirlos al iniciar sesión.
