@@ -447,11 +447,17 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   - Diez sujetos por diez objetos; cada celda es la lista de verbos con sus condiciones (C1–C20, H) y
     la nota de alcance («solo contacto», «solo aprobadas»…). Suma 102 permisos y 38 celdas vacías,
     lo mismo que el inventario. También trae los verbos que piden reautenticación y el alcance de C17.
-- [ ] 4.2 Reglas Rego con el mismo identificador que en la Parte 1: una regla por condición (C1 a C20) y
+- [x] 4.2 Reglas Rego con el mismo identificador que en la Parte 1: una regla por condición (C1 a C20) y
   por control de historial (H1 a H4). Niega por omisión. La respuesta incluye la decisión (`conceder`,
   `conceder_con_restriccion`, `denegar`) y la regla que la determinó.
-- [ ] 4.3 C17 (abstención por vínculo) sobre todo verbo distinto de leer de TEC, VER, SUP, GER y ADM en
-  fincas, asignaciones, mediciones y enmiendas.
+  - `politica/verdeazul/reglas.rego` (C1–C20) y `decision.rego` (celda, C17, POL-AU-06, H1–H3; H4
+    son C3, C8 y C10). Respuesta `{resultado, regla, avisar}` con los cinco resultados graduados de
+    4.9. Formato de la entrada en `politica/LEEME.md`.
+  - 70 pruebas en `decision_test.rego`: la matriz suma 102/38, toda combinación fuera de la matriz se
+    deniega (10 sujetos × 10 objetos × 21 verbos), y los casos T-01 a T-39 que decide el motor.
+    Cobertura 99,3 %; `opa check --strict` y `opa fmt` limpios. OPA 1.22.3 (`-static`, por huella).
+- [x] 4.3 C17 (abstención por vínculo) sobre todo verbo distinto de leer de TEC, VER, SUP, GER y ADM en
+  fincas, asignaciones, mediciones y enmiendas. (En `decision.rego`; caso T-29.)
 - [ ] 4.4 ⚠ Dockerfile de `politica`: imagen oficial de OPA fijada por huella, con la política
   incluida, sin root. Publicar como `opa:v…`.
 - [ ] 4.5 Sidecar en `verdeazul-app`: OPA escucha en `localhost:8181`, no se expone fuera de la
