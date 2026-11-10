@@ -46,6 +46,11 @@ class SegundoFactorObligatorio(TestCase):
         respuesta = self.client.get(reverse("hola"))
         self.assertRedirects(respuesta, reverse("mfa_activate_totp"), fetch_redirect_response=False)
 
+    def test_recien_entrado_activa_sin_repetir_la_contrasena(self):
+        _persona()
+        self.client.post(reverse("account_login"), {"login": "tec.prueba", "password": CLAVE})
+        self.assertEqual(self.client.get(reverse("mfa_activate_totp")).status_code, 200)
+
     def test_sin_totp_puede_salir(self):
         self.client.force_login(_persona())
         self.assertEqual(self.client.get(reverse("account_logout")).status_code, 200)
