@@ -17,7 +17,7 @@ spec:
         autoscaling.knative.dev/maxScale: "2"
         run.googleapis.com/startup-cpu-boost: "true"
     spec:
-      # Su propia cuenta de servicio, nunca la de Compute: solo puede leer sus dos secretos.
+      # Su propia cuenta de servicio, nunca la de Compute: solo puede leer sus tres secretos.
       serviceAccountName: sa-app@verdeazul-ce1115-g6.iam.gserviceaccount.com
       containerConcurrency: 40
       timeoutSeconds: 60
@@ -44,6 +44,11 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-url-app
+                  key: "1"
+            - name: MFA_CLAVE
+              valueFrom:
+                secretKeyRef:
+                  name: mfa-clave
                   key: "1"
           resources:
             limits:
