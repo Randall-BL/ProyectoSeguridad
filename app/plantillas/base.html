@@ -1,0 +1,62 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block head_title %}Inicio{% endblock head_title %} · Verdeazul Carbono</title>
+  <link rel="icon" href="{% static 'verdeazul/marca.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'verdeazul/verdeazul.css' %}">
+  {% block extra_head %}{% endblock extra_head %}
+</head>
+<body class="{% block clase_cuerpo %}{% endblock clase_cuerpo %}">
+  <a class="solo-lector" href="#principal">Ir al contenido</a>
+  {% block encabezado %}
+    <header class="barra">
+      <div class="barra-interior">
+        <a class="marca" href="{% url 'inicio' %}">
+          <img src="{% static 'verdeazul/marca.svg' %}" alt="">
+          <span>Verdeazul Carbono<small>Registro y certificación de carbono</small></span>
+        </a>
+        {% if menu_principal %}
+          <nav class="menu" aria-label="Principal">
+            {% for opcion in menu_principal %}
+              <a href="{{ opcion.url }}"{% if opcion.actual %} aria-current="page"{% endif %}>{{ opcion.texto }}</a>
+            {% endfor %}
+          </nav>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <div class="persona">
+            <div class="persona-datos">
+              <strong>{{ user.get_full_name|default:user.username }}</strong>
+              <span>{{ rol_activo_nombre|default:"Sin rol elegido" }}</span>
+            </div>
+            <a class="avatar" href="{% url 'mfa_index' %}" title="Mi cuenta" aria-label="Mi cuenta">{% if user.first_name %}{{ user.first_name|first }}{{ user.last_name|first }}{% else %}{{ user.username|first }}{% endif %}</a>
+            <form method="post" action="{% url 'account_logout' %}">
+              {% csrf_token %}
+              <button class="boton-barra" type="submit">Salir</button>
+            </form>
+          </div>
+        {% else %}
+          <div class="persona">
+            <a class="boton-barra" href="{% url 'account_login' %}">Iniciar sesión</a>
+          </div>
+        {% endif %}
+      </div>
+    </header>
+  {% endblock encabezado %}
+  <main id="principal" class="contenido">
+    {% block body %}
+      {% include "nucleo/_mensajes.html" %}
+      {% block content %}{% endblock content %}
+    {% endblock body %}
+  </main>
+  <footer class="pie">
+    <div class="pie-interior">
+      <span>Verdeazul Carbono · CE-1115 Seguridad de la Información · Grupo 6</span>
+      <span>Versión <code>{{ version_app }}</code>{% if commit_app %} · commit <code>{{ commit_app }}</code>{% endif %}</span>
+    </div>
+  </footer>
+  {% block extra_body %}{% endblock extra_body %}
+</body>
+</html>

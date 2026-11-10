@@ -1,0 +1,42 @@
+{% extends "mfa/base_manage.html" %}
+{% comment %}
+Sin el botón de desactivar de allauth: el segundo factor es obligatorio (POL-AU-05) y restablecerlo
+es un trámite de ADM con aprobación de GER (POL-AU-10).
+{% endcomment %}
+{% block head_title %}Segundo factor{% endblock head_title %}
+{% block content %}
+  <span class="sobretitulo">Mi cuenta</span>
+  <h1>Segundo factor</h1>
+  <p class="suave">Se pide al entrar y otra vez antes de cada decisión: aprobar, devolver, autorizar, abrir o cerrar un período, resolver una alerta o exportar evidencia.</p>
+  <section>
+    <h2>Aplicación autenticadora
+      {% if authenticators.totp %}<span class="insignia"><span class="punto"></span>Activa</span>{% else %}<span class="insignia insignia-aviso">Sin activar</span>{% endif %}
+    </h2>
+    {% if authenticators.totp %}
+      <p>No se puede desactivar desde aquí. Si cambia de teléfono o lo pierde, el administrador lo restablece con aprobación de Gerencia.</p>
+    {% else %}
+      <p>Actívela para poder usar el sistema.</p>
+      <div class="acciones"><a class="boton boton-primario" href="{% url 'mfa_activate_totp' %}">Activar</a></div>
+    {% endif %}
+  </section>
+  {% with total=authenticators.recovery_codes.generate_codes|length sin_usar=authenticators.recovery_codes.get_unused_codes|length %}
+    <section>
+      <h2>Códigos de recuperación
+        {% if authenticators.recovery_codes %}<span class="insignia insignia-gris">{{ sin_usar }} de {{ total }} sin usar</span>{% endif %}
+      </h2>
+      {% if authenticators.recovery_codes %}
+        <p>Cada código sirve una sola vez, para entrar cuando no tiene el teléfono a mano. Guárdelos fuera de este equipo.</p>
+        <div class="acciones">
+          <a class="boton boton-secundario" href="{% url 'mfa_view_recovery_codes' %}">Ver</a>
+          <a class="boton boton-secundario" href="{% url 'mfa_download_recovery_codes' %}">Descargar</a>
+          <a class="boton boton-secundario" href="{% url 'mfa_generate_recovery_codes' %}">Generar nuevos</a>
+        </div>
+      {% else %}
+        <p>Todavía no tiene códigos de recuperación.</p>
+        {% if authenticators.totp %}
+          <div class="acciones"><a class="boton boton-primario" href="{% url 'mfa_generate_recovery_codes' %}">Generar</a></div>
+        {% endif %}
+      {% endif %}
+    </section>
+  {% endwith %}
+{% endblock content %}

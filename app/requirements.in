@@ -8,3 +8,6 @@ django>=5.2,<5.3
 django-allauth[mfa]
 gunicorn
 psycopg[binary]
+# Sirve los estilos y las imágenes propias desde la misma imagen, con huella en el nombre y caché
+# larga; nada se carga de un CDN (la política de contenido solo permite el propio origen).
+whitenoise

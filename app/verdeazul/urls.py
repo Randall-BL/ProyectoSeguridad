@@ -16,7 +16,7 @@ RUTAS_DE_CUENTA = {
 }
 
 urlpatterns = [
-    path("", views.hola, name="hola"),
+    path("", views.inicio, name="inicio"),
     path("salud", views.salud, name="salud"),
     path(
         "cuentas/",

@@ -504,6 +504,14 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 - [ ] 5.13 ⚠ Todo acceso a datos por el ORM o con consultas parametrizadas. Prohibido `raw()` con
   cadenas armadas, `extra()`, `eval` y `pickle` sobre datos externos (regla de Bandit y Ruff).
 - [ ] 5.14 Sin el sitio de administración de Django: edita cualquier tabla saltándose las reglas.
+- [x] 5.15 Diseño de la interfaz, adelantado el 10 nov: plantilla base con encabezado y menú por rol
+  activo, estilos propios en `nucleo/static/verdeazul/` servidos por WhiteNoise (con huella en el
+  nombre, sin CDN ni estilos en línea, listos para una CSP estricta), claro y oscuro, y adaptados al
+  teléfono. Las pantallas de allauth (entrar, código, activar TOTP, códigos de recuperación,
+  contraseña, salir) usan el mismo diseño y no ofrecen desactivar el segundo factor. Portada sin
+  sesión; inicio con el rol activo, la sesión (inicio, cierre a los 30 min o a las 12 h) y el
+  segundo factor; elección de rol en tarjetas. Pendiente para 9.x: el QR del TOTP es una imagen
+  `data:`, así que la CSP necesita `img-src 'self' data:`.
 
 ---
 

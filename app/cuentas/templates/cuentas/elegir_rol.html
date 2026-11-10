@@ -1,15 +1,23 @@
-{% extends "allauth/layouts/base.html" %}
-{% block head_title %}Elegir el rol de esta sesión{% endblock head_title %}
+{% extends "base.html" %}
+{% block head_title %}Rol de esta sesión{% endblock head_title %}
 {% block content %}
-  <h1>¿Con qué rol trabaja en esta sesión?</h1>
-  <p>
-    Tiene una habilitación temporal de técnico. En una misma sesión se trabaja con un solo rol:
-    para cambiarlo, cierre la sesión y vuelva a entrar.
-  </p>
-  <form method="post" class="opciones-rol">
-    {% csrf_token %}
-    {% for valor, nombre in posibles %}
-      <button type="submit" name="rol" value="{{ valor }}">{{ nombre }}</button>
-    {% endfor %}
-  </form>
+  <div class="eleccion">
+    <span class="sobretitulo">Habilitación temporal vigente</span>
+    <h1>¿Con qué rol trabaja en esta sesión?</h1>
+    <p class="suave">
+      Tiene una habilitación temporal de técnico. En una misma sesión se trabaja con un solo rol:
+      para cambiarlo, cierre la sesión y vuelva a entrar. Con ninguno de los dos podrá aprobar una
+      medición en la que usted haya escrito una versión.
+    </p>
+    <form method="post" class="opciones-rol">
+      {% csrf_token %}
+      {% for valor, nombre, descripcion in posibles %}
+        <button type="submit" name="rol" value="{{ valor }}" class="opcion-rol" aria-label="Trabajar como {{ nombre }}">
+          <span class="insignia">{{ valor }}</span>
+          <strong>{{ nombre }}</strong>
+          <span>{{ descripcion }}</span>
+        </button>
+      {% endfor %}
+    </form>
+  </div>
 {% endblock content %}

@@ -16,6 +16,17 @@ from cuentas.models import Rol
 
 ROL_ACTIVO = "va_rol"
 
+# Qué hace cada rol, en una línea (Parte 1, Entregable 2).
+QUE_HACE = {
+    Rol.TEC: "Mide las parcelas de las fincas que tiene asignadas y envía las mediciones a revisión.",
+    Rol.VER: "Revisa las mediciones de otros y las aprueba o las devuelve con observaciones.",
+    Rol.SUP: "Asigna fincas a los técnicos y atiende las alertas de su equipo.",
+    Rol.GER: "Aprueba el catálogo, las cuentas y los períodos, y autoriza las enmiendas.",
+    Rol.ADM: "Propone fincas, cuentas y períodos, y mantiene los datos personales de los dueños.",
+    Rol.AUD: "Consulta todo durante su ventana y exporta evidencia sellada, sin modificar nada.",
+    Rol.DUE: "Consulta sus fincas, sus mediciones aprobadas y sus certificados.",
+}
+
 # Lo que se puede hacer antes de elegir el rol.
 PERMITIDAS_SIN_ROL = {
     "elegir_rol",

@@ -55,3 +55,6 @@ Thumbs.db
 desktop.ini
 ~$*
 .neon
+
+# Archivos estáticos colectados (se generan al construir la imagen)
+app/estatico/

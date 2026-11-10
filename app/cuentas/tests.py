@@ -43,7 +43,7 @@ def _persona(usuario="tec.prueba", rol=Rol.TEC, **campos):
 class SegundoFactorObligatorio(TestCase):
     def test_sin_totp_solo_puede_activarlo(self):
         self.client.force_login(_persona())
-        respuesta = self.client.get(reverse("hola"))
+        respuesta = self.client.get(reverse("inicio"))
         self.assertRedirects(respuesta, reverse("mfa_activate_totp"), fetch_redirect_response=False)
 
     def test_recien_entrado_activa_sin_repetir_la_contrasena(self):
@@ -59,10 +59,10 @@ class SegundoFactorObligatorio(TestCase):
         persona = _persona()
         TOTP.activate(persona, generate_totp_secret())
         self.client.force_login(persona)
-        self.assertEqual(self.client.get(reverse("hola")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("inicio")).status_code, 200)
 
     def test_sin_sesion_no_se_redirige(self):
-        self.assertEqual(self.client.get(reverse("hola")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("inicio")).status_code, 200)
 
 
 class SecretoTotp(TestCase):
@@ -182,7 +182,7 @@ class SesionDeServidor(TestCase):
         sesion = self.client.session
         sesion[INICIO] = int(time.time()) - settings.SESION_MAXIMA - 1
         sesion.save()
-        respuesta = self.client.get(reverse("hola"))
+        respuesta = self.client.get(reverse("inicio"))
         self.assertRedirects(respuesta, reverse("account_login"), fetch_redirect_response=False)
         self.assertFalse(Sesion.objects.filter(usuario=self.persona).exists())
 
@@ -359,13 +359,13 @@ class RolActivoTecVer(TestCase):
 
     def test_sin_habilitacion_el_rol_queda_fijo(self):
         self.client.force_login(self.carla)
-        self.assertEqual(self.client.get(reverse("hola")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("inicio")).status_code, 200)
         self.assertEqual(self.client.session[ROL_ACTIVO], Rol.VER)
 
     def test_con_habilitacion_tiene_que_elegir(self):
         self._habilitar()
         self.client.force_login(self.carla)
-        respuesta = self.client.get(reverse("hola"))
+        respuesta = self.client.get(reverse("inicio"))
         self.assertRedirects(respuesta, reverse("elegir_rol"), fetch_redirect_response=False)
         self.assertContains(self.client.get(reverse("elegir_rol")), "Técnico de campo")
 
@@ -398,7 +398,7 @@ class RolActivoTecVer(TestCase):
         PropuestaRol.objects.filter(pk=habilitacion.pk).update(
             fin_habilitacion=timezone.localdate() - timedelta(days=1)
         )
-        respuesta = self.client.get(reverse("hola"))
+        respuesta = self.client.get(reverse("inicio"))
         self.assertRedirects(respuesta, reverse("account_login"), fetch_redirect_response=False)
         self.assertNotIn("_auth_user_id", self.client.session)
 
@@ -436,9 +436,9 @@ class VentanaDeLaCuenta(TestCase):
         ahora = timezone.now()
         auditora = self._auditora(ahora - timedelta(days=1), ahora + timedelta(days=30))
         self.client.force_login(auditora)
-        self.assertEqual(self.client.get(reverse("hola")).context["user"], auditora)
+        self.assertEqual(self.client.get(reverse("inicio")).context["user"], auditora)
         Usuario.objects.filter(pk=auditora.pk).update(vigente_hasta=ahora - timedelta(minutes=1))
-        self.assertFalse(self.client.get(reverse("hola")).context["user"].is_authenticated)
+        self.assertFalse(self.client.get(reverse("inicio")).context["user"].is_authenticated)
 
     def test_t20_ope_no_es_un_rol_de_la_aplicacion(self):
         self.assertNotIn("OPE", Rol.values)

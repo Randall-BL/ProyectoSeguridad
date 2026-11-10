@@ -1,0 +1,8 @@
+{% load allauth %}
+<section>
+  <h2>{% slot title %}{% endslot %}</h2>
+  {% slot body %}{% endslot %}
+  {% if slots.actions %}
+    <div class="acciones">{% for accion in slots.actions %}{{ accion }}{% endfor %}</div>
+  {% endif %}
+</section>

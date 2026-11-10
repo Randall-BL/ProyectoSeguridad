@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block head_title %}Inicio{% endblock head_title %}
+{% block content %}
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo">{{ rol_activo_nombre }}</span>
+      <h1>{{ saludo }}, {{ user.first_name|default:user.username }}</h1>
+      <p>{{ que_hace }}</p>
+    </div>
+    <span class="estado"><span class="punto"></span>En línea · PostgreSQL {{ postgres }} · PostGIS {{ postgis }}</span>
+  </div>
+
+  <div class="rejilla-2">
+    <section class="tarjeta">
+      <h2>Lo que puede hacer su rol</h2>
+      {% if permisos %}
+        <p class="suave">Sale de la matriz de acceso, la misma que aplica el motor de decisión en cada petición. Las marcadas en azul tienen una condición.</p>
+        <ul class="permisos">
+          {% for permiso in permisos %}
+            <li>
+              <span class="objeto">{{ permiso.objeto }}</span>
+              <span class="verbos">
+                {% for verbo in permiso.verbos %}
+                  <span class="insignia{% if verbo.condiciones %} insignia-azul{% endif %}"{% if verbo.condiciones %} title="{{ verbo.condiciones|join:', ' }}"{% endif %}>{{ verbo.nombre }}{% if verbo.condiciones %} · {{ verbo.condiciones|join:", " }}{% endif %}</span>
+                {% endfor %}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="suave">Las pantallas de cada flujo llegan con la versión 0.3.0.</p>
+      {% endif %}
+    </section>
+
+    <section class="tarjeta">
+      <h2>Su sesión</h2>
+      <dl class="datos">
+        <dt>Rol activo</dt>
+        <dd>{{ rol_activo_nombre }}{% if con_habilitacion %} <span class="insignia insignia-azul">con habilitación</span>{% endif %}</dd>
+        {% if inicio_sesion %}
+          <dt>Inició</dt>
+          <dd>{{ inicio_sesion|date:"j \d\e F, H:i" }}</dd>
+          <dt>Se cierra</dt>
+          <dd>a los {{ inactividad_min }} minutos sin actividad, o a las {{ fin_sesion|time:"H:i" }}</dd>
+        {% endif %}
+        <dt>Segundo factor</dt>
+        <dd>{% if totp_activo %}<span class="insignia"><span class="punto"></span>Activo</span>{% else %}<span class="insignia insignia-aviso">Sin activar</span>{% endif %}</dd>
+        <dt>Recuperación</dt>
+        <dd>{{ codigos_sin_usar }} código{{ codigos_sin_usar|pluralize }} sin usar</dd>
+      </dl>
+      <div class="tarjeta-pie">
+        <a class="boton boton-secundario" href="{% url 'mfa_index' %}">Segundo factor</a>
+        <a class="boton boton-secundario" href="{% url 'account_change_password' %}">Cambiar contraseña</a>
+      </div>
+    </section>
+  </div>
+{% endblock content %}

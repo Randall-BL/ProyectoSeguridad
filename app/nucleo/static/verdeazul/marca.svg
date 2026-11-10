@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Verdeazul Carbono">
+  <rect width="32" height="32" rx="8" fill="#0f5c4d"/>
+  <path d="M8.5 20.5C8.5 13 14 8 23.5 8c0 9.5-5.5 14.5-12.5 14.5-1.6 0-2.5-.5-2.5-2Z" fill="#8fdcc3"/>
+  <path d="M10 21.5c3-4.2 6.3-7.2 10.5-9.3" fill="none" stroke="#0f5c4d" stroke-width="1.7" stroke-linecap="round"/>
+  <path d="M5.5 25.5c2.8 0 4-1.6 6.6-1.6s3.8 1.6 6.6 1.6 4-1.6 7.8-1.6" fill="none" stroke="#9dccf0" stroke-width="1.7" stroke-linecap="round"/>
+</svg>

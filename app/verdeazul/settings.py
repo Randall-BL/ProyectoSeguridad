@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.staticfiles",
     "allauth",
     "allauth.account",
     "allauth.mfa",
@@ -67,7 +68,7 @@ AUTH_USER_MODEL = "cuentas.Usuario"
 # El de allauth, más la ventana de la cuenta y el rol (tarea 3.9).
 AUTHENTICATION_BACKENDS = ["cuentas.autenticacion.Autenticacion"]
 LOGIN_URL = "account_login"
-LOGIN_REDIRECT_URL = "hola"
+LOGIN_REDIRECT_URL = "inicio"
 
 # --- Inicio de sesión y segundo factor (POL-AU-05, POL-AU-06, POL-AU-10) ----------------------
 # Se entra con el nombre de usuario; el correo no sirve para entrar ni para recuperar la cuenta.
@@ -140,6 +141,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -167,10 +169,28 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "nucleo.contexto.verdeazul",
             ]
         },
     }
 ]
+
+# --- Archivos estáticos -----------------------------------------------------------------------
+# Estilos e imágenes propios (y los de allauth), servidos por WhiteNoise desde la misma imagen:
+# nombres con huella, comprimidos y con caché larga. Nada se carga de un CDN. collectstatic corre
+# al construir la imagen; en local y en las pruebas, sin colectar, se leen de cada aplicación.
+STATIC_URL = "estatico/"
+STATIC_ROOT = BASE_DIR / "estatico"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        if DEBUG
+        else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
+WHITENOISE_USE_FINDERS = DEBUG
+WHITENOISE_AUTOREFRESH = DEBUG
 
 DATABASES = {"default": _base_desde_url(_entorno("DATABASE_URL"))}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
