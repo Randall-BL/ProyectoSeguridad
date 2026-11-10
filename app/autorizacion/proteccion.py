@@ -49,6 +49,9 @@ def protegida(accion, tipo, *, objeto=None, cambio=None):
                 return respuestas.sin_motor(request, accion, hechos_objeto, str(error))
             if accion == "leer":
                 historial.anotar_lectura(request, hechos_objeto, decision)
+            # Respuesta graduada (4.9): conceder y avisar, o restringir, dejan una alerta.
+            if decision.avisar or decision.resultado == "restringir":
+                historial.alertar(request, accion, hechos_objeto, decision, motivo)
 
             if decision.concedida:
                 request.decision = decision

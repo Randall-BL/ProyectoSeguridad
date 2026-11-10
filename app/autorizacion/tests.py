@@ -379,3 +379,49 @@ class LecturasEnElHistorial(TestCase):
         _, historial_, _, _ = hechos.del_sujeto(peticion)
         self.assertEqual(historial_["fincas_24h"], 3)
         self.assertEqual(historial_["fincas_60min"], 2)
+
+
+class RespuestaGraduada(TestCase):
+    """Tarea 4.9: conceder; conceder y avisar; pedir segundo factor y motivo; restringir."""
+
+    def setUp(self):
+        self.persona = _usuario("ver.prueba", Rol.VER)
+        titular = Titular.objects.create(codigo="T-930", tipo=Titular.Tipo.FISICA)
+        self.finca = str(Finca.objects.create(codigo="F-930", nombre="Prueba", titular=titular).pk)
+
+    def _ver(self, decision, motivo=""):
+        ruta = f"/fincas/{self.finca}" + (f"?motivo={motivo}" if motivo else "")
+        peticion = RequestFactory().get(ruta)
+        SessionMiddleware(lambda r: None).process_request(peticion)
+        peticion.user = self.persona
+        peticion.rol_activo = Rol.VER
+        with mock.patch.object(motor, "preguntar", return_value=decision):
+            return _ver_finca(peticion, pk=self.finca)
+
+    def _alertas(self):
+        from negocio.models import Alerta
+
+        return list(Alerta.objects.filter(sujeto=self.persona).values_list("control", "nivel"))
+
+    def test_conceder_sin_avisar(self):
+        self.assertEqual(self._ver(motor.Decision("conceder", "H")).status_code, 200)
+        self.assertEqual(self._alertas(), [])
+
+    def test_conceder_y_avisar(self):
+        self.assertEqual(self._ver(motor.Decision("conceder", "H1", True)).content, b"finca")
+        self.assertEqual(self._alertas(), [("H1", "aviso")])
+
+    def test_con_motivo_queda_como_verificacion(self):
+        self._ver(motor.Decision("conceder", "H3", True), motivo="Visita de control")
+        self.assertEqual(self._alertas(), [("H3", "verificacion")])
+
+    def test_restringir_deniega_y_avisa(self):
+        respuesta = self._ver(motor.Decision("restringir", "H1"))
+        self.assertEqual(respuesta.status_code, 403)
+        self.assertContains(respuesta, "siguiente día hábil", status_code=403)
+        self.assertEqual(self._alertas(), [("H1", "restriccion")])
+
+    def test_pedir_motivo_sin_codigo_reciente_manda_a_reautenticarse(self):
+        respuesta = self._ver(motor.Decision("pedir_segundo_factor_y_motivo", "H1"))
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn("/cuentas/2fa/reauthenticate/", respuesta["Location"])

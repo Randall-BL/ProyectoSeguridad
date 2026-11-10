@@ -503,8 +503,12 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     si se está fuera de la jornada del rol (`va_hechos_sujeto`). Los umbrales y la jornada salen de
     `negocio_parametrorol` (valores iniciales de 2.6). Falta la pantalla de GER para cambiarlos (5.x)
     y bajar los umbrales de un rol de prueba para la demostración.
-- [ ] 4.9 Respuesta graduada: conceder; conceder y avisar; pedir segundo factor y motivo; restringir las
+- [x] 4.9 Respuesta graduada: conceder; conceder y avisar; pedir segundo factor y motivo; restringir las
   fincas nuevas hasta el siguiente día hábil.
+  - El motor responde el nivel (4.2) y `@protegida` lo aplica: avisar y restringir crean una
+    `Alerta` con su control y nivel (con motivo, «verificación»); pedir motivo exige primero el
+    código reciente y después un motivo que viaja con la misma petición (`motivo.html`); restringir
+    responde 403 «hasta el siguiente día hábil». 5 pruebas en `RespuestaGraduada`.
 - [ ] 4.10 La interfaz pregunta al motor qué botones mostrar, solo por comodidad: lo que protege es la
   decisión en el servidor.
 - [ ] 4.11 `opa test` con cobertura, `opa check --strict` y Regal en CI.
