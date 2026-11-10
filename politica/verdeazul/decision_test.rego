@@ -58,7 +58,7 @@ sujeto_base := {
 	"tecnicos_a_cargo": [],
 }
 
-persona(id, rol, extra) := object.union(object.union(sujeto_base, {"id": id, "rol": rol}), extra)
+persona(id, rol, extra) := object.union_n([sujeto_base, {"id": id, "rol": rol}, extra])
 
 pedido(s, accion, o) := {
 	"sujeto": s,
@@ -99,8 +99,8 @@ nueva_en_f1 := {
 
 test_la_matriz_tiene_102_permisos_y_38_celdas_denegadas if {
 	celdas := data.matriz.celdas
-	count([p | some rol, obj; some p in celdas[rol][obj]]) == 102
-	count([1 | some rol, obj; count(celdas[rol][obj]) == 0]) == 38
+	count([p | some fila in celdas; some lista in fila; some p in lista]) == 102
+	count([1 | some fila in celdas; some lista in fila; count(lista) == 0]) == 38
 }
 
 verbos := {

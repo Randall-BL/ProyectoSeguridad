@@ -90,20 +90,6 @@ cumple contains "C7" if {
 	_responsable_si_es_tecnico(objeto.medicion)
 }
 
-_solicitable(m) if m.estado == "aprobada"
-
-_solicitable(m) if {
-	m.periodo_estado == "cerrado"
-	m.estado in {"devuelta", "excluida"}
-}
-
-_responsable_si_es_tecnico(_) if not es_tec
-
-_responsable_si_es_tecnico(m) if {
-	es_tec
-	m.responsable == sujeto.id
-}
-
 # C8 Autorización final: dictamen técnico favorable, y quien autoriza no la solicitó, no la revisó
 # ni escribió una versión de la medición.
 cumple contains "C8" if {
@@ -129,13 +115,6 @@ cumple contains "C10" if {
 	not sujeto.id in objeto.medicion.autores
 	objeto.solicitada_por != sujeto.id
 	_no_aprobo_si_es_material
-}
-
-_no_aprobo_si_es_material if not objeto.material
-
-_no_aprobo_si_es_material if {
-	objeto.material
-	objeto.medicion.aprobada_por != sujeto.id
 }
 
 # C11 Catálogo con segunda firma: ADM propone (queda en estado propuesto) y GER aprueba lo que
@@ -180,10 +159,6 @@ cumple contains "C14" if {
 	objeto.propuesta.registrada_por != sujeto.id
 }
 
-_transicion_valida("planificado", "abrir")
-
-_transicion_valida("abierto", "cerrar")
-
 # C15 Alertas ajenas: nadie atiende una alerta sobre sí mismo. SUP, las de sus técnicos; GER, las
 # de los demás y las que SUP no resolvió en dos días hábiles.
 cumple contains "C15" if {
@@ -197,10 +172,6 @@ cumple contains "C15" if {
 	objeto.sujeto_alerta != sujeto.id
 	_le_toca_a_gerencia
 }
-
-_le_toca_a_gerencia if objeto.supervisor_del_sujeto == null
-
-_le_toca_a_gerencia if objeto.escalada
 
 # C16 Supresión condicionada: no hay obligación vigente de conservar el dato.
 cumple contains "C16" if objeto.obligacion_conservar == false
@@ -218,6 +189,40 @@ cumple contains "C19" if {
 	_dentro_del_maximo
 }
 
+# C20 Comprobación pública: quien consulta presenta el código impreso en el certificado.
+cumple contains "C20" if trim_space(object.get(objeto, "codigo", "")) != ""
+
+# --- Funciones auxiliares de las reglas ------------------------------------------------------
+
+_solicitable(m) if m.estado == "aprobada"
+
+_solicitable(m) if {
+	m.periodo_estado == "cerrado"
+	m.estado in {"devuelta", "excluida"}
+}
+
+_responsable_si_es_tecnico(_) if not es_tec
+
+_responsable_si_es_tecnico(m) if {
+	es_tec
+	m.responsable == sujeto.id
+}
+
+_no_aprobo_si_es_material if not objeto.material
+
+_no_aprobo_si_es_material if {
+	objeto.material
+	objeto.medicion.aprobada_por != sujeto.id
+}
+
+_transicion_valida("planificado", "abrir")
+
+_transicion_valida("abierto", "cerrar")
+
+_le_toca_a_gerencia if objeto.supervisor_del_sujeto == null
+
+_le_toca_a_gerencia if objeto.escalada
+
 _temporal_bien_formada if input.cambio.tipo == "ordinaria"
 
 _temporal_bien_formada if {
@@ -233,6 +238,3 @@ _dentro_del_maximo if {
 	input.accion == "crear"
 	objeto.activas_del_tecnico < input.parametros.max_asignaciones_activas
 }
-
-# C20 Comprobación pública: quien consulta presenta el código impreso en el certificado.
-cumple contains "C20" if trim_space(object.get(objeto, "codigo", "")) != ""

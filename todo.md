@@ -518,7 +518,12 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   - El inicio pide al motor las celdas del rol activo (`/v1/data/matriz/celdas/<rol>`) y las
     muestra con sus reglas; sin motor, también responde 503 (K-3). Los botones de cada pantalla de
     la fase 5 harán lo mismo. Las pruebas de `cuentas` no dependen del motor (lo simulan).
-- [ ] 4.11 `opa test` con cobertura, `opa check --strict` y Regal en CI.
+- [x] 4.11 `opa test` con cobertura, `opa check --strict` y Regal en CI.
+  - Trabajo `politica` en `seguridad.yml`: `opa fmt --fail`, `check --strict`, las 70 pruebas y
+    cobertura mínima de 95 % (hoy 99,3 %), y Regal 0.43.0 sin hallazgos. OPA y Regal por huella.
+    Regal pidió ordenar `reglas.rego` (las reglas juntas, las auxiliares al final), un punto de
+    entrada declarado y valores por omisión en vez de `else`; las pruebas tienen excepciones de
+    estilo en `politica/.regal/config.yaml`.
 
 ---
 

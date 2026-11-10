@@ -1,0 +1,33 @@
+# Regal (linter de Rego) para la política. En CI: regal lint --config-file politica/.regal/config.yaml politica
+rules:
+  imports:
+    unresolved-reference:
+      level: error
+      # La matriz llega como dato desde matriz.json, no desde un paquete Rego.
+      except-paths:
+        - data.matriz
+        - data.matriz.*
+        - data.matriz.**
+  style:
+    line-length:
+      level: error
+      max-line-length: 110
+      ignore:
+        files:
+          - "*_test.rego"
+    file-length:
+      level: error
+      ignore:
+        files:
+          - "*_test.rego"
+    external-reference:
+      level: error
+      ignore:
+        files:
+          - "*_test.rego"
+  performance:
+    with-outside-test-context:
+      level: error
+      ignore:
+        files:
+          - "*_test.rego"

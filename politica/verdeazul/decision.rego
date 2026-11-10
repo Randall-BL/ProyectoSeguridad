@@ -24,7 +24,10 @@ permiso := p if {
 	p.verbo == input.accion
 }
 
-condiciones := {c | some c in permiso.condiciones; c != matriz.lectura_vigilada}
+condiciones contains c if {
+	some c in permiso.condiciones
+	c != matriz.lectura_vigilada
+}
 
 vigilada if matriz.lectura_vigilada in permiso.condiciones
 
@@ -35,6 +38,10 @@ fallida := min({c | some c in condiciones; not c in cumple})
 
 default decision := {"resultado": "denegar", "regla": "matriz", "avisar": false}
 
+# METADATA
+# title: Decisión del motor
+# description: Lo que responde el motor a la aplicación, con la regla que lo decidió.
+# entrypoint: true
 decision := _respuesta("denegar", "matriz") if {
 	not permiso
 } else := _respuesta("denegar", "C17") if {
@@ -58,9 +65,9 @@ decision := _respuesta("denegar", "matriz") if {
 
 _respuesta(resultado, regla) := {"resultado": resultado, "regla": regla, "avisar": false}
 
-regla_concedida := concat(",", sort(condiciones)) if {
-	count(condiciones) > 0
-} else := "matriz"
+default regla_concedida := "matriz"
+
+regla_concedida := concat(",", sort(condiciones)) if count(condiciones) > 0
 
 # --- C17: abstención por vínculo (tarea 4.3) ---------------------------------------------------
 
@@ -110,7 +117,7 @@ justificada if {
 
 # --- Utilidades --------------------------------------------------------------------------------
 
-coleccion if object.get(objeto, "coleccion", false)
+coleccion if objeto.coleccion == true
 
 es_tec if sujeto.rol == "TEC"
 
