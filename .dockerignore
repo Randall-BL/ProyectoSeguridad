@@ -2,5 +2,8 @@
 # Así nunca viajan .env.local, .neon, .git ni los documentos.
 *
 !app/
+!politica/matriz.json
+!politica/verdeazul/
+politica/verdeazul/*_test.rego
 **/__pycache__/
 **/*.pyc

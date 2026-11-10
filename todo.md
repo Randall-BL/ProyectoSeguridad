@@ -458,8 +458,12 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     Cobertura 99,3 %; `opa check --strict` y `opa fmt` limpios. OPA 1.22.3 (`-static`, por huella).
 - [x] 4.3 C17 (abstención por vínculo) sobre todo verbo distinto de leer de TEC, VER, SUP, GER y ADM en
   fincas, asignaciones, mediciones y enmiendas. (En `decision.rego`; caso T-29.)
-- [ ] 4.4 ⚠ Dockerfile de `politica`: imagen oficial de OPA fijada por huella, con la política
+- [x] 4.4 ⚠ Dockerfile de `politica`: imagen oficial de OPA fijada por huella, con la política
   incluida, sin root. Publicar como `opa:v…`.
+  - `politica/Dockerfile`: `openpolicyagent/opa:1.22.3-static` por huella (sin shell), solo la matriz
+    y las reglas (las pruebas no entran), usuario 1000, sin telemetría. Se publica con el mismo
+    `infra/publicar.sh politica vX.Y.Z`, así que la imagen se llama `politica:v…`. Probada en local:
+    `/health` responde y T-06 sale «denegar, C3».
 - [ ] 4.5 Sidecar en `verdeazul-app`: OPA escucha en `localhost:8181`, no se expone fuera de la
   instancia (frontera F3). Arranque ordenado con sonda de inicio: si OPA no está listo, la instancia
   no recibe tráfico (K-3).
