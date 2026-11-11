@@ -451,6 +451,20 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 .opcion-rol-accion::after { content: "→" / ""; display: inline-block; margin-left: 8px; transition: transform .15s ease; }
 .opcion-rol:hover .opcion-rol-accion::after { transform: translateX(3px); }
 
+/* --- Denegado, motivo, sin motor y no encontrado ---------------------------------------- */
+
+/* El código va en grande y tenue, solo como decoración: el mismo dato está en la insignia. */
+.error-pagina { max-width: 760px; padding: 8px 0 24px; }
+.error-pagina .error-codigo {
+  margin: 0 0 8px;
+  font: 400 clamp(6rem, 3.5rem + 10vw, 11rem)/.9 var(--serif); letter-spacing: -.04em;
+  color: var(--ceniza);
+}
+.error-pagina > .insignia { margin-bottom: 20px; }
+.error-pagina h1 { margin-bottom: 16px; }
+.error-pagina > p { max-width: 60ch; font-size: 17px; color: var(--grafito); }
+.error-pagina > .tarjeta { margin-top: 32px; }
+
 /* --- Portada (sin sesión) --------------------------------------------------------------- */
 
 .portada { flex: 1; width: 100%; }

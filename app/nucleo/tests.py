@@ -95,3 +95,14 @@ class InicioPorRol(TestCase):
         peticion.rol_activo = Rol.VER
         ContextoDeBase(_falla)(peticion)
         self.assertFalse(Periodo.objects.filter(nombre="X").exists())
+
+
+class PaginaNoEncontrada(TestCase):
+    """5.15: la página 404 propia no dice más que la de Django. No repite la dirección pedida ni
+    distingue lo que no existe de lo que el motor niega (T-08 responde lo mismo en los dos casos)."""
+
+    def test_no_repite_la_direccion_ni_dice_la_causa(self):
+        respuesta = self.client.get("/fincas/no-existe-7f3a/")
+        self.assertContains(respuesta, "No encontramos esta página", status_code=404)
+        self.assertNotContains(respuesta, "no-existe-7f3a", status_code=404)
+        self.assertNotContains(respuesta, "permiso", status_code=404)

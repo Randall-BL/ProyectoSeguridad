@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% block head_title %}Operación denegada{% endblock head_title %}
 {% block content %}
-  <div class="eleccion">
-    <span class="sobretitulo">Error 403 · regla {{ regla }}</span>
+  <div class="error-pagina">
+    <p class="error-codigo" aria-hidden="true">403</p>
+    <span class="insignia">Error 403 · regla {{ regla }}</span>
     {% if restringida %}
       <h1>Acceso restringido hasta el siguiente día hábil</h1>
-      <p class="suave">Consultó hoy más fincas distintas que el umbral de su rol. Las fincas que ya había consultado siguen disponibles; las nuevas, desde el siguiente día hábil. Su supervisor recibió un aviso.</p>
+      <p>Consultó hoy más fincas distintas que el umbral de su rol. Las fincas que ya había consultado siguen disponibles; las nuevas, desde el siguiente día hábil. Su supervisor recibió un aviso.</p>
     {% else %}
       <h1>Su rol no permite esta operación</h1>
-      <p class="suave">La matriz de acceso no la concede en estas condiciones (regla {{ regla }}). El intento quedó registrado en la bitácora.</p>
+      <p>La matriz de acceso no la concede en estas condiciones (regla {{ regla }}). El intento quedó registrado en la bitácora.</p>
     {% endif %}
     <div class="acciones"><a class="boton boton-secundario" href="{% url 'inicio' %}">Volver al inicio</a></div>
   </div>

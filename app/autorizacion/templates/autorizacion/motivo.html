@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block head_title %}Motivo de la consulta{% endblock head_title %}
 {% block content %}
-  <div class="eleccion">
-    <span class="sobretitulo">Control de historial · {{ regla }}</span>
+  <div class="error-pagina">
+    <p class="error-codigo" aria-hidden="true">{{ regla }}</p>
+    <span class="insignia insignia-aviso"><span aria-hidden="true">!</span> Control de historial · {{ regla }}</span>
     <h1>Escriba el motivo para continuar</h1>
-    <p class="suave">
+    <p>
       {% if regla == "H2" %}Está tomando una decisión fuera de la jornada de su rol.
       {% elif regla == "H3" %}Fuera de la jornada, consultó muchas fincas que no había visto en los últimos 90 días.
       {% else %}Hoy consultó más fincas distintas que el umbral de verificación de su rol.{% endif %}
@@ -15,7 +16,8 @@
       {% for nombre, valor in campos %}<input type="hidden" name="{{ nombre }}" value="{{ valor }}">{% endfor %}
       <div class="campo">
         <label for="motivo">Motivo</label>
-        <textarea id="motivo" name="motivo" rows="3" required maxlength="500"></textarea>
+        <textarea id="motivo" name="motivo" rows="3" required maxlength="500" aria-describedby="motivo-ayuda"></textarea>
+        <small class="ayuda" id="motivo-ayuda">Hasta 500 caracteres. Lo leen su supervisor y quien audite la bitácora.</small>
       </div>
       <div class="acciones">
         <button class="boton boton-primario" type="submit">Continuar</button>
