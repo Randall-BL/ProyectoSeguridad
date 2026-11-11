@@ -567,6 +567,15 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   sesión; inicio con el rol activo, la sesión (inicio, cierre a los 30 min o a las 12 h) y el
   segundo factor; elección de rol en tarjetas. Pendiente para 9.x: el QR del TOTP es una imagen
   `data:`, así que la CSP necesita `img-src 'self' data:`.
+  Rediseño el 10 nov sobre el estilo «Monad» (styles.refero.design), en 7 commits `5.15:`:
+  - lienzo pergamino, titulares en serif y la interfaz en mono, con fuentes del sistema;
+  - el azul solo para la acción principal; modo claro y oscuro según el sistema, con contraste AA medido;
+  - página 404 propia que no dice más que la de Django.
+  Componentes para las pantallas de esta fase:
+  - `nucleo/_estado.html`: insignia de cada estado, con ícono y texto;
+  - `nucleo/_resumen_errores.html` y `nucleo/_vacio.html`;
+  - tablas, migas y paginación;
+  - todos juntos en `nucleo/muestrario.html`, sin ruta y probado.
 
 ---
 
