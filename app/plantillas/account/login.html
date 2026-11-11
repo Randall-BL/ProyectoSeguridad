@@ -6,9 +6,9 @@ Como la de allauth, sin la invitación a registrarse: las cuentas las propone AD
 {% load allauth %}
 {% block head_title %}Iniciar sesión{% endblock head_title %}
 {% block content %}
-  <span class="sobretitulo">Acceso del personal y de los dueños</span>
+  <span class="insignia">Paso 1 de 2</span>
   <h1>Iniciar sesión</h1>
-  <p class="intro">Entre con su nombre de usuario y su contraseña. Después se le pedirá el código de su aplicación autenticadora.</p>
+  <p class="intro">Acceso del personal y de los dueños de las fincas. Entre con su nombre de usuario y su contraseña; después se le pedirá el código de su aplicación autenticadora.</p>
   {% url 'account_login' as login_url %}
   {% element form form=form method="post" action=login_url tags="entrance,login" %}
     {% slot body %}

@@ -3,7 +3,6 @@
 {% load allauth static %}
 {% block head_title %}Códigos de recuperación{% endblock head_title %}
 {% block content %}
-  <span class="sobretitulo">Segundo factor</span>
   <h1>Códigos de recuperación</h1>
   <p class="suave">Le quedan {{ unused_codes|length }} de {{ total_count }}. Cada uno sirve una sola vez, para entrar si no tiene el teléfono a mano. Guárdelos fuera de este equipo y no los comparta.</p>
   {% if can_view_codes %}

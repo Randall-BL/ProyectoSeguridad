@@ -5,12 +5,11 @@ es un trámite de ADM con aprobación de GER (POL-AU-10).
 {% endcomment %}
 {% block head_title %}Segundo factor{% endblock head_title %}
 {% block content %}
-  <span class="sobretitulo">Mi cuenta</span>
   <h1>Segundo factor</h1>
   <p class="suave">Se pide al entrar y otra vez antes de cada decisión: aprobar, devolver, autorizar, abrir o cerrar un período, resolver una alerta o exportar evidencia.</p>
   <section>
     <h2>Aplicación autenticadora
-      {% if authenticators.totp %}<span class="insignia"><span class="punto"></span>Activa</span>{% else %}<span class="insignia insignia-aviso">Sin activar</span>{% endif %}
+      {% if authenticators.totp %}<span class="insignia insignia-llena"><span aria-hidden="true">✓</span> Activa</span>{% else %}<span class="insignia insignia-aviso"><span aria-hidden="true">!</span> Sin activar</span>{% endif %}
     </h2>
     {% if authenticators.totp %}
       <p>No se puede desactivar desde aquí. Si cambia de teléfono o lo pierde, el administrador lo restablece con aprobación de Gerencia.</p>

@@ -223,7 +223,7 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 .insignia {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 12px;
-  font-size: 12px; line-height: 1; letter-spacing: 0; text-transform: uppercase; white-space: nowrap;
+  font: 400 12px/1 var(--mono); letter-spacing: 0; text-transform: uppercase; white-space: nowrap;
   color: var(--texto); background: var(--pergamino);
   border: 1px solid var(--ceniza); border-radius: var(--pildora);
 }
@@ -367,72 +367,68 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 
 /* --- Entrada (iniciar sesión, segundo factor, reautenticación) -------------------------- */
 
-.entrada .contenido { max-width: none; padding: 0; display: flex; }
-.entrada-rejilla { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); min-height: 100vh; }
-.entrada-marca {
-  position: relative;
-  overflow: hidden;
-  color: #fff;
-  padding: 3rem clamp(2rem, 5vw, 4.5rem);
-  display: flex; flex-direction: column; justify-content: space-between; gap: 2rem;
-  background:
-    radial-gradient(1200px 500px at -10% 110%, rgba(59, 143, 208, .45), transparent 60%),
-    radial-gradient(800px 420px at 110% -10%, rgba(143, 220, 195, .25), transparent 60%),
-    linear-gradient(160deg, var(--verde-900), var(--verde-950));
+.entrada .persona { display: none; }
+.entrada-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: stretch; }
+.entrada-formulario { align-self: center; justify-self: center; width: 100%; max-width: 440px; padding: 24px 0 40px; }
+.entrada-formulario > .insignia { margin-bottom: 20px; }
+.entrada-formulario h1 { margin-bottom: 14px; font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem); }
+.entrada-formulario .intro, .entrada-formulario > p { color: var(--grafito); }
+.entrada-formulario .acciones > .boton-primario:only-child { width: 100%; }
+.entrada-formulario .volver { margin: 28px 0 0; padding-top: 20px; font-size: 13px; color: var(--humo); border-top: 1px solid var(--ceniza); }
+
+/* La única tarjeta de color de la pantalla: lo que protege el sistema. */
+.entrada-panel {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 48px;
+  min-height: 560px; padding: 48px;
+  background: var(--pervinca); border-radius: var(--radio-tarjeta);
 }
-.entrada-marca::after {
-  content: "";
-  position: absolute; inset: auto -20% -35% -20%; height: 60%;
-  background: repeating-radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, .05) 0 2px, transparent 2px 26px);
-  pointer-events: none;
+.entrada-panel::after {
+  content: ""; position: absolute; z-index: -1; right: -70px; top: -80px; width: 260px; height: 260px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 148, 115, .8), rgba(160, 181, 235, .6) 55%, rgba(167, 252, 205, .7));
+  filter: blur(8px); opacity: .8;
 }
-.entrada-marca .marca img { width: 40px; height: 40px; }
-.entrada-marca .marca { font-size: 1.15rem; }
-.entrada-lema { position: relative; z-index: 1; }
-.entrada-lema h2 { font-size: clamp(1.6rem, 2.6vw, 2.3rem); font-weight: 650; letter-spacing: -.02em; margin-bottom: .75rem; }
-.entrada-lema p { color: rgba(255, 255, 255, .78); max-width: 34rem; font-size: 1.02rem; }
-.garantias { list-style: none; padding: 0; margin: 0; display: grid; gap: .9rem; position: relative; z-index: 1; }
-.garantias li { display: flex; gap: .8rem; align-items: flex-start; color: rgba(255, 255, 255, .88); }
-.garantias svg { flex: none; width: 22px; height: 22px; margin-top: .1rem; color: var(--verde-200); }
-.garantias strong { display: block; color: #fff; font-weight: 600; }
-.garantias span { font-size: .9rem; opacity: .8; }
-.entrada-pie { font-size: .8rem; color: rgba(255, 255, 255, .55); position: relative; z-index: 1; }
-.entrada-formulario { display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; }
-.entrada-tarjeta { width: 100%; max-width: 410px; }
-.entrada-tarjeta h1 { font-size: 1.55rem; }
-.entrada-tarjeta > p, .entrada-tarjeta .intro { color: var(--texto-suave); }
-.entrada-tarjeta button[type="submit"] { width: 100%; }
-.entrada-tarjeta .volver { margin-top: 1.5rem; font-size: .9rem; text-align: center; }
-@media (max-width: 900px) {
-  .entrada-rejilla { grid-template-columns: 1fr; min-height: 0; }
-  .entrada-marca { padding: 1.25rem 1.5rem; gap: 1rem; }
-  .entrada-lema, .garantias, .entrada-pie { display: none; }
-}
+.entrada-panel h2 { max-width: 13ch; margin: 0; font-size: clamp(2rem, 1.4rem + 2vw, 2.75rem); }
+.garantias { display: grid; margin: 0; padding: 0; list-style: none; }
+.garantias li { display: flex; gap: 14px; align-items: flex-start; padding: 16px 0; border-top: 1px solid rgba(36, 36, 36, .18); }
+.garantias svg { flex: none; width: 20px; height: 20px; margin-top: 1px; }
+.garantias strong { display: block; font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: uppercase; }
+.garantias span { font-size: 14px; color: var(--grafito); }
 
 /* --- Gestión de la cuenta --------------------------------------------------------------- */
 
-.gestion { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 1.5rem; align-items: start; }
-.gestion-menu { display: grid; gap: .2rem; position: sticky; top: 1rem; }
-.gestion-menu .sobretitulo { padding: 0 .75rem; }
-.gestion-menu a { padding: .5rem .75rem; border-radius: var(--radio-chico); color: var(--texto-suave); text-decoration: none; font-weight: 500; }
-.gestion-menu a:hover { background: var(--superficie); color: var(--texto); }
-.gestion-menu a[aria-current="page"] { background: var(--verde-100); color: var(--insignia-texto); font-weight: 600; }
-.gestion-contenido { max-width: 720px; }
+.gestion { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; align-items: start; }
 .gestion-sola { grid-template-columns: minmax(0, 640px); justify-content: center; }
-.gestion-contenido > section { border: 1px solid var(--borde); border-radius: var(--radio-chico); padding: 1rem 1.15rem; margin-bottom: 1rem; background: var(--superficie-2); }
-.gestion-contenido > section h2 { font-size: 1rem; }
-@media (max-width: 760px) {
-  .gestion { grid-template-columns: 1fr; }
-  .gestion-menu { position: static; grid-auto-flow: column; justify-content: start; overflow-x: auto; }
-  .gestion-menu .sobretitulo { display: none; }
-  .gestion-menu a { white-space: nowrap; }
+.gestion-menu { position: sticky; top: 24px; display: grid; gap: 4px; }
+.gestion-menu .meta { padding: 0 16px 8px; }
+.gestion-menu a {
+  padding: 10px 16px; font-size: 14px; text-transform: uppercase; text-decoration: none; color: var(--grafito);
+  border: 1px solid transparent; border-radius: var(--pildora);
 }
+.gestion-menu a:hover { color: var(--texto); background: var(--pergamino-hundido); }
+.gestion-menu a[aria-current="page"] { color: var(--texto); border-color: var(--texto); }
+.gestion-contenido { max-width: 720px; }
+.gestion-contenido > .insignia { margin-bottom: 16px; }
+.gestion-contenido > h1 { margin-bottom: 16px; }
+.gestion-contenido > p { max-width: 62ch; }
+.gestion-contenido > section { padding: 32px 0; border-top: 1px solid var(--ceniza); }
+.gestion-contenido > section:first-of-type { margin-top: 32px; }
+.gestion-contenido > section:last-child { border-bottom: 1px solid var(--ceniza); }
+.gestion-contenido > section h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 24px; }
+.gestion-contenido > section p { color: var(--grafito); }
+.gestion-contenido > form { margin-top: 32px; }
 
-.qr { display: flex; justify-content: center; margin: .5rem 0 1.25rem; }
-.qr img { width: 200px; height: 200px; padding: 10px; background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-chico); }
-.pasos { counter-reset: paso; list-style: none; padding: 0; margin: 0 0 1.25rem; display: grid; gap: .6rem; }
-.pasos li { counter-increment: paso; display: flex; gap: .7rem; align-items: baseline; color: var(--texto-suave); }
-.pasos li::before { content: counter(paso); flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: grid; place-items: center; font-size: .78rem; font-weight: 700; background: var(--verde-100); color: var(--insignia-texto); }
+/* Activación del segundo factor y códigos de recuperación */
+.pasos { display: grid; gap: 14px; margin: 28px 0; padding: 0; list-style: none; counter-reset: paso; }
+.pasos li { display: flex; gap: 14px; align-items: baseline; color: var(--grafito); counter-increment: paso; }
+.pasos li::before {
+  content: counter(paso); flex: none; width: 28px; height: 28px;
+  display: grid; place-items: center; font-size: 13px; color: var(--texto);
+  border: 1px solid var(--texto); border-radius: 50%;
+}
+.qr { display: flex; margin: 8px 0 28px; }
+.qr img { width: 208px; height: 208px; padding: 12px; background: #fff; border: 1px solid var(--ceniza); border-radius: var(--radio-campo); }
+#recovery_codes { font-size: 15px; line-height: 1.8; letter-spacing: .04em; }
 
 /* --- Elegir el rol de la sesión (habilitación temporal) --------------------------------- */
 
@@ -532,6 +528,8 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 .preguntas details p { max-width: 68ch; margin: 0; padding: 0 0 32px; color: var(--grafito); }
 
 @media (prefers-color-scheme: dark) {
+  .garantias li { border-top-color: rgba(240, 236, 233, .16); }
+  .entrada-panel::after { opacity: .55; }
   .heroe::before { opacity: .4; }
   .rasgo-destacado::after { opacity: .6; }
 }
@@ -553,7 +551,6 @@ tbody tr:hover { background: var(--superficie-2); }
 
 /* --- Pie -------------------------------------------------------------------------------- */
 
-.entrada .pie { display: none; }
 
 @media (max-width: 860px) {
   :root { --margen: 20px; }
@@ -585,6 +582,13 @@ tbody tr:hover { background: var(--superficie-2); }
   .tarjeta, .vacio { padding: 28px 24px; border-radius: 28px; }
   .datos > div { grid-template-columns: 1fr; gap: 2px; }
   .opcion-rol { min-height: 0; padding: 28px; border-radius: 28px; }
+  .entrada-rejilla { grid-template-columns: 1fr; gap: 32px; }
+  .entrada-formulario { padding: 0; }
+  .entrada-panel { min-height: 0; gap: 24px; padding: 28px 24px; border-radius: 28px; }
+  .gestion { grid-template-columns: 1fr; gap: 28px; }
+  .gestion-menu { position: static; grid-auto-flow: column; justify-content: start; overflow-x: auto; }
+  .gestion-menu .meta { display: none; }
+  .gestion-menu a { white-space: nowrap; }
   .pie .ancho { grid-template-columns: 1fr; }
   .pie dl { grid-column: auto; grid-template-columns: 1fr 1fr; }
 }

@@ -9,13 +9,13 @@ segundo factor ni elegido rol, solo ve el formulario, sin menú.
     <div class="gestion{% if not rol_activo %} gestion-sola{% endif %}">
       {% if rol_activo %}
         <nav class="gestion-menu" aria-label="Mi cuenta">
-          <span class="sobretitulo">Mi cuenta</span>
+          <span class="meta">Mi cuenta</span>
           <a href="{% url 'mfa_index' %}"{% if ruta|slice:":4" == "mfa_" %} aria-current="page"{% endif %}>Segundo factor</a>
           <a href="{% url 'account_change_password' %}"{% if ruta == "account_change_password" %} aria-current="page"{% endif %}>Contraseña</a>
           <a href="{% url 'inicio' %}">Volver al inicio</a>
         </nav>
       {% endif %}
-      <div class="gestion-contenido tarjeta">
+      <div class="gestion-contenido">
         {% include "nucleo/_mensajes.html" %}
         {% block content %}{% endblock content %}
       </div>
