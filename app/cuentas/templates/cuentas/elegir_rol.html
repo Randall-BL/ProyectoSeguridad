@@ -2,7 +2,7 @@
 {% block head_title %}Rol de esta sesión{% endblock head_title %}
 {% block content %}
   <div class="eleccion">
-    <span class="sobretitulo">Habilitación temporal vigente</span>
+    <span class="insignia">Habilitación temporal vigente</span>
     <h1>¿Con qué rol trabaja en esta sesión?</h1>
     <p class="suave">
       Tiene una habilitación temporal de técnico. En una misma sesión se trabaja con un solo rol:
@@ -15,7 +15,8 @@
         <button type="submit" name="rol" value="{{ valor }}" class="opcion-rol" aria-label="Trabajar como {{ nombre }}">
           <span class="insignia">{{ valor }}</span>
           <strong>{{ nombre }}</strong>
-          <span>{{ descripcion }}</span>
+          <span class="opcion-rol-texto">{{ descripcion }}</span>
+          <span class="opcion-rol-accion" aria-hidden="true">Trabajar con este rol</span>
         </button>
       {% endfor %}
     </form>

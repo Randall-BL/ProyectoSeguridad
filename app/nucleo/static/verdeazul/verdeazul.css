@@ -324,58 +324,46 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 .pie dt { margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0; color: var(--humo); }
 .pie dd { margin: 0; }
 
-/* --- Contenido -------------------------------------------------------------------------- */
+/* --- Páginas con sesión ------------------------------------------------------------------ */
 
-.encabezado-pagina { margin-bottom: 1.5rem; display: flex; gap: 1rem; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
-.encabezado-pagina p { color: var(--texto-suave); margin: 0; }
-.sobretitulo {
-  display: block;
-  font-size: .75rem;
-  font-weight: 650;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--verde-600);
-  margin-bottom: .35rem;
+.encabezado-pagina { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px 32px; padding: 8px 0 40px; }
+.encabezado-pagina h1 { margin-bottom: 14px; }
+.encabezado-pagina p { max-width: 52ch; margin: 0; font-size: 18px; line-height: 1.4; color: var(--grafito); }
+.sobretitulo { display: block; margin-bottom: 12px; font-size: 12px; letter-spacing: 0; text-transform: uppercase; color: var(--humo); }
+.estado {
+  display: inline-flex; align-items: center; padding: 8px 14px;
+  font-size: 13px; letter-spacing: 0; text-transform: uppercase; white-space: nowrap; color: var(--grafito);
+  border: 1px solid var(--ceniza); border-radius: var(--pildora);
 }
 
-.tarjeta {
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  box-shadow: var(--sombra);
-  padding: 1.4rem 1.5rem;
-}
+.rejilla-2 { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.bloque h2 { margin-bottom: 10px; }
+.bloque-nota { max-width: 62ch; margin-bottom: 24px; font-size: 14px; color: var(--humo); }
+
+/* Tarjeta: 40 px de radio y borde ceniza, sin sombra ni relleno de color. */
+.tarjeta { padding: 40px; border: 1px solid var(--ceniza); border-radius: var(--radio-tarjeta); }
 .tarjeta > :last-child { margin-bottom: 0; }
-.tarjeta + .tarjeta { margin-top: 1rem; }
-.tarjeta h2 { display: flex; align-items: center; gap: .5rem; }
-.tarjeta-pie {
-  margin: 1.1rem -1.5rem -1.4rem;
-  padding: .8rem 1.5rem;
-  border-top: 1px solid var(--borde);
-  background: var(--superficie-2);
-  border-radius: 0 0 var(--radio) var(--radio);
-  display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
-}
+.tarjeta h2 { margin-bottom: 24px; font-size: 28px; }
+.tarjeta .acciones { margin-top: 28px; }
 
-.rejilla { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-.rejilla-2 { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: start; }
-@media (max-width: 860px) { .rejilla-2 { grid-template-columns: 1fr; } }
+/* Permisos del rol: filas con borde inferior; el objeto en serif y las acciones en píldoras. */
+.permisos { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ceniza); }
+.permisos li { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--ceniza); }
+.permisos .objeto { font: 400 22px/1.2 var(--serif); letter-spacing: -.02em; }
+.permisos .verbos { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 
-.datos { display: grid; grid-template-columns: max-content 1fr; gap: .55rem 1.25rem; margin: 0; }
-.datos dt { color: var(--texto-suave); font-size: .88rem; }
-.datos dd { margin: 0; font-weight: 500; }
+/* Datos clave-valor */
+.datos { margin: 0; }
+.datos > div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 16px; padding: 14px 0; border-top: 1px solid var(--ceniza); font-size: 15px; }
+.datos dt { font-size: 12px; line-height: 1.9; letter-spacing: 0; text-transform: uppercase; color: var(--humo); }
+.datos dd { margin: 0; }
 
-/* Lista de permisos del rol */
-.permisos { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
-.permisos li {
-  display: flex; gap: .75rem; align-items: center; justify-content: space-between;
-  padding: .55rem .75rem;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio-chico);
-  background: var(--superficie-2);
-}
-.permisos .objeto { font-weight: 600; }
-.permisos .verbos { display: flex; gap: .3rem; flex-wrap: wrap; justify-content: flex-end; }
+/* Estado vacío: qué falta y, si existe, qué se puede hacer. */
+.vacio { padding: 40px; text-align: center; border: 1px dashed var(--borde-control); border-radius: var(--radio-tarjeta); }
+.vacio h3 { margin-bottom: 10px; }
+.vacio p { max-width: 48ch; margin: 0 auto; color: var(--grafito); }
+.vacio .acciones { justify-content: center; margin-top: 24px; }
+
 
 /* --- Entrada (iniciar sesión, segundo factor, reautenticación) -------------------------- */
 
@@ -448,25 +436,24 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 
 /* --- Elegir el rol de la sesión (habilitación temporal) --------------------------------- */
 
-.eleccion { max-width: 760px; margin: 1rem auto; }
-.opciones-rol { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.eleccion { max-width: 880px; margin: 0 auto; padding-top: 16px; }
+.eleccion > .insignia { margin-bottom: 20px; }
+.eleccion h1 { margin-bottom: 16px; }
+.eleccion > p { max-width: 64ch; font-size: 17px; }
+.opciones-rol { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
 .opcion-rol {
-  display: grid; gap: .45rem; align-content: start;
-  text-align: left;
-  font: inherit; color: var(--texto);
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 1.25rem 1.35rem;
-  cursor: pointer;
-  box-shadow: var(--sombra);
-  transition: border-color .15s, box-shadow .15s, transform .1s;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  min-height: 300px; padding: 40px; text-align: left;
+  font: inherit; letter-spacing: inherit; color: var(--texto); background: transparent;
+  border: 1px solid var(--ceniza); border-radius: var(--radio-tarjeta); cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
 }
-.opcion-rol:hover { border-color: var(--verde-500); box-shadow: 0 0 0 3px rgba(26, 138, 114, .15), var(--sombra); }
-.opcion-rol:active { transform: translateY(1px); }
-.opcion-rol .insignia { justify-self: start; }
-.opcion-rol strong { font-size: 1.08rem; }
-.opcion-rol > span:last-child { color: var(--texto-suave); font-size: .9rem; }
+.opcion-rol:hover { border-color: var(--texto); background: var(--pergamino-hundido); }
+.opcion-rol strong { margin-top: auto; font: 400 32px/1.1 var(--serif); letter-spacing: -.02em; }
+.opcion-rol-texto { color: var(--grafito); }
+.opcion-rol-accion { margin-top: 8px; font-size: 13px; letter-spacing: 0; text-transform: uppercase; }
+.opcion-rol-accion::after { content: "→" / ""; display: inline-block; margin-left: 8px; transition: transform .15s ease; }
+.opcion-rol:hover .opcion-rol-accion::after { transform: translateX(3px); }
 
 /* --- Portada (sin sesión) --------------------------------------------------------------- */
 
@@ -554,8 +541,6 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 .heroe p { animation-delay: .06s; }
 .heroe .acciones { animation-delay: .12s; }
 
-.estado { display: inline-flex; align-items: center; gap: .45rem; font-size: .82rem; color: var(--texto-suave); }
-.estado .punto { color: var(--exito); box-shadow: 0 0 0 3px var(--exito-borde); }
 
 /* --- Tablas ----------------------------------------------------------------------------- */
 
@@ -592,6 +577,14 @@ tbody tr:hover { background: var(--superficie-2); }
   .rasgo { padding: 32px; border-radius: 28px; }
   .rasgo h3 { margin-top: 40px; }
   .preguntas summary { padding: 24px 0; font-size: 21px; }
+  .encabezado-pagina { padding-bottom: 32px; }
+  .estado { white-space: normal; }
+  .rejilla-2 { grid-template-columns: 1fr; gap: 40px; }
+  .permisos li { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .permisos .verbos { justify-content: flex-start; }
+  .tarjeta, .vacio { padding: 28px 24px; border-radius: 28px; }
+  .datos > div { grid-template-columns: 1fr; gap: 2px; }
+  .opcion-rol { min-height: 0; padding: 28px; border-radius: 28px; }
   .pie .ancho { grid-template-columns: 1fr; }
   .pie dl { grid-column: auto; grid-template-columns: 1fr 1fr; }
 }
@@ -603,10 +596,6 @@ tbody tr:hover { background: var(--superficie-2); }
   .persona .boton-chico { padding: 8px 12px; font-size: 12px; }
 }
 
-@media (max-width: 720px) {
-  .tarjeta { padding: 1.15rem; }
-  .tarjeta-pie { margin: 1rem -1.15rem -1.15rem; padding: .75rem 1.15rem; }
-}
 
 /* --- Movimiento reducido ---------------------------------------------------------------- */
 
