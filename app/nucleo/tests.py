@@ -4,9 +4,11 @@ import secrets
 from unittest import mock
 from datetime import date
 
+from django import forms
 from django.contrib.auth.models import AnonymousUser
 from django.db import connection
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
@@ -95,6 +97,53 @@ class InicioPorRol(TestCase):
         peticion.rol_activo = Rol.VER
         ContextoDeBase(_falla)(peticion)
         self.assertFalse(Periodo.objects.filter(nombre="X").exists())
+
+
+class FormularioDeMuestra(forms.Form):
+    parcela = forms.CharField(label="Parcela", max_length=10)
+    fecha_medicion = forms.DateField(label="Fecha de la medición", help_text="Dentro del período.")
+    toneladas = forms.DecimalField(label="Toneladas de CO₂", min_value=0, decimal_places=2)
+
+    def clean(self):
+        raise forms.ValidationError("El período cerró antes de enviar la medición.")
+
+
+class MuestrarioDeComponentes(TestCase):
+    """5.15: los componentes para la fase 5 se arman sin estilos en línea, con el estado dicho con
+    ícono y texto, y el resumen de errores enlazado con cada campo."""
+
+    def _muestrario(self):
+        peticion = RequestFactory().get("/")
+        peticion.user = AnonymousUser()
+        peticion.rol_activo = ""
+        formulario = FormularioDeMuestra({"parcela": "P-01", "fecha_medicion": "2026-13-40", "toneladas": "-3"})
+        return render_to_string("nucleo/muestrario.html", {"form": formulario}, request=peticion)
+
+    def test_resumen_de_errores_enlazado_y_anunciado(self):
+        html = self._muestrario()
+        self.assertIn('class="resumen-errores" role="alert"', html)
+        self.assertIn("Revise 3 datos antes de continuar", html)
+        self.assertIn('href="#id_toneladas"', html)
+        self.assertIn('href="#id_fecha_medicion"', html)
+        self.assertIn("El período cerró antes de enviar la medición.", html)
+
+    def test_sin_estilos_ni_scripts_en_linea(self):
+        html = self._muestrario().lower()
+        for prohibido in ("style=", "<style", "<script"):
+            self.assertNotIn(prohibido, html)
+
+    def test_cada_estado_con_icono_y_texto(self):
+        for estado, clase, icono in (
+            ("borrador", "insignia-borrador", "○"),
+            ("enviada", "insignia-pendiente", "→"),
+            ("devuelta", "insignia-aviso", "↩"),
+            ("aprobada", "insignia-exito", "✓"),
+            ("revocado", "insignia-peligro", "✕"),
+            ("sustituida", "insignia-gris", "■"),
+        ):
+            html = render_to_string("nucleo/_estado.html", {"estado": estado, "texto": estado.capitalize()})
+            self.assertIn(clase, html)
+            self.assertIn(f'<span aria-hidden="true">{icono}</span> {estado.capitalize()}', html)
 
 
 class PaginaNoEncontrada(TestCase):

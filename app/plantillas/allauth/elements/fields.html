@@ -1,6 +1,6 @@
 {% comment %}Cada campo con su etiqueta, su ayuda y sus errores; los errores generales van arriba.{% endcomment %}
 {% if attrs.form.non_field_errors %}
-  <div class="aviso aviso-error">{{ attrs.form.non_field_errors }}</div>
+  <div class="aviso aviso-error" role="alert">{{ attrs.form.non_field_errors }}</div>
 {% endif %}
 {% for campo in attrs.form %}
   {% if campo.is_hidden %}

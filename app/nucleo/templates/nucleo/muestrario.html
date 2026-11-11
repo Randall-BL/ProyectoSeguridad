@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load allauth %}
+{% comment %}
+Muestrario de los componentes para las pantallas de la fase 5: migas, avisos, tabla, insignias de
+estado, formulario con errores y estado vacío. No tiene ruta: lo renderizan las pruebas
+(nucleo/tests.py) para que los componentes sigan funcionando, y sirve de referencia del marcado.
+Necesita en el contexto un formulario con errores en «form». Los datos son de ejemplo.
+{% endcomment %}
+{% block head_title %}Muestrario{% endblock head_title %}
+{% block content %}
+  <nav aria-label="Migas de pan">
+    <ol class="migas">
+      <li><a href="{% url 'inicio' %}">Inicio</a></li>
+      <li><a href="#fincas">Fincas</a></li>
+      <li aria-current="page">Finca de ejemplo</li>
+    </ol>
+  </nav>
+
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Finca de ejemplo</h1>
+      <p>Muestrario de los componentes para las pantallas de la fase 5.</p>
+    </div>
+    {% include "nucleo/_estado.html" with estado="abierto" texto="Período 2026-II abierto" %}
+  </div>
+
+  <section class="seccion-pagina" aria-labelledby="titulo-avisos">
+    <h2 id="titulo-avisos">Avisos</h2>
+    <div class="mensajes">
+      <div class="aviso"><p>La medición quedó guardada como borrador.</p></div>
+      <div class="aviso aviso-success"><p><strong>Medición enviada.</strong> La revisará un verificador distinto de usted.</p></div>
+      <div class="aviso aviso-warning"><p><strong>Fuera de la jornada.</strong> Las decisiones a esta hora piden un motivo.</p></div>
+      <div class="aviso aviso-error"><p><strong>No se pudo enviar.</strong> El período cerró antes de que terminara.</p></div>
+    </div>
+  </section>
+
+  <section class="seccion-pagina" aria-labelledby="titulo-tabla">
+    <h2 id="titulo-tabla">Mediciones del período 2026-II</h2>
+    <div class="tabla-envoltura" role="region" aria-labelledby="titulo-tabla" tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Parcela</th>
+            <th scope="col">Fecha</th>
+            <th scope="col" class="numero">Toneladas de CO₂</th>
+            <th scope="col">Estado</th>
+            <th scope="col"><span class="solo-lector">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">P-01</th><td>3 nov 2026</td><td class="numero">12,40</td><td>{% include "nucleo/_estado.html" with estado="borrador" texto="Borrador" %}</td><td class="celda-acciones"><a href="#formulario">Editar</a></td></tr>
+          <tr><th scope="row">P-02</th><td>4 nov 2026</td><td class="numero">8,15</td><td>{% include "nucleo/_estado.html" with estado="enviada" texto="Enviada" %}</td><td class="celda-acciones"><a href="#formulario">Ver</a></td></tr>
+          <tr><th scope="row">P-03</th><td>5 nov 2026</td><td class="numero">10,02</td><td>{% include "nucleo/_estado.html" with estado="devuelta" texto="Devuelta" %}</td><td class="celda-acciones"><a href="#formulario">Corregir</a></td></tr>
+          <tr><th scope="row">P-04</th><td>6 nov 2026</td><td class="numero">15,77</td><td>{% include "nucleo/_estado.html" with estado="aprobada" texto="Aprobada" %}</td><td class="celda-acciones"><a href="#formulario">Ver</a></td></tr>
+          <tr><th scope="row">P-05</th><td>7 nov 2026</td><td class="numero">0,00</td><td>{% include "nucleo/_estado.html" with estado="excluida" texto="Excluida" %}</td><td class="celda-acciones"><a href="#formulario">Ver</a></td></tr>
+        </tbody>
+      </table>
+      <div class="tabla-pie">
+        <span>5 de 18 mediciones</span>
+        <nav class="paginacion" aria-label="Páginas de la tabla">
+          <a class="boton boton-secundario boton-chico" href="#titulo-tabla">Anterior</a>
+          <a class="boton boton-secundario boton-chico" href="#titulo-tabla">Siguiente</a>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion-pagina" aria-labelledby="titulo-estados">
+    <h2 id="titulo-estados">Estados</h2>
+    <p class="bloque-nota">Cada grupo lleva su ícono además del color.</p>
+    <div class="insignias">
+      {% include "nucleo/_estado.html" with estado="borrador" texto="Borrador" %}
+      {% include "nucleo/_estado.html" with estado="solicitada" texto="Solicitada" %}
+      {% include "nucleo/_estado.html" with estado="devuelta" texto="Devuelta" %}
+      {% include "nucleo/_estado.html" with estado="verificacion" texto="Verificación adicional" %}
+      {% include "nucleo/_estado.html" with estado="autorizada" texto="Autorizada" %}
+      {% include "nucleo/_estado.html" with estado="revocado" texto="Revocado" %}
+      {% include "nucleo/_estado.html" with estado="cerrado" texto="Cerrado" %}
+    </div>
+  </section>
+
+  <section class="seccion-pagina" id="formulario" aria-labelledby="titulo-formulario">
+    <h2 id="titulo-formulario">Formulario con errores</h2>
+    <form class="formulario" method="post" novalidate>
+      {% csrf_token %}
+      {% include "nucleo/_resumen_errores.html" with form=form %}
+      <fieldset>
+        <legend>Datos de la medición</legend>
+        <div class="campos-2">{% element fields form=form %}{% endelement %}</div>
+      </fieldset>
+      <div class="acciones">
+        <button class="boton boton-primario" type="submit">Enviar a revisión</button>
+        <a class="boton boton-secundario" href="#titulo-tabla">Volver a la lista</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="seccion-pagina" aria-labelledby="titulo-vacio">
+    <h2 id="titulo-vacio">Estado vacío</h2>
+    {% include "nucleo/_vacio.html" with titulo="Todavía no hay mediciones" texto="Cuando registre la primera medición de esta finca, aparecerá aquí con su estado." accion_url="#formulario" accion_texto="Registrar la primera" %}
+  </section>
+{% endblock content %}

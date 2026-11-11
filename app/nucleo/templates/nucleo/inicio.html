@@ -28,10 +28,7 @@
           {% endfor %}
         </ul>
       {% else %}
-        <div class="vacio">
-          <h3>Todavía no hay pantallas para su rol</h3>
-          <p>Las pantallas de cada flujo llegan con la versión 0.3.0.</p>
-        </div>
+        {% include "nucleo/_vacio.html" with titulo="Todavía no hay pantallas para su rol" texto="Las pantallas de cada flujo llegan con la versión 0.3.0." %}
       {% endif %}
     </section>
 

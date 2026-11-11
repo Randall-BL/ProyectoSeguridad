@@ -263,20 +263,6 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 .aviso-error { --tono: var(--error); background: var(--error-fondo); border-color: var(--error); }
 .aviso-error::before { content: "!" / ""; }
 
-/* === Compatibilidad temporal ===============================================================
-   Las secciones que siguen todavía usan los nombres de la versión anterior; se reescriben una por
-   una y este bloque desaparece con la última. */
-
-:root {
-  --verde-950: #072b24; --verde-900: #0b3d33; --verde-700: #0f5c4d; --verde-600: #13735f;
-  --verde-500: #1a8a72; --verde-200: #b9e3d6; --verde-100: var(--pergamino-hundido);
-  --fondo: var(--pergamino); --superficie: var(--pergamino); --superficie-2: var(--pergamino-hundido);
-  --borde: var(--ceniza); --borde-fuerte: var(--borde-control);
-  --texto-suave: var(--grafito); --texto-tenue: var(--humo); --enlace: var(--texto);
-  --insignia-texto: var(--texto); --radio: 24px; --radio-chico: var(--radio-campo);
-  --sombra: none; --sombra-alta: none;
-}
-
 /* === Franja, barra y pie =================================================================== */
 
 .ancho { width: 100%; max-width: var(--ancho); margin: 0 auto; padding: 0 var(--margen); }
@@ -554,17 +540,60 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 .heroe .acciones { animation-delay: .12s; }
 
 
-/* --- Tablas ----------------------------------------------------------------------------- */
+/* --- Componentes para las pantallas de la fase 5 ---------------------------------------- */
 
-.tabla-envoltura { overflow-x: auto; border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie); }
-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
-th, td { text-align: left; padding: .65rem .9rem; border-bottom: 1px solid var(--borde); }
-th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--texto-suave); background: var(--superficie-2); font-weight: 650; }
-tbody tr:last-child td { border-bottom: 0; }
-tbody tr:hover { background: var(--superficie-2); }
+.seccion-pagina { padding: 40px 0; border-top: 1px solid var(--ceniza); }
+.seccion-pagina > h2 { margin-bottom: 24px; }
+.insignias { display: flex; flex-wrap: wrap; gap: 8px; }
 
-/* --- Pie -------------------------------------------------------------------------------- */
+/* Migas de pan */
+.migas { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; padding: 0; list-style: none; font-size: 13px; letter-spacing: 0; text-transform: uppercase; color: var(--humo); }
+.migas li + li::before { content: "/" / ""; margin-right: 8px; color: var(--borde-control); }
+.migas a { color: var(--grafito); text-decoration: none; }
+.migas a:hover { color: var(--texto); text-decoration: underline; }
+.migas [aria-current="page"] { color: var(--texto); }
 
+/* Insignias de estado (nucleo/_estado.html): ícono, texto y borde; el color nunca va solo. */
+.insignia-borrador { color: var(--grafito); border-style: dashed; border-color: var(--borde-control); }
+.insignia-pendiente { border-color: var(--texto); }
+
+/* Tablas: borde fino alrededor, filas separadas por líneas, cifras alineadas a la derecha. En el
+   teléfono la envoltura se desplaza de lado y recibe el foco para poder hacerlo con el teclado. */
+.tabla-envoltura { overflow-x: auto; border: 1px solid var(--ceniza); border-radius: 24px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+caption { padding: 20px 24px 4px; text-align: left; font: 400 22px/1.2 var(--serif); letter-spacing: -.02em; }
+th, td { padding: 14px 24px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--ceniza); }
+thead th { font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: uppercase; white-space: nowrap; color: var(--humo); }
+tbody th { font-weight: 400; }
+tbody tr:last-child > * { border-bottom: 0; }
+tbody tr:hover { background: var(--pergamino-hundido); }
+.numero { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.celda-acciones { text-align: right; white-space: nowrap; }
+.tabla-pie {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 16px;
+  padding: 14px 24px; font-size: 13px; color: var(--humo); border-top: 1px solid var(--ceniza);
+}
+.paginacion { display: flex; gap: 8px; }
+
+/* Formularios largos: grupos con leyenda en serif, dos columnas en pantallas anchas y un resumen
+   de errores arriba (nucleo/_resumen_errores.html) que enlaza con cada campo. */
+.formulario { max-width: 760px; }
+fieldset { min-width: 0; margin: 0 0 8px; padding: 0; border: 0; }
+legend { margin-bottom: 20px; padding: 0; font: 400 24px/1.2 var(--serif); letter-spacing: -.02em; }
+.campos-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+.campos-2 > .aviso { grid-column: 1 / -1; }
+.resumen-errores { margin-bottom: 32px; padding: 20px 24px; background: var(--error-fondo); border: 1px solid var(--error); border-radius: var(--radio-campo); }
+.resumen-errores h2 { display: flex; gap: 10px; align-items: baseline; margin: 0 0 10px; font-size: 20px; color: var(--error); }
+.resumen-errores h2::before { content: "!" / ""; font: 700 16px var(--mono); }
+.resumen-errores ul { margin: 0; padding-left: 20px; }
+.resumen-errores li + li { margin-top: 4px; }
+.resumen-errores a { color: var(--error); }
+.aviso strong:first-child { font-weight: 700; }
+
+/* Estado vacío (nucleo/_vacio.html) */
+.vacio-icono { display: block; width: 32px; height: 32px; margin: 0 auto 16px; color: var(--humo); }
+
+/* --- Pantallas angostas ------------------------------------------------------------------ */
 
 @media (max-width: 860px) {
   :root { --margen: 20px; }
@@ -603,6 +632,9 @@ tbody tr:hover { background: var(--superficie-2); }
   .gestion-menu { position: static; grid-auto-flow: column; justify-content: start; overflow-x: auto; }
   .gestion-menu .meta { display: none; }
   .gestion-menu a { white-space: nowrap; }
+  .campos-2 { grid-template-columns: 1fr; }
+  th, td { padding: 12px 16px; }
+  .tabla-pie { padding: 12px 16px; }
   .pie .ancho { grid-template-columns: 1fr; }
   .pie dl { grid-column: auto; grid-template-columns: 1fr 1fr; }
 }

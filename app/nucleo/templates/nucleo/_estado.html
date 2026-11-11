@@ -1,0 +1,27 @@
+{% comment %}
+Insignia de estado para las pantallas de la fase 5. El color nunca va solo: cada grupo lleva su ícono
+y el texto del estado.
+
+  {% include "nucleo/_estado.html" with estado=medicion.estado texto=medicion.get_estado_display %}
+
+Grupos: en preparación (borrador), en trámite (enviada, solicitada, corregida, revisada, propuesto,
+propuesta, planificado), devuelta, aviso o verificación de una alerta, concedido (aprobada, aprobado,
+autorizada, vigente, abierto), negado (excluida, rechazada, rechazado, revocado, restricción) y
+cerrado (cerrado, sustituida y cualquier otro).
+{% endcomment %}{% spaceless %}
+{% if estado == "borrador" %}
+  <span class="insignia insignia-borrador"><span aria-hidden="true">○</span> {{ texto|default:estado }}</span>
+{% elif estado == "enviada" or estado == "solicitada" or estado == "corregida" or estado == "revisada" or estado == "propuesto" or estado == "propuesta" or estado == "planificado" %}
+  <span class="insignia insignia-pendiente"><span aria-hidden="true">→</span> {{ texto|default:estado }}</span>
+{% elif estado == "devuelta" %}
+  <span class="insignia insignia-aviso"><span aria-hidden="true">↩</span> {{ texto|default:estado }}</span>
+{% elif estado == "aviso" or estado == "verificacion" %}
+  <span class="insignia insignia-aviso"><span aria-hidden="true">!</span> {{ texto|default:estado }}</span>
+{% elif estado == "aprobada" or estado == "aprobado" or estado == "autorizada" or estado == "vigente" or estado == "abierto" %}
+  <span class="insignia insignia-exito"><span aria-hidden="true">✓</span> {{ texto|default:estado }}</span>
+{% elif estado == "excluida" or estado == "rechazada" or estado == "rechazado" or estado == "revocado" or estado == "restriccion" %}
+  <span class="insignia insignia-peligro"><span aria-hidden="true">✕</span> {{ texto|default:estado }}</span>
+{% else %}
+  <span class="insignia insignia-gris"><span aria-hidden="true">■</span> {{ texto|default:estado }}</span>
+{% endif %}
+{% endspaceless %}
