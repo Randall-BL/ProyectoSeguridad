@@ -609,20 +609,28 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     legible solo por su cuenta de servicio.
 - [ ] 6.2 Publicar la clave pública y su huella: en el README, en `docs/` y en una ruta
   `/.well-known/verdeazul-clave.pem` del servicio público. No es secreta.
-- [ ] 6.3 Servicio de emisión (`verdeazul-emision`): sin acceso público; solo `sa-app` tiene
+- [x] 6.3 Servicio de emisión (`verdeazul-emision`): sin acceso público; solo `sa-app` tiene
   `run.invoker`. Recibe el identificador de una medición aprobada, comprueba C4 con su propio usuario de
   base, firma e inserta. Ninguna persona puede invocar la emisión directamente.
-- [ ] 6.4 Contenido firmado: código, parcela, finca (por código), período, toneladas, fecha de emisión,
+  - 13-nov: `emision/` (Flask + gunicorn, imagen sin root). `run.invoker` solo para `sa-app` y `sa-trabajos`
+    (`infra/desplegar.sh`), y el servicio vuelve a revisar la cuenta del token (`INVOCADORES`) y la anota
+    en la bitácora. Segundo candado en la base: el disparador `regla_certificado` (`negocio/sql/0006`)
+    rechaza un certificado que no corresponda a la medición aprobada, aunque venga de `va_emision`.
+  - Pruebas: `flujos/tests_certificados.py` (con los usuarios de base reales: T-07, C4 en la base, nadie
+    más emite) y `emision/test_servicio.py` (quién puede invocarlo).
+- [x] 6.4 Contenido firmado: código, parcela, finca (por código), período, toneladas, fecha de emisión,
   nombre de quien aprobó (POL-CE-04), código del certificado al que reemplaza, algoritmo, identificador
   de la clave, clave pública y firma.
-- [ ] 6.5 Revocar y reemitir en una sola transacción cuando una enmienda autorizada cambia las toneladas;
+- [x] 6.5 Revocar y reemitir en una sola transacción cuando una enmienda autorizada cambia las toneladas;
   los dos quedan enlazados y ninguno se borra (C4, T-25). Si no cambian, se anota la enmienda.
+  - 13-nov: `POST /reemitir` (`emision/emitir.py`). T-25 probado contra la base; llamar dos veces no
+    duplica. `POST /emitir-pendientes` recupera lo que quedó sin emitir si una llamada falló.
 - [ ] 6.6 Verificación en `verdeazul-publico` («dado el archivo»): se sube el certificado y responde si la
   firma es válida, si el contenido fue modificado y **si la clave incrustada es la de Verdeazul**. Sin esa
   última comprobación, cualquiera podría firmar un certificado falso con su propia clave e incrustarla.
 - [ ] 6.7 Comprobación por código (C20): sello válido, estado, toneladas, período y, si fue revocado, el
   código del reemplazo. Sin listados, búsquedas ni datos del titular. Límite de ritmo por origen.
-- [ ] 6.8 `verificador/`: programa de línea de comandos que verifica un certificado sin conexión al
+- [x] 6.8 `verificador/`: programa de línea de comandos que verifica un certificado sin conexión al
   sistema. Es lo que haría un comprador en otro país.
 - [ ] 6.9 Demostración preparada: un certificado válido, el mismo con una tonelada cambiada (debe
   fallar) y uno revocado consultado por código (T-32).

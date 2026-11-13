@@ -18,11 +18,17 @@ trap 'rm -f "$tmp"' EXIT
 sed "s/__VERSION__/$VERSION/g" "$DIR/$COMPONENTE.service.yaml" > "$tmp"
 gcloud run services replace "$tmp" --project="$PROYECTO" --region="$REGION"
 
-# Solo la aplicación y la comprobación pública se abren a internet; emisión queda privada.
+# Solo la aplicación y la comprobación pública se abren a internet. La emisión queda privada: la
+# invocan solo la aplicación y los trabajos programados, con su token de identidad.
 case "$COMPONENTE" in
   app|publico)
     gcloud run services add-iam-policy-binding "$SERVICIO" --project="$PROYECTO" --region="$REGION" \
       --member=allUsers --role=roles/run.invoker >/dev/null ;;
+  emision)
+    for cuenta in sa-app sa-trabajos; do
+      gcloud run services add-iam-policy-binding "$SERVICIO" --project="$PROYECTO" --region="$REGION" \
+        --member="serviceAccount:$cuenta@$PROYECTO.iam.gserviceaccount.com" --role=roles/run.invoker >/dev/null
+    done ;;
 esac
 gcloud run services describe "$SERVICIO" --project="$PROYECTO" --region="$REGION" \
   --format="value(status.url,status.latestReadyRevisionName)"

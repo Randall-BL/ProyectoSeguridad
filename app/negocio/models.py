@@ -467,6 +467,8 @@ class Alerta(models.Model):
     )
     resuelta_en = models.DateTimeField(null=True, blank=True)
     resolucion = models.TextField(blank=True)
+    # La marca el trabajo diario cuando SUP no la resolvió en dos días hábiles (C15, tarea 7.4).
+    escalada_en = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [
