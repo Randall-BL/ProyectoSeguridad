@@ -1,0 +1,10 @@
+{% if migas %}
+  <nav aria-label="Migas de pan">
+    <ol class="migas">
+      <li><a href="{% url 'inicio' %}">Inicio</a></li>
+      {% for texto, url in migas %}
+        {% if url %}<li><a href="{{ url }}">{{ texto }}</a></li>{% else %}<li aria-current="page">{{ texto }}</li>{% endif %}
+      {% endfor %}
+    </ol>
+  </nav>
+{% endif %}

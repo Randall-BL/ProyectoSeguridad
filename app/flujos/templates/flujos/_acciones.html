@@ -1,0 +1,18 @@
+{% comment %}
+Acciones de una página: enlaces (GET) o formularios de un solo botón (POST, con csrf). Solo se
+muestran las que el rol tiene en la matriz; lo que protege es la decisión del servidor, no esto.
+{% endcomment %}
+{% if acciones %}
+  <div class="acciones">
+    {% for accion in acciones %}
+      {% if accion.metodo == "post" %}
+        <form method="post" action="{{ accion.url }}">
+          {% csrf_token %}
+          <button type="submit" class="boton {% if accion.primaria %}boton-primario{% elif accion.peligro %}boton-peligro{% else %}boton-secundario{% endif %}">{{ accion.texto }}</button>
+        </form>
+      {% else %}
+        <a class="boton {% if accion.primaria %}boton-primario{% else %}boton-secundario{% endif %}" href="{{ accion.url }}">{{ accion.texto }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

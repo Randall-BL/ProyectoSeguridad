@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block head_title %}{{ titulo }}{% endblock head_title %}
+{% block content %}
+  {% include "flujos/_migas.html" %}
+  <div class="encabezado-pagina">
+    <div>
+      <h1>{{ titulo }}</h1>
+      {% if descripcion %}<p>{{ descripcion }}</p>{% endif %}
+    </div>
+    {% if estado %}{% include "nucleo/_estado.html" with estado=estado texto=estado_texto %}{% endif %}
+  </div>
+  <div class="rejilla-2">
+    <section class="tarjeta" aria-label="Datos">
+      <h2>Datos</h2>
+      <dl class="datos">
+        {% for etiqueta, valor in datos %}<div><dt>{{ etiqueta }}</dt><dd>{{ valor|default:"—" }}</dd></div>{% endfor %}
+      </dl>
+    </section>
+    <section aria-label="Acciones">
+      {% if acciones %}
+        <h2>Acciones</h2>
+        <p class="bloque-nota">Las que su rol tiene en la matriz. El servidor vuelve a decidir cada una.</p>
+        {% include "flujos/_acciones.html" %}
+      {% endif %}
+    </section>
+  </div>
+  {% for seccion in secciones %}
+    <section class="seccion-pagina" aria-label="{{ seccion.titulo }}">
+      <h2>{{ seccion.titulo }}</h2>
+      {% if seccion.nota %}<p class="bloque-nota">{{ seccion.nota }}</p>{% endif %}
+      {% include "flujos/_tabla.html" with tabla=seccion %}
+    </section>
+  {% endfor %}
+{% endblock content %}
