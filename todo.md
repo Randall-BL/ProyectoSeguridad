@@ -160,6 +160,9 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
   mejora si da el tiempo (si no, desviación D-07).
   - 9-nov: pendiente antes de sembrar Neon: que `sembrar` active el TOTP de cada cuenta y escriba
     su semilla (URI `otpauth://`) en el archivo de `--salida`, junto a la contraseña.
+  - 12-nov: hecho. La rama `main` de Neon quedó migrada y sembrada con las 12 cuentas, cada una con
+    TOTP y códigos de recuperación. El archivo con contraseñas y semillas está fuera de los dos repos
+    y va al anexo del informe.
 - [ ] **0.5 Cómo se construyen las imágenes.** Recomendado para empezar: un script `infra/deploy.sh`
   con `gcloud builds submit` (Cloud Build). Mejora: GitHub Actions con Workload Identity Federation.
   Nunca una llave JSON de cuenta de servicio guardada como secreto del repositorio si se puede evitar.
@@ -393,8 +396,8 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 - [x] 3.3 Segundo factor con django-allauth (TOTP y códigos de recuperación; WebAuthn si da el tiempo).
   Sin SMS ni correo (POL-AU-05).
   - allauth 65.21.1: usuario, contraseña y TOTP; 10 códigos de recuperación de respaldo. Secreto TOTP
-    y semilla de los códigos cifrados con Fernet (`MFA_CLAVE`, secreto `mfa-clave`; falta crearlo en
-    Secret Manager al desplegar v0.2.0).
+    y semilla de los códigos cifrados con Fernet (`MFA_CLAVE`, secreto `mfa-clave`, creado el 12-nov
+    con `infra/crear-secretos.sh`; solo `sa-app` lo lee).
   - `cuentas.middleware.ExigirSegundoFactor`: sin TOTP solo se puede activarlo o salir. Nadie lo
     desactiva desde su sesión (POL-AU-10), y no hay registro abierto ni recuperación por correo.
   - En la base, `va_app` solo puede borrar la fila de códigos de recuperación (RLS en
@@ -472,8 +475,9 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   no recibe tráfico (K-3).
   - `infra/app.service.yaml`: contenedor `politica` sin puertos declarados (solo la aplicación
     recibe tráfico), sondas de inicio y de vida en `/health`, y `container-dependencies` para que la
-    aplicación arranque después. La aplicación lo encuentra en `OPA_URL`. Se comprueba al desplegar
-    v0.2.0: hay que publicar `politica:v0.2.0` junto con `app:v0.2.0`.
+    aplicación arranque después. La aplicación lo encuentra en `OPA_URL`. Comprobado el 12-nov en
+    la revisión `verdeazul-app-00003`: los dos contenedores quedan listos y sanos, y la sonda de inicio
+    de OPA pasa antes de que la aplicación reciba tráfico.
 - [x] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
   pregunta al motor. ⚠ **Si OPA no responde, tarda más que el límite o contesta algo inválido, la
   petición se frena** (K-3, criterio de aceptación 6): 503, registro en la bitácora y nada más. Sin
