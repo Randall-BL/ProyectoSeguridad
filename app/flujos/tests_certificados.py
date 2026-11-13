@@ -7,22 +7,29 @@ El código de los servicios vive fuera de la aplicación (emision/, verificador/
 importan desde el repositorio y se saltan si no está (imagen de producción)."""
 
 import io
+import json
 import os
 import sys
+import time
 from contextlib import contextmanager
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
 from unittest import mock, skipUnless
 
+from allauth.account.internal.flows.login import _AUTHENTICATION_METHODS_USER_SESSION_KEY
+from allauth.mfa.models import Authenticator
+from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
 from django.conf import settings
 from django.core.management import call_command
 from django.db import DatabaseError, connection, transaction
 from django.test import TestCase
+from django.urls import reverse
 
 from bitacora.models import Registro
 from cuentas.models import Usuario
-from negocio.models import Certificado, Enmienda, Medicion, VersionMedicion
+from flujos.tests import MOTIVO, _opa_disponible
+from negocio.models import Certificado, Enmienda, ExportacionAuditoria, Medicion, VersionMedicion
 
 RAIZ = Path(settings.BASE_DIR).parent
 for carpeta in ("emision", "verificador"):
@@ -193,3 +200,101 @@ class EmisionDeCertificados(TestCase):
             self.assertEqual(cursor.fetchone()[0], 0)
         with como("va_publico"), self.assertRaises(DatabaseError), transaction.atomic(), connection.cursor() as cursor:
             cursor.execute("SELECT codigo FROM negocio_certificado")
+
+
+# --- La aplicación con el servicio de emisión (6.3, 6.5, 6.10) ------------------------------------
+
+
+@skipUnless(emitir is not None and _opa_disponible(), "requiere emision/ y el motor real (OPA)")
+class LaAplicacionPideAlServicio(TestCase):
+    """La aplicación no firma: pide al servicio después de confirmar la transacción. Aquí el
+    servicio HTTP se reemplaza por el código real de emision/ corriendo como va_emision."""
+
+    @classmethod
+    def setUpTestData(cls):
+        with mock.patch.dict(os.environ, {"SEMILLA_CONTRASENA": "Clave-local-de-pruebas-2026"}):
+            call_command("sembrar", stdout=io.StringIO())
+
+    def setUp(self):
+        self.clave = Ed25519PrivateKey.generate()
+
+    def _como(self, usuario, rol):
+        persona = Usuario.objects.get(username=usuario)
+        if not Authenticator.objects.filter(user=persona, type=Authenticator.Type.TOTP).exists():
+            TOTP.activate(persona, generate_totp_secret())
+        self.client.force_login(persona)
+        sesion = self.client.session
+        sesion.update({"va_rol": rol, "va_inicio": int(time.time()),
+                       "account_authentication_methods": [{"method": "mfa", "at": time.time(), "type": "totp"}],
+                       _AUTHENTICATION_METHODS_USER_SESSION_KEY: str(persona.pk)})
+        sesion.save()
+        return persona
+
+    def _servicio(self, ruta, datos):
+        """Lo que haría verdeazul-emision con esa petición."""
+        with como("va_emision") as conexion:
+            if ruta == "/emitir":
+                return 201, emitir.emitir(conexion, datos["medicion"], self.clave)
+            if ruta == "/reemitir":
+                return 200, emitir.reemitir(conexion, datos["enmienda"], self.clave)
+            return 200, {"sello": emitir.sellar(conexion, datos["huella"], datos["objeto"], self.clave)}
+
+    def _enviada(self):
+        return Medicion.objects.get(parcela__finca__codigo="F-001", parcela__codigo="P-1", periodo__nombre="2026-II")
+
+    def test_aprobar_una_medicion_emite_su_certificado(self):
+        self._como("ver.diego", "VER")
+        enviada = self._enviada()
+        with mock.patch("nucleo.emision.llamar", side_effect=self._servicio) as llamar, \
+                self.captureOnCommitCallbacks(execute=True):
+            respuesta = self.client.post(reverse("aprobar_medicion", args=[enviada.pk]), MOTIVO)
+        self.assertEqual(respuesta.status_code, 302)
+        llamar.assert_called_once_with("/emitir", {"medicion": str(enviada.pk)})
+        c = Certificado.objects.get(medicion=enviada, estado="vigente")
+        self.assertTrue(vc.verificar({"contenido": c.contenido, "firma": c.firma}, self.clave.public_key())["valido"])
+
+    def test_si_el_servicio_no_responde_la_aprobacion_queda_igual(self):
+        self._como("ver.diego", "VER")
+        enviada = self._enviada()
+        with self.captureOnCommitCallbacks(execute=True):  # sin EMISION_URL
+            respuesta = self.client.post(reverse("aprobar_medicion", args=[enviada.pk]), MOTIVO)
+        self.assertEqual(respuesta.status_code, 302)
+        enviada.refresh_from_db()
+        self.assertEqual(enviada.estado, "aprobada")
+        self.assertFalse(Certificado.objects.filter(medicion=enviada).exists())  # lo recupera el trabajo diario
+
+    def test_t31_el_paquete_del_auditor_sale_sellado_y_se_verifica(self):
+        self._como("aud.elena", "AUD")
+        with mock.patch("nucleo.emision.llamar", side_effect=self._servicio):
+            respuesta = self.client.get(reverse("exportar_fincas"), MOTIVO)
+        self.assertEqual(respuesta.status_code, 200)
+        texto = respuesta.content.decode()
+        resultado = vc.verificar_archivo(texto, self.clave.public_key())
+        self.assertTrue(resultado["valido"], resultado["motivo"])
+        self.assertEqual(json.loads(texto)["sello"]["huella_sha256"], respuesta["X-Verdeazul-Huella"])
+        alterado = texto.replace('"F-001"', '"F-999"', 1)
+        self.assertFalse(vc.verificar_archivo(alterado, self.clave.public_key())["valido"])
+
+    def test_sin_sello_no_se_entrega_el_paquete(self):
+        self._como("aud.elena", "AUD")
+        respuesta = self.client.get(reverse("exportar_fincas"), MOTIVO)  # sin EMISION_URL
+        self.assertEqual(respuesta.status_code, 503)
+        self.assertFalse(ExportacionAuditoria.objects.exists())
+        self.assertTrue(Registro.objects.filter(accion="exportar", resultado="denegado", regla__startswith="C18").exists())
+
+    def test_quien_lee_el_certificado_descarga_el_archivo_firmado(self):
+        aprobada = Medicion.objects.get(parcela__finca__codigo="F-001", parcela__codigo="P-1", periodo__nombre="2026-I")
+        with como("va_emision") as conexion:
+            codigo = emitir.emitir(conexion, aprobada.pk, self.clave)["codigo"]
+        c = Certificado.objects.get(codigo=codigo)
+        self._como("ger.gabriela", "GER")
+        with self.settings(PUBLICO_URL="https://publico.ejemplo"):
+            ficha = self.client.get(reverse("certificado", args=[c.pk]), MOTIVO)
+        self.assertContains(ficha, f"https://publico.ejemplo/comprobar?codigo={codigo}")
+        respuesta = self.client.get(reverse("descargar_certificado", args=[c.pk]), MOTIVO)
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertIn(f'filename="{codigo}.json"', respuesta["Content-Disposition"])
+        self.assertTrue(vc.verificar_archivo(respuesta.content.decode(), self.clave.public_key())["valido"])
+        # Un dueño sin relación con esa finca no lo ve (C5).
+        self._como("due.rosa", "DUE")
+        self.assertEqual(self.client.get(reverse("descargar_certificado", args=[c.pk])).status_code, 404)

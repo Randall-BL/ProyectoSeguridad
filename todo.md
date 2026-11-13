@@ -567,9 +567,10 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   - 12-nov: `flujos/vistas/titulares.py`. T-37 probado.
 - [x] 5.10 DUE ve lo de sus fincas y solo mediciones aprobadas (C5).
   - 12-nov: por la seguridad por fila y C5 en el motor; T-08 probado.
-- [ ] 5.11 AUD ve todo y exporta paquetes sellados, con su identidad, sin datos personales y con la
+- [x] 5.11 AUD ve todo y exporta paquetes sellados, con su identidad, sin datos personales y con la
   huella en la bitácora (C18, T-31).
   - 12-nov: exportación por objeto en `/exportar/<objeto>/` (`flujos/vistas/exportar.py`) con la identidad del auditor, sin datos personales y con su huella SHA-256 en la bitácora y en ExportacionAuditoria (T-31 probado). Falta el sello con la clave de Verdeazul (6.10).
+  - 13-nov: sellado con 6.10.
 - [x] 5.12 GER y AUD leen la bitácora; cada lectura queda registrada (POL-BT-05).
   - 12-nov: `/bitacora/` con la comprobación de la cadena; cada lectura se registra.
 - [x] 5.13 ⚠ Todo acceso a datos por el ORM o con consultas parametrizadas. Prohibido `raw()` con
@@ -642,7 +643,13 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   sistema. Es lo que haría un comprador en otro país.
 - [ ] 6.9 Demostración preparada: un certificado válido, el mismo con una tonelada cambiada (debe
   fallar) y uno revocado consultado por código (T-32).
-- [ ] 6.10 Sellar los paquetes de exportación del auditor con la misma clave, por el servicio de emisión (C18).
+- [x] 6.10 Sellar los paquetes de exportación del auditor con la misma clave, por el servicio de emisión (C18).
+  - 13-nov: la aplicación manda al servicio solo la huella del paquete y agrega el sello que recibe; si el
+    servicio no responde, no se entrega nada (503) y la denegación queda en la bitácora. El verificador de
+    consola también verifica paquetes. Además, aprobar una medición pide la emisión y autorizar una
+    enmienda pide la reemisión, después de confirmar la transacción (`nucleo/emision.py`, token de
+    identidad de sa-app); si la llamada falla, la recupera el trabajo diario. Quien puede leer un
+    certificado descarga su archivo firmado y tiene el enlace a la comprobación pública.
 
 ---
 

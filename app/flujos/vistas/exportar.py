@@ -1,18 +1,22 @@
 """Exportar evidencia (5.11, C18): AUD, dentro de su ventana, descarga un paquete por objeto. Lo
 genera el sistema, lleva la identidad de quien lo pidió, no incluye datos personales de los
-dueños, y su huella SHA-256 queda en la bitácora y en ExportacionAuditoria. El sello con la clave
-de Verdeazul lo agrega el servicio de emisión en la fase 6 (tarea 6.10)."""
+dueños, y su huella SHA-256 queda en la bitácora y en ExportacionAuditoria. Lo sella el servicio
+de emisión con la clave de Verdeazul (6.10): se le manda solo la huella y devuelve la firma, que va
+en el campo «sello». Sin sello no se entrega nada. El paquete se verifica sin conexión con
+verificador/verificar.py."""
 
 import hashlib
 import json
 
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from autorizacion.proteccion import protegida
 from bitacora.models import Registro
 from flujos.comun import anotar
+from nucleo import emision
 from negocio.models import (
     Alerta,
     Asignacion,
@@ -146,11 +150,20 @@ def _vista(tipo):
             "objeto": tipo,
             "generado_en": ahora.isoformat(),
             "auditor": request.user.username,
-            "sello": None,
             "filas": CONTENIDO[tipo](),
         }
+        # La huella es del JSON canónico del paquete sin el sello: lo mismo que recalcula el verificador.
+        huella = hashlib.sha256(
+            json.dumps(paquete, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        try:
+            paquete["sello"] = emision.sellar(huella, tipo)
+        except emision.SinEmision:
+            anotar(request, "exportar", tipo, "", resultado="denegado", regla="C18: sin sello")
+            respuesta = render(request, "flujos/sin_sello.html", status=503)
+            respuesta.conservar_bitacora = True  # la denegación queda; nada más se escribió
+            return respuesta
         cuerpo = json.dumps(paquete, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        huella = hashlib.sha256(cuerpo.encode("utf-8")).hexdigest()
         registro = ExportacionAuditoria.objects.create(auditor=request.user, objeto=tipo, huella=huella)
         anotar(request, "exportar", tipo, registro.pk, despues={"huella": huella, "filas": len(paquete["filas"])})
         respuesta = HttpResponse(cuerpo, content_type="application/json; charset=utf-8")

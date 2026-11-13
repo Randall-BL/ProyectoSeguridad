@@ -1,7 +1,12 @@
 """Certificados: los leen VER y GER (con H1 a H3), AUD dentro de su ventana y DUE los suyos (C5).
-Emitirlos y revocarlos es solo del sistema (fila SIS, C4): llega con el servicio de emisión en la
-fase 6."""
+Emitirlos y revocarlos es solo del sistema (fila SIS, C4): lo hace el servicio de emisión. Quien
+puede leer un certificado puede descargar su archivo firmado y comprobarlo en el servicio público."""
 
+import json
+from urllib.parse import urlencode
+
+from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -42,5 +47,27 @@ def ficha(request, certificado):
         "datos": [("Finca", c.parcela.finca.codigo), ("Parcela", c.parcela.codigo), ("Período", c.periodo.nombre),
                   ("Toneladas de CO₂", c.toneladas_co2), ("Emitido", c.emitido_en.strftime("%d/%m/%Y %H:%M")),
                   ("Revocado", c.revocado_en.strftime("%d/%m/%Y %H:%M") if c.revocado_en else None),
-                  ("Reemplaza a", c.reemplaza.codigo if c.reemplaza else None), ("Clave", c.clave_id)],
+                  ("Reemplaza a", c.reemplaza.codigo if c.reemplaza else None),
+                  ("Lo reemplaza", getattr(getattr(c, "reemplazado_por", None), "codigo", None)),
+                  ("Clave", c.clave_id)],
+        "acciones": _acciones(c),
     })
+
+
+def _acciones(c):
+    acciones = [accion("Descargar el certificado", reverse("descargar_certificado", args=[c.pk]), primaria=True)]
+    if settings.PUBLICO_URL:
+        enlace = f"{settings.PUBLICO_URL.rstrip('/')}/comprobar?{urlencode({'codigo': c.codigo})}"
+        acciones.append(accion("Comprobar en el servicio público", enlace))
+    return acciones
+
+
+@require_http_methods(["GET"])
+@protegida("leer", "certificados", objeto=h.certificado)
+def descargar(request, certificado):
+    """El archivo firmado tal cual: contenido y firma. Es lo que se entrega al comprador."""
+    c = get_object_or_404(Certificado, pk=certificado)
+    cuerpo = json.dumps({"contenido": c.contenido, "firma": c.firma}, ensure_ascii=False, indent=2, sort_keys=True)
+    respuesta = HttpResponse(cuerpo, content_type="application/json; charset=utf-8")
+    respuesta["Content-Disposition"] = f'attachment; filename="{c.codigo}.json"'
+    return respuesta
