@@ -146,6 +146,17 @@ class MuestrarioDeComponentes(TestCase):
             self.assertIn(f'<span aria-hidden="true">{icono}</span> {estado.capitalize()}', html)
 
 
+class SinSitioDeAdministracion(TestCase):
+    """5.14: no existe el sitio de administración de Django, que edita cualquier tabla saltándose
+    el motor de decisión, la seguridad por fila y la bitácora."""
+
+    def test_no_esta_instalado_ni_responde(self):
+        from django.conf import settings
+
+        self.assertNotIn("django.contrib.admin", settings.INSTALLED_APPS)
+        self.assertEqual(self.client.get("/admin/").status_code, 404)
+
+
 class PaginaNoEncontrada(TestCase):
     """5.15: la página 404 propia no dice más que la de Django. No repite la dirección pedida ni
     distingue lo que no existe de lo que el motor niega (T-08 responde lo mismo en los dos casos)."""
