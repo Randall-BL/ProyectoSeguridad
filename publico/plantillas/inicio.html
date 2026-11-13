@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>Comprobar un certificado</h1>
+<p class="entrada">Cada certificado de Verdeazul está firmado con Ed25519. Puede comprobarlo de dos formas: con el archivo, que dice si alguien lo modificó, o con el código, que dice si sigue vigente.</p>
+
+<div class="dos">
+  <section class="tarjeta" aria-labelledby="t-archivo">
+    <h2 id="t-archivo">Con el archivo</h2>
+    <p>Suba el archivo <code>.json</code> del certificado. Se revisa la firma, que el contenido no cambió y que la clave es la de Verdeazul. El archivo no se guarda.</p>
+    <form method="post" action="{{ url_for('verificar') }}" enctype="multipart/form-data">
+      <div class="campo{% if error_archivo %} campo-error{% endif %}">
+        <label for="certificado">Archivo del certificado</label>
+        <input id="certificado" name="certificado" type="file" accept=".json,application/json" required
+               {% if error_archivo %}aria-invalid="true" aria-describedby="e-archivo"{% endif %}>
+        {% if error_archivo %}<p class="error" id="e-archivo" role="alert">{{ error_archivo }}</p>{% endif %}
+      </div>
+      <button class="boton boton-primario" type="submit">Verificar el archivo</button>
+    </form>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-codigo">
+    <h2 id="t-codigo">Con el código</h2>
+    <p>Escriba el código impreso en el certificado. Responde si el sello es válido, su estado, las toneladas y el período, y si fue revocado, cuál lo reemplaza.</p>
+    <form method="get" action="{{ url_for('comprobar') }}">
+      <div class="campo{% if error_codigo %} campo-error{% endif %}">
+        <label for="codigo">Código del certificado</label>
+        <input id="codigo" name="codigo" type="text" autocomplete="off" spellcheck="false" autocapitalize="characters"
+               placeholder="VA-2026-II-XXXXXXXX" maxlength="24" required
+               {% if error_codigo %}aria-invalid="true" aria-describedby="e-codigo"{% endif %}>
+        {% if error_codigo %}<p class="error" id="e-codigo" role="alert">{{ error_codigo }}</p>{% endif %}
+      </div>
+      <button class="boton boton-secundario" type="submit">Comprobar el código</button>
+    </form>
+  </section>
+</div>
+
+<section class="clave" aria-labelledby="t-clave">
+  <h2 id="t-clave">La clave de Verdeazul</h2>
+  <p>Huella SHA-256 de la clave pública. Es la misma que aparece en el repositorio del proyecto.</p>
+  <p class="huella"><code>{{ clave_id }}</code></p>
+  <p><a href="{{ url_for('clave_publica') }}">Descargar la clave pública</a> · <a href="{{ repositorio }}">Verificador sin conexión</a></p>
+</section>
+{% endblock %}

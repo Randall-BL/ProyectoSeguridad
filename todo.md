@@ -607,8 +607,10 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   - El mismo script creó `va_emision`, `va_publico` y `va_trabajos` con LOGIN en Neon (`db/roles/servicio.sql`,
     antes `va_app.sql`) y sus secretos `db-url-emision`, `db-url-publico` y `db-url-trabajos`, cada uno
     legible solo por su cuenta de servicio.
-- [ ] 6.2 Publicar la clave pública y su huella: en el README, en `docs/` y en una ruta
+- [x] 6.2 Publicar la clave pública y su huella: en el README, en `docs/` y en una ruta
   `/.well-known/verdeazul-clave.pem` del servicio público. No es secreta.
+  - 13-nov: README («Certificados: clave pública y verificación»), `docs/verdeazul-clave-publica.pem` y la
+    misma copia junto al verificador; una prueba exige que las dos sean iguales.
 - [x] 6.3 Servicio de emisión (`verdeazul-emision`): sin acceso público; solo `sa-app` tiene
   `run.invoker`. Recibe el identificador de una medición aprobada, comprueba C4 con su propio usuario de
   base, firma e inserta. Ninguna persona puede invocar la emisión directamente.
@@ -625,11 +627,17 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   los dos quedan enlazados y ninguno se borra (C4, T-25). Si no cambian, se anota la enmienda.
   - 13-nov: `POST /reemitir` (`emision/emitir.py`). T-25 probado contra la base; llamar dos veces no
     duplica. `POST /emitir-pendientes` recupera lo que quedó sin emitir si una llamada falló.
-- [ ] 6.6 Verificación en `verdeazul-publico` («dado el archivo»): se sube el certificado y responde si la
+- [x] 6.6 Verificación en `verdeazul-publico` («dado el archivo»): se sube el certificado y responde si la
   firma es válida, si el contenido fue modificado y **si la clave incrustada es la de Verdeazul**. Sin esa
   última comprobación, cualquiera podría firmar un certificado falso con su propia clave e incrustarla.
-- [ ] 6.7 Comprobación por código (C20): sello válido, estado, toneladas, período y, si fue revocado, el
+  - 13-nov: `publico/` (Flask, sin JavaScript, CSP `default-src 'none'`). El archivo no se guarda; si la
+    firma no corresponde, no se muestra el contenido. 15 pruebas en `publico/test_servicio.py`.
+- [x] 6.7 Comprobación por código (C20): sello válido, estado, toneladas, período y, si fue revocado, el
   código del reemplazo. Sin listados, búsquedas ni datos del titular. Límite de ritmo por origen.
+  - 13-nov: `va_comprobar(codigo)` (SECURITY DEFINER, código exacto, sin LIKE) es lo único que puede
+    llamar `va_publico`. El servicio vuelve a verificar la firma guardada, valida la forma del código antes
+    de ir a la base y limita a 10 consultas por minuto por origen (último valor de X-Forwarded-For, el que
+    agrega Cloud Run), en memoria y con `maxScale` 1. T-32 probado contra la base y en el servicio.
 - [x] 6.8 `verificador/`: programa de línea de comandos que verifica un certificado sin conexión al
   sistema. Es lo que haría un comprador en otro país.
 - [ ] 6.9 Demostración preparada: un certificado válido, el mismo con una tonelada cambiada (debe

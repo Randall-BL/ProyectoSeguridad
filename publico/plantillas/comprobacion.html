@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Código {{ codigo }}{% endblock %}
+{% block contenido %}
+<p class="migas"><a href="{{ url_for('inicio') }}">Comprobar</a> / Con el código</p>
+{% if certificado is none %}
+<div class="veredicto veredicto-mal" role="status">
+  <h1 class="veredicto-titulo"><span aria-hidden="true">✕</span> No hay un certificado con ese código</h1>
+  <p>{% if formato %}Revise que el código esté completo y sin espacios.{% else %}Un código de Verdeazul tiene la forma VA-2026-II-XXXXXXXX.{% endif %}</p>
+</div>
+{% else %}
+{% set vigente = certificado.estado == "vigente" and sello.valido %}
+<div class="veredicto {{ 'veredicto-bien' if vigente else 'veredicto-mal' }}" role="status">
+  <h1 class="veredicto-titulo"><span aria-hidden="true">{{ "✓" if vigente else "✕" }}</span>
+    {% if not sello.valido %}El sello no es válido{% elif vigente %}Certificado vigente{% else %}Certificado revocado{% endif %}</h1>
+  <p>{% if not sello.valido %}{{ sello.motivo }}{% elif vigente %}El sello es de Verdeazul y el certificado sigue vigente.{% else %}Ya no vale: fue reemplazado por otro certificado.{% endif %}</p>
+</div>
+<dl class="datos">
+  <dt>Código</dt><dd><code>{{ certificado.codigo }}</code></dd>
+  <dt>Sello</dt><dd>{{ "Válido, firmado por Verdeazul" if sello.valido else "No válido" }}</dd>
+  <dt>Estado</dt><dd>{{ "Vigente" if certificado.estado == "vigente" else "Revocado" }}</dd>
+  <dt>Toneladas de CO₂</dt><dd>{{ "%.3f"|format(certificado.toneladas_co2) }}</dd>
+  <dt>Período</dt><dd>{{ certificado.periodo }}</dd>
+  {% if certificado.revocado_en %}<dt>Revocado</dt><dd>{{ certificado.revocado_en.strftime("%Y-%m-%d") }}</dd>{% endif %}
+  {% if certificado.reemplazado_por %}<dt>Lo reemplaza</dt>
+    <dd><a href="{{ url_for('comprobar', codigo=certificado.reemplazado_por) }}"><code>{{ certificado.reemplazado_por }}</code></a></dd>{% endif %}
+</dl>
+{% endif %}
+<p><a href="{{ url_for('inicio') }}">Comprobar otro certificado</a></p>
+{% endblock %}

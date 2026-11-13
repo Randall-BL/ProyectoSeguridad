@@ -14,10 +14,10 @@ están en [Randall-BL/CE1115-Proyecto-P1-Verdeazul](https://github.com/Randall-B
 | `app/` | Aplicación Django, punto de cumplimiento | Sprint 1 |
 | `politica/` | Motor de decisión OPA: la matriz como política | Sprint 2 |
 | `db/` | Usuarios de base, permisos, seguridad por fila, bitácora | Sprint 2 |
-| `emision/` | Servicio de emisión de certificados (SIS) | Sprint 4 |
-| `publico/` | Comprobación pública de certificados (PUB) | Sprint 4 |
+| `emision/` | Servicio de emisión de certificados (SIS) | Sprint 4: firma, revoca y reemite |
+| `publico/` | Comprobación pública de certificados (PUB) | Sprint 4: por archivo y por código |
 | `trabajos/` | Trabajos programados | Sprint 4 |
-| `verificador/` | Verificador de certificados sin acceso al sistema | Sprint 4 |
+| `verificador/` | Formato del certificado y verificador sin conexión | Sprint 4 |
 | `infra/` | Scripts de Google Cloud, Cloud Build y Cloud Run (sin secretos) | Sprint 1 |
 
 ## Configuración del repositorio (una vez por clon)
@@ -102,7 +102,7 @@ Shell para correr los scripts.
 
 ```
 sh infra/preparar-gcp.sh     # registro de imágenes, cuentas de servicio, bucket de Cloud Build
-sh infra/crear-secretos.sh   # secretos en Secret Manager y usuario de base va_app
+sh infra/crear-secretos.sh   # secretos, un usuario de base por componente y la clave de firma
 ```
 
 **Cada versión:**
@@ -117,6 +117,34 @@ quiere volver. El registro conserva las últimas cinco versiones de cada imagen 
 
 **Dependencias:** se editan en `app/requirements.in` y se fijan con
 `sh infra/fijar-dependencias.sh app` (requiere `pip install uv`).
+
+## Certificados: clave pública y verificación
+
+Cada certificado es un JSON canónico (claves ordenadas, sin espacios, UTF-8) firmado con **Ed25519**,
+con la clave pública y su huella incrustadas (decisión 0.3). Lo firma solo el servicio de emisión, que
+es el único que lee la clave privada en Secret Manager. Una firma correcta no basta: la clave
+incrustada tiene que ser **esta**, la publicada por Verdeazul.
+
+- Huella SHA-256 de la clave pública (sus 32 bytes): `5fb2e24fa692518552f64842ecdaa94af05f6b87d035f66efaa0513a1b166d0f`
+- Archivo: [docs/verdeazul-clave-publica.pem](docs/verdeazul-clave-publica.pem), la misma copia que trae
+  el verificador y que sirve el servicio público en `/.well-known/verdeazul-clave.pem`.
+
+```
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEA4W/eeOeYlcyBg2bBdLpiTTdILrdZ1FpAusrTS2VKaHY=
+-----END PUBLIC KEY-----
+```
+
+**Verificar sin conexión** (lo que haría un comprador en otro país; también verifica los paquetes
+sellados que exporta el auditor):
+
+```
+pip install cryptography
+python verificador/verificar.py certificado.json
+```
+
+**Comprobar en línea**, con el archivo o con el código del certificado:
+https://verdeazul-publico-708901712393.us-east1.run.app
 
 ## Versiones publicadas
 
