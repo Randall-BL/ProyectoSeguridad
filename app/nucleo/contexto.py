@@ -17,6 +17,7 @@ MENU = [
     ("Mediciones", "mediciones", ("TEC", "VER", "SUP", "GER", "AUD", "DUE")),
     ("Enmiendas", "enmiendas", ("TEC", "VER", "SUP", "GER", "AUD", "DUE")),
     ("Certificados", "certificados", ("VER", "GER", "AUD", "DUE")),
+    ("Personal", "cuentas", ("GER", "ADM", "AUD")),
 ]
 
 

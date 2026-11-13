@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load allauth %}
+{% block head_title %}{{ titulo }}{% endblock head_title %}
+{% block content %}
+  {% include "flujos/_migas.html" %}
+  <div class="encabezado-pagina">
+    <div>
+      <h1>{{ titulo }}</h1>
+      <p>Si tiene un vínculo familiar o comercial con el titular de una finca, declárelo: no podrá medir, aprobar, asignar, revisar ni autorizar nada sobre sus fincas (C17).</p>
+    </div>
+    {% if ultima %}<span class="estado">Última declaración: {{ ultima.fecha|date:"j \d\e F \d\e Y" }}</span>{% endif %}
+  </div>
+
+  <section class="seccion-pagina" aria-labelledby="titulo-vinculos">
+    <h2 id="titulo-vinculos">Vínculos declarados</h2>
+    {% if vinculos %}
+      <div class="tabla-envoltura" role="region" aria-labelledby="titulo-vinculos" tabindex="0">
+        <table>
+          <thead><tr><th scope="col">Titular</th><th scope="col">Tipo</th><th scope="col">Declarado</th><th scope="col">Estado</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+          <tbody>
+            {% for v in vinculos %}
+              <tr>
+                <th scope="row">{{ v.titular.codigo }}</th>
+                <td>{{ v.get_tipo_display }}</td>
+                <td>{{ v.declarado_en|date:"d/m/Y" }}</td>
+                <td>{% if v.retirado_en %}Retirado{% elif v.retiro_solicitado_en %}Retiro pedido{% else %}Vigente{% endif %}</td>
+                <td class="celda-acciones">
+                  {% if not v.retiro_solicitado_en and not v.retirado_en %}
+                    <form method="post">{% csrf_token %}<input type="hidden" name="operacion" value="retiro"><input type="hidden" name="vinculo" value="{{ v.pk }}"><button class="boton boton-secundario boton-chico" type="submit">Pedir retiro</button></form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      {% include "nucleo/_vacio.html" with titulo="No ha declarado vínculos" texto="Si no tiene ninguno, regístrelo abajo: la declaración queda con su fecha." %}
+    {% endif %}
+  </section>
+
+  <section class="seccion-pagina" aria-labelledby="titulo-declarar">
+    <h2 id="titulo-declarar">Declarar un vínculo</h2>
+    <form class="formulario" method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="operacion" value="declarar">
+      {% include "nucleo/_resumen_errores.html" with form=form %}
+      {% element fields form=form %}{% endelement %}
+      <div class="acciones"><button class="boton boton-primario" type="submit">Declarar</button></div>
+    </form>
+    <form method="post" class="acciones">
+      {% csrf_token %}
+      <input type="hidden" name="operacion" value="sin_vinculos">
+      <button class="boton boton-secundario" type="submit">Declaro que no tengo vínculos</button>
+    </form>
+  </section>
+{% endblock content %}

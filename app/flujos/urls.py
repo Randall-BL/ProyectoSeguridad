@@ -11,6 +11,7 @@ from flujos.vistas import (
     mediciones,
     enmiendas,
     certificados,
+    cuentas,
     exportar,
 )
 
@@ -60,6 +61,14 @@ urlpatterns = [
     path("certificados/", certificados.lista, name="certificados"),
     path("certificados/<uuid:certificado>/", certificados.ficha, name="certificado"),
     # Cuentas (5.3)
+    path("personal/", cuentas.lista, name="cuentas"),
+    path("personal/nueva/", cuentas.crear, name="crear_cuenta"),
+    path("personal/<uuid:cuenta>/", cuentas.ficha, name="cuenta"),
+    path("personal/<uuid:cuenta>/desactivar/", cuentas.desactivar, name="desactivar_cuenta"),
+    path("personal/<uuid:cuenta>/rol/", cuentas.proponer_rol, name="proponer_rol"),
+    path("personal/roles/<uuid:propuesta>/aprobar/", cuentas.aprobar_rol, name="aprobar_rol"),
+    path("personal/vinculos/<uuid:vinculo>/aprobar-retiro/", cuentas.aprobar_retiro, name="aprobar_retiro"),
+    path("mis-vinculos/", cuentas.mis_vinculos, name="mis_vinculos"),
     # Alertas (5.8) y bitácora (5.12)
 ] + [
     # Exportaciones del auditor (5.11, C18)
