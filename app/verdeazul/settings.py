@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "negocio",
     "bitacora",
     "autorizacion",
+    "flujos",
 ]
 
 AUTH_USER_MODEL = "cuentas.Usuario"

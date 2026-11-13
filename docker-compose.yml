@@ -9,8 +9,9 @@ services:
       # Sin contraseña solo aquí: el puerto escucha únicamente en 127.0.0.1 y no hay datos reales.
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      # 55432 para no chocar con un PostgreSQL instalado en la máquina.
-      - "127.0.0.1:55432:5432"
+      # 15432 para no chocar con un PostgreSQL instalado en la máquina. Debajo de 49152 a propósito:
+      # en Windows, Hyper-V reserva bloques de puertos altos al arrancar y el 55432 quedó dentro de uno.
+      - "127.0.0.1:15432:5432"
     volumes:
       - datos:/var/lib/postgresql
     healthcheck:

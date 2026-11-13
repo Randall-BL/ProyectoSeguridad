@@ -76,7 +76,7 @@ DJANGO_SECRET_KEY=<cualquier valor largo> docker compose up --build
 ```
 
 La app queda en http://127.0.0.1:8000 y la base (PostGIS 18, sin contraseña, solo local) en
-`127.0.0.1:55432`. La llave se puede poner en `.env`, que git ignora.
+`127.0.0.1:15432`. La llave se puede poner en `.env`, que git ignora.
 
 Para crear las tablas y cargar los personajes de los casos de prueba (una sola vez por base):
 
@@ -126,3 +126,5 @@ Cada etiqueta de git corresponde a la imagen con la misma etiqueta en
 | Versión | Commit | Fecha | Qué trae |
 |---|---|---|---|
 | `v0.1.0` | `6a0a1f8` | 2026-11-06 | «Hola»: Django por HTTPS en Cloud Run, que lee Neon con la cadena de Secret Manager; imagen sin root |
+| `v0.2.0` | `383da2f` (`app`), `7b5df6e` (`politica`) | 2026-11-12 | Base con seguridad por fila y bitácora encadenada, Argon2id y TOTP obligatorio, sesión revocable, OPA como contenedor auxiliar que decide cada petición y frena todo si no responde (T-41), interfaz nueva. La imagen de la política salió de `7b5df6e`, que solo cambia `.gcloudignore`: los archivos de la política son los mismos de `383da2f` |
+| `v0.3.0` | `c8d05be` | 2026-11-12 | Los flujos de la fase 5 con una ruta protegida por cada permiso de los siete roles: catálogo, períodos, asignaciones, mediciones, enmiendas, cuentas, datos personales, alertas, bitácora y exportación del auditor. Corrige la seguridad por fila que impedía a un técnico registrar mediciones |

@@ -24,4 +24,5 @@ urlpatterns = [
     ),
     path("cuentas/2fa/", include("allauth.mfa.urls")),
     path("cuentas/rol/", cuentas.elegir_rol, name="elegir_rol"),
+    path("", include("flujos.urls")),
 ]

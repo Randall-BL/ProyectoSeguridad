@@ -277,19 +277,20 @@ input[name="code"] { font-size: 24px; letter-spacing: .4em; text-align: center; 
 }
 .luz { display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--luz); vertical-align: 1px; }
 
-.barra .ancho { display: flex; align-items: center; gap: 40px; min-height: 84px; }
+.barra .ancho { display: flex; align-items: center; gap: 32px; min-height: 84px; }
 .marca {
   display: inline-flex; align-items: center; gap: 12px;
   font: 400 22px/1 var(--serif); letter-spacing: -.02em; white-space: nowrap; text-decoration: none;
 }
 .marca img { width: 30px; height: 30px; border-radius: 50%; }
-.menu { display: flex; flex-wrap: wrap; gap: 4px 28px; }
-.menu a { padding: 6px 0; font-size: 15px; text-transform: uppercase; text-decoration: none; color: var(--grafito); }
+.menu { display: flex; flex-wrap: wrap; gap: 4px 22px; }
+.menu a { padding: 6px 0; font-size: 14px; text-transform: uppercase; text-decoration: none; color: var(--grafito); }
 .menu a:hover { color: var(--texto); }
 .menu a[aria-current="page"] { color: var(--texto); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 8px; }
 .persona { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 .persona form { margin: 0; }
-.persona-datos { text-align: right; font-size: 13px; line-height: 1.35; text-transform: uppercase; letter-spacing: 0; }
+.persona-datos { text-align: right; font-size: 13px; line-height: 1.35; text-transform: uppercase; letter-spacing: 0; white-space: nowrap; }
+@media (max-width: 1240px) { .persona-datos { display: none; } }
 .persona-datos strong { display: block; font-weight: 400; }
 .persona-datos span { color: var(--humo); }
 .avatar {

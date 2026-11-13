@@ -7,6 +7,11 @@ Las contraseñas nunca están en el repositorio. Salen de una de tres formas:
 * Sin ninguna de las dos: se generan y se imprimen una sola vez, y solo en una terminal, para que
   no terminen en un registro de Cloud Run o de CI.
 
+Con ``--salida`` o en la terminal, cada cuenta queda además con el segundo factor activo (TOTP y
+códigos de recuperación, decisión 0.4): su semilla ``otpauth://`` va junto a la contraseña, para el
+anexo del informe. Los secretos se cifran con ``MFA_CLAVE``, que tiene que ser la misma del
+despliegue. Con ``SEMILLA_CONTRASENA`` (la base local) cada persona lo activa al entrar.
+
 Se corre con el usuario dueño de la base, una sola vez por base:
 
     python manage.py sembrar --salida ../../cuentas_prueba.txt
@@ -139,6 +144,8 @@ class Command(BaseCommand):
             self.ahora = timezone.now()
             self.hoy = timezone.localdate()
             claves = self._personas(compartida)
+            if not compartida:
+                claves = self._segundo_factor(claves)
             self._catalogo()
             self._periodos()
             self._primer_periodo()
@@ -226,6 +233,21 @@ class Command(BaseCommand):
                 continue
             self._propuesta_rol(persona, persona.rol, aprobada_por=gerardo if persona is gabriela else gabriela)
         return claves
+
+    def _segundo_factor(self, claves):
+        """TOTP y códigos de recuperación para cada cuenta; la semilla va al lado de la contraseña."""
+        from allauth.mfa.adapter import get_adapter
+        from allauth.mfa.recovery_codes.internal.auth import RecoveryCodes
+        from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
+
+        con_semilla = []
+        for usuario, rol, clave in claves:
+            persona = self.u[usuario]
+            secreto = generate_totp_secret()
+            TOTP.activate(persona, secreto)
+            RecoveryCodes.activate(persona)
+            con_semilla.append((usuario, rol, clave, get_adapter().build_totp_url(persona, secreto)))
+        return con_semilla
 
     def _propuesta_rol(self, persona, rol, *, aprobada_por):
         return PropuestaRol.objects.create(
@@ -519,9 +541,13 @@ def _clave_nueva(persona):
 
 
 def _tabla(claves):
-    ancho = max(len(u) for u, _, _ in claves)
-    filas = [f"{'usuario'.ljust(ancho)}  rol  contraseña"]
-    filas += [f"{u.ljust(ancho)}  {r}  {c}" for u, r, c in claves]
+    """Usuario, rol y contraseña; si la cuenta ya tiene segundo factor, también su semilla TOTP."""
+    ancho = max(len(fila[0]) for fila in claves)
+    con_semilla = len(claves[0]) == 4
+    filas = [f"{'usuario'.ljust(ancho)}  rol  contraseña" + ("  semilla TOTP" if con_semilla else "")]
+    for fila in claves:
+        u, r, c = fila[:3]
+        filas.append(f"{u.ljust(ancho)}  {r}  {c}" + (f"  {fila[3]}" if con_semilla else ""))
     return "\n".join(filas) + "\n"
 
 

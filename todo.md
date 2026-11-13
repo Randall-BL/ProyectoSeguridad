@@ -160,6 +160,9 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
   mejora si da el tiempo (si no, desviación D-07).
   - 9-nov: pendiente antes de sembrar Neon: que `sembrar` active el TOTP de cada cuenta y escriba
     su semilla (URI `otpauth://`) en el archivo de `--salida`, junto a la contraseña.
+  - 12-nov: hecho. La rama `main` de Neon quedó migrada y sembrada con las 12 cuentas, cada una con
+    TOTP y códigos de recuperación. El archivo con contraseñas y semillas está fuera de los dos repos
+    y va al anexo del informe.
 - [ ] **0.5 Cómo se construyen las imágenes.** Recomendado para empezar: un script `infra/deploy.sh`
   con `gcloud builds submit` (Cloud Build). Mejora: GitHub Actions con Workload Identity Federation.
   Nunca una llave JSON de cuenta de servicio guardada como secreto del repositorio si se puede evitar.
@@ -216,7 +219,7 @@ demás es agregar funcionalidad encima.
 - [x] 1.6 Entorno local: `docker compose` con PostGIS y OPA, solo para desarrollar (lo que se evalúa es
   la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización. Hecho:
   `docker-compose.yml` con PostGIS 18 (fijada por huella) y la app; OPA se agrega en el sprint 2.
-  Los puertos escuchan solo en 127.0.0.1 (la base en el 55432). Comprobado: la app corre como
+  Los puertos escuchan solo en 127.0.0.1 (la base en el 15432). Comprobado: la app corre como
   `uid=10001` y no puede escribir en `/srv/app`.
 
 **Neon**
@@ -393,8 +396,8 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 - [x] 3.3 Segundo factor con django-allauth (TOTP y códigos de recuperación; WebAuthn si da el tiempo).
   Sin SMS ni correo (POL-AU-05).
   - allauth 65.21.1: usuario, contraseña y TOTP; 10 códigos de recuperación de respaldo. Secreto TOTP
-    y semilla de los códigos cifrados con Fernet (`MFA_CLAVE`, secreto `mfa-clave`; falta crearlo en
-    Secret Manager al desplegar v0.2.0).
+    y semilla de los códigos cifrados con Fernet (`MFA_CLAVE`, secreto `mfa-clave`, creado el 12-nov
+    con `infra/crear-secretos.sh`; solo `sa-app` lo lee).
   - `cuentas.middleware.ExigirSegundoFactor`: sin TOTP solo se puede activarlo o salir. Nadie lo
     desactiva desde su sesión (POL-AU-10), y no hay registro abierto ni recuperación por correo.
   - En la base, `va_app` solo puede borrar la fila de códigos de recuperación (RLS en
@@ -472,8 +475,9 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   no recibe tráfico (K-3).
   - `infra/app.service.yaml`: contenedor `politica` sin puertos declarados (solo la aplicación
     recibe tráfico), sondas de inicio y de vida en `/health`, y `container-dependencies` para que la
-    aplicación arranque después. La aplicación lo encuentra en `OPA_URL`. Se comprueba al desplegar
-    v0.2.0: hay que publicar `politica:v0.2.0` junto con `app:v0.2.0`.
+    aplicación arranque después. La aplicación lo encuentra en `OPA_URL`. Comprobado el 12-nov en
+    la revisión `verdeazul-app-00003`: los dos contenedores quedan listos y sanos, y la sonda de inicio
+    de OPA pasa antes de que la aplicación reciba tráfico.
 - [x] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
   pregunta al motor. ⚠ **Si OPA no responde, tarda más que el límite o contesta algo inválido, la
   petición se frena** (K-3, criterio de aceptación 6): 503, registro en la bitácora y nada más. Sin
@@ -531,34 +535,48 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 
 Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejercitar cada permiso.
 
-- [ ] 5.1 Inicio por rol con las acciones que tiene. Respuesta «no encontrado» igual para lo ajeno y lo
+- [x] 5.1 Inicio por rol con las acciones que tiene. Respuesta «no encontrado» igual para lo ajeno y lo
   inexistente (T-08).
-- [ ] 5.2 Catálogo: ADM propone alta de finca, cambio de titular o de geometría; GER aprueba (C11).
+  - 12-nov: el inicio muestra lo que el motor da al rol y el menú lleva a cada pantalla de su rol; lo ajeno y lo inexistente responden la misma 404 (T-08, probado).
+- [x] 5.2 Catálogo: ADM propone alta de finca, cambio de titular o de geometría; GER aprueba (C11).
   Parcelas con mediciones no se editan: versión nueva.
-- [ ] 5.3 Cuentas: ADM crea, propone roles y desactiva; GER aprueba; nadie toca su propia cuenta (C12).
+  - 12-nov: `flujos/vistas/fincas.py`. Alta de finca con su primera parcela (WKT), cambio de titular y parcela nueva que reemplaza a otra; GER aprueba desde la ficha. T-15 probado.
+- [x] 5.3 Cuentas: ADM crea, propone roles y desactiva; GER aprueba; nadie toca su propia cuenta (C12).
   Cada quien cambia su contraseña, sus factores y su declaración de vínculos (C13); retirar un vínculo lo aprueba GER.
-- [ ] 5.4 Períodos: ADM registra apertura y cierre con las fechas de la coordinación; GER aprueba. No
+  - 12-nov: `flujos/vistas/cuentas.py`, en `/personal/`. La cuenta nace sin rol y con una contraseña inicial que se muestra una sola vez; `/mis-vinculos/` para C13. T-16 y T-35 probados.
+- [x] 5.4 Períodos: ADM registra apertura y cierre con las fechas de la coordinación; GER aprueba. No
   existe reabrir. Al cerrar, los borradores nunca enviados pasan a `excluida` (C14, T-22).
-- [ ] 5.5 Asignaciones: SUP crea ordinarias y temporales (motivo y fecha de fin, 15 días máximo,
+  - 12-nov: `flujos/vistas/periodos.py`. T-22 probado: al cerrar, el borrador de A pasa a excluida.
+- [x] 5.5 Asignaciones: SUP crea ordinarias y temporales (motivo y fecha de fin, 15 días máximo,
   renovable); nadie se asigna a sí mismo; vencen solas (C19, T-27, T-28). Un técnico tiene como máximo
   20 asignaciones activas; la pantalla muestra cuántas lleva (K-1, T-38, T-39).
-- [ ] 5.6 Mediciones: TEC crea, modifica (versión nueva) y envía; fecha de medición declarada y fecha
+  - 12-nov: `flujos/vistas/asignaciones.py`, con la tabla de activas por técnico. Vencen solas para el acceso (C1 mira las fechas); marcarlas terminadas es del trabajo 7.2. T-28 y T-38 probados.
+- [x] 5.6 Mediciones: TEC crea, modifica (versión nueva) y envía; fecha de medición declarada y fecha
   de registro del servidor (C2, T-30). VER aprueba o devuelve con observaciones (C3); el formulario de
   aprobación no lleva ningún campo de aprobador, que sale de la sesión (K-2, T-40). Más de cinco días
   hábiles entre las dos fechas pide motivo.
-- [ ] 5.7 Enmiendas: solicitar (TEC, VER o GER, C7), corregir en 10 días hábiles como versión propuesta
+  - 12-nov: `flujos/vistas/mediciones.py`. Recorrido con va_app: A registra y envía, C aprueba con reautenticación y motivo fuera de jornada. Encontrado y corregido: la seguridad por fila no dejaba a ningún técnico insertar una medición (`negocio/sql/0005`). T-01, T-03, T-05, T-06, T-29, T-40 probados.
+- [x] 5.7 Enmiendas: solicitar (TEC, VER o GER, C7), corregir en 10 días hábiles como versión propuesta
   (C9), revisión técnica independiente con cálculo de materialidad (C10), autorización final de GER que
   registra si el certificado fue comercializado (C8).
-- [ ] 5.8 Alertas: SUP atiende las de sus técnicos; GER las demás y las que SUP no resuelva en dos días
+  - 12-nov: `flujos/vistas/enmiendas.py`. Material si cambia un dato del cálculo de toneladas. La revocación y reemisión del certificado afectado es de 6.5.
+- [x] 5.8 Alertas: SUP atiende las de sus técnicos; GER las demás y las que SUP no resuelva en dos días
   hábiles; nadie resuelve una sobre sí mismo (C15, T-36).
-- [ ] 5.9 Datos personales: ADM los mantiene; supresión solo si no hay obligación de conservar (C16, T-37).
-- [ ] 5.10 DUE ve lo de sus fincas y solo mediciones aprobadas (C5).
+  - 12-nov: `flujos/vistas/alertas.py`; la escalada a GER se calcula al leer (dos días hábiles). T-36 probado.
+- [x] 5.9 Datos personales: ADM los mantiene; supresión solo si no hay obligación de conservar (C16, T-37).
+  - 12-nov: `flujos/vistas/titulares.py`. T-37 probado.
+- [x] 5.10 DUE ve lo de sus fincas y solo mediciones aprobadas (C5).
+  - 12-nov: por la seguridad por fila y C5 en el motor; T-08 probado.
 - [ ] 5.11 AUD ve todo y exporta paquetes sellados, con su identidad, sin datos personales y con la
   huella en la bitácora (C18, T-31).
-- [ ] 5.12 GER y AUD leen la bitácora; cada lectura queda registrada (POL-BT-05).
-- [ ] 5.13 ⚠ Todo acceso a datos por el ORM o con consultas parametrizadas. Prohibido `raw()` con
+  - 12-nov: exportación por objeto en `/exportar/<objeto>/` (`flujos/vistas/exportar.py`) con la identidad del auditor, sin datos personales y con su huella SHA-256 en la bitácora y en ExportacionAuditoria (T-31 probado). Falta el sello con la clave de Verdeazul (6.10).
+- [x] 5.12 GER y AUD leen la bitácora; cada lectura queda registrada (POL-BT-05).
+  - 12-nov: `/bitacora/` con la comprobación de la cadena; cada lectura se registra.
+- [x] 5.13 ⚠ Todo acceso a datos por el ORM o con consultas parametrizadas. Prohibido `raw()` con
   cadenas armadas, `extra()`, `eval` y `pickle` sobre datos externos (regla de Bandit y Ruff).
-- [ ] 5.14 Sin el sitio de administración de Django: edita cualquier tabla saltándose las reglas.
+  - 12-nov: revisado con grep: ningún raw(), extra(), eval ni pickle, y todo cursor.execute va con parámetros. Bandit y Ruff entran al CI en 8.8.
+- [x] 5.14 Sin el sitio de administración de Django: edita cualquier tabla saltándose las reglas.
+  - 12-nov: `nucleo.tests.SinSitioDeAdministracion`.
 - [x] 5.15 Diseño de la interfaz, adelantado el 10 nov: plantilla base con encabezado y menú por rol
   activo, estilos propios en `nucleo/static/verdeazul/` servidos por WhiteNoise (con huella en el
   nombre, sin CDN ni estilos en línea, listos para una CSP estricta), claro y oscuro, y adaptados al
@@ -630,8 +648,11 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     (K-2).
   - T-41: con OPA detenido, cualquier rol pide cualquier acción. Se frena con 503, no se ejecuta nada
     y queda en la bitácora (K-3).
-- [ ] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
+  - 12-nov: `flujos.tests.CasosDeLaParte1`, con el motor real, cubre T-01, T-02, T-03, T-05, T-06, T-08, T-10, T-15, T-16, T-22, T-27, T-28, T-29, T-31, T-35, T-36, T-37, T-38 y T-40; T-41 está en nucleo y autorizacion. En Rego ya pasan T-01 a T-39. Faltan de punta a punta los demás.
+- [x] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
+  - Cubierto en `politica/verdeazul/decision_test.rego`: toda combinación fuera de la matriz se deniega, y las 38 celdas vacías están contadas.
 - [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
+  - 12-nov: `flujos.tests.CadaPermisoTieneRuta` exige una ruta protegida para cada permiso de los siete roles de la aplicación. Falta el caso feliz uno por uno.
 - [ ] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
   restricciones): las dos copias de la regla no pueden divergir (RR-10).
 - [ ] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una

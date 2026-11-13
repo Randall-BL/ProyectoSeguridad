@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block head_title %}{{ titulo }}{% endblock head_title %}
+{% block content %}
+  {% include "flujos/_migas.html" %}
+  <div class="encabezado-pagina">
+    <div>
+      <h1>{{ titulo }}</h1>
+      {% if descripcion %}<p>{{ descripcion }}</p>{% endif %}
+    </div>
+    {% include "flujos/_acciones.html" %}
+  </div>
+  {% include "flujos/_tabla.html" %}
+  {% for seccion in secciones %}
+    <section class="seccion-pagina" aria-label="{{ seccion.titulo }}">
+      <h2>{{ seccion.titulo }}</h2>
+      {% if seccion.nota %}<p class="bloque-nota">{{ seccion.nota }}</p>{% endif %}
+      {% include "flujos/_tabla.html" with tabla=seccion %}
+    </section>
+  {% endfor %}
+{% endblock content %}

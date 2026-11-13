@@ -10,6 +10,16 @@ from cuentas.models import Rol
 # es la decisión en el servidor (tarea 4.10).
 MENU = [
     ("Inicio", "inicio", ()),
+    ("Fincas", "fincas", ("TEC", "VER", "SUP", "GER", "ADM", "AUD", "DUE")),
+    ("Titulares", "titulares", ("TEC", "GER", "ADM", "AUD", "DUE")),
+    ("Períodos", "periodos", ()),
+    ("Asignaciones", "asignaciones", ("TEC", "SUP", "GER", "AUD", "DUE")),
+    ("Mediciones", "mediciones", ("TEC", "VER", "SUP", "GER", "AUD", "DUE")),
+    ("Enmiendas", "enmiendas", ("TEC", "VER", "SUP", "GER", "AUD", "DUE")),
+    ("Certificados", "certificados", ("VER", "GER", "AUD", "DUE")),
+    ("Personal", "cuentas", ("GER", "ADM", "AUD")),
+    ("Alertas", "alertas", ("SUP", "GER", "AUD")),
+    ("Bitácora", "bitacora", ("GER", "AUD")),
 ]
 
 
