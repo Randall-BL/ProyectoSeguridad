@@ -11,6 +11,7 @@ from cuentas.models import Rol
 MENU = [
     ("Inicio", "inicio", ()),
     ("Fincas", "fincas", ("TEC", "VER", "SUP", "GER", "ADM", "AUD", "DUE")),
+    ("Titulares", "titulares", ("TEC", "GER", "ADM", "AUD", "DUE")),
     ("Períodos", "periodos", ()),
     ("Asignaciones", "asignaciones", ("TEC", "SUP", "GER", "AUD", "DUE")),
     ("Mediciones", "mediciones", ("TEC", "VER", "SUP", "GER", "AUD", "DUE")),

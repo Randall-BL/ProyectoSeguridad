@@ -5,6 +5,7 @@ from django.urls import path
 
 from flujos.vistas import (
     fincas,
+    titulares,
     periodos,
     asignaciones,
     mediciones,
@@ -22,6 +23,11 @@ urlpatterns = [
     path("fincas/<uuid:finca>/proponer-parcela/", fincas.proponer_parcela, name="proponer_parcela"),
     path("catalogo/<uuid:propuesta>/aprobar/", fincas.aprobar, name="aprobar_catalogo"),
     # Datos personales (5.9)
+    path("titulares/", titulares.lista, name="titulares"),
+    path("titulares/nuevo/", titulares.crear, name="crear_titular"),
+    path("titulares/<uuid:titular>/", titulares.ficha, name="titular"),
+    path("titulares/<uuid:titular>/datos/", titulares.editar, name="editar_titular"),
+    path("titulares/<uuid:titular>/suprimir/", titulares.suprimir, name="suprimir_titular"),
     # Períodos (5.4)
     path("periodos/", periodos.lista, name="periodos"),
     path("periodos/nuevo/", periodos.crear, name="crear_periodo"),
