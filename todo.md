@@ -599,8 +599,14 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 ## 6 · Certificados firmados y comprobación (meta: 14 nov)
 
-- [ ] 6.1 ⚠ Generar la clave Ed25519 en Cloud Shell y subirla directamente a Secret Manager como
+- [x] 6.1 ⚠ Generar la clave Ed25519 en Cloud Shell y subirla directamente a Secret Manager como
   `firma-clave-privada` (por la entrada estándar, sin dejarla en disco). Solo `sa-emision` tiene acceso.
+  - 13-nov: `infra/crear-secretos.sh` la genera con `infra/clave_firma.py` y la manda por una tubería a
+    Secret Manager (no en Cloud Shell, pero igual sin tocar el disco ni la pantalla), y después comprueba
+    que la guardada corresponde a la pública. Huella `5fb2e24f…166d0f`. Solo `sa-emision` la lee.
+  - El mismo script creó `va_emision`, `va_publico` y `va_trabajos` con LOGIN en Neon (`db/roles/servicio.sql`,
+    antes `va_app.sql`) y sus secretos `db-url-emision`, `db-url-publico` y `db-url-trabajos`, cada uno
+    legible solo por su cuenta de servicio.
 - [ ] 6.2 Publicar la clave pública y su huella: en el README, en `docs/` y en una ruta
   `/.well-known/verdeazul-clave.pem` del servicio público. No es secreta.
 - [ ] 6.3 Servicio de emisión (`verdeazul-emision`): sin acceso público; solo `sa-app` tiene
