@@ -42,7 +42,9 @@ class SemillaConSegundoFactor(TestCase):
         with mock.patch.dict("os.environ", {"SEMILLA_CONTRASENA": "Una-clave-local-larga-2026"}):
             call_command("sembrar", stdout=open(os.devnull, "w"))
         ana = Usuario.objects.get(username="tec.ana")
-        asignada = Asignacion.objects.filter(tecnico=ana, terminada_en__isnull=True, periodo__estado="abierto").first()
+        asignada = Asignacion.objects.filter(
+            tecnico=ana, tipo="ordinaria", terminada_en__isnull=True, periodo__estado="abierto"
+        ).first()
         propia = Parcela.objects.filter(finca=asignada.finca, activa=True).first()
         ajena = Parcela.objects.exclude(finca__asignaciones__tecnico=ana).filter(activa=True).first()
 

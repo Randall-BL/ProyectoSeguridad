@@ -4,17 +4,17 @@ una prueba exige que los 102 permisos tengan al menos una."""
 from django.urls import path
 
 from flujos.vistas import (
-    fincas,
-    titulares,
-    periodos,
+    alertas,
     asignaciones,
-    mediciones,
-    enmiendas,
+    bitacora,
     certificados,
     cuentas,
-    alertas,
-    bitacora,
+    enmiendas,
     exportar,
+    fincas,
+    mediciones,
+    periodos,
+    titulares,
 )
 
 urlpatterns = [
