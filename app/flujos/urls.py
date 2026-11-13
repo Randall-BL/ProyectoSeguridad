@@ -12,6 +12,8 @@ from flujos.vistas import (
     enmiendas,
     certificados,
     cuentas,
+    alertas,
+    bitacora,
     exportar,
 )
 
@@ -70,6 +72,9 @@ urlpatterns = [
     path("personal/vinculos/<uuid:vinculo>/aprobar-retiro/", cuentas.aprobar_retiro, name="aprobar_retiro"),
     path("mis-vinculos/", cuentas.mis_vinculos, name="mis_vinculos"),
     # Alertas (5.8) y bitácora (5.12)
+    path("alertas/", alertas.lista, name="alertas"),
+    path("alertas/<uuid:alerta>/resolver/", alertas.resolver, name="resolver_alerta"),
+    path("bitacora/", bitacora.lista, name="bitacora"),
 ] + [
     # Exportaciones del auditor (5.11, C18)
     path(f"exportar/{tipo}/", vista, name=f"exportar_{tipo}")

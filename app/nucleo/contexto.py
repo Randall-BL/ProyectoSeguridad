@@ -18,6 +18,8 @@ MENU = [
     ("Enmiendas", "enmiendas", ("TEC", "VER", "SUP", "GER", "AUD", "DUE")),
     ("Certificados", "certificados", ("VER", "GER", "AUD", "DUE")),
     ("Personal", "cuentas", ("GER", "ADM", "AUD")),
+    ("Alertas", "alertas", ("SUP", "GER", "AUD")),
+    ("Bitácora", "bitacora", ("GER", "AUD")),
 ]
 
 
