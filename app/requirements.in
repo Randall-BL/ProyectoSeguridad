@@ -1,5 +1,13 @@
 # Dependencias directas de la aplicación. requirements.txt sale de aquí, con la versión y la
 # huella de cada paquete fijadas: sh infra/fijar-dependencias.sh app
+argon2-cffi
+# Cifra en la base los secretos TOTP y las semillas de los códigos de recuperación (POL-AU-05).
+cryptography
 django>=5.2,<5.3
+# Inicio de sesión, segundo factor TOTP con códigos de recuperación y reautenticación (fase 3).
+django-allauth[mfa]
 gunicorn
 psycopg[binary]
+# Sirve los estilos y las imágenes propias desde la misma imagen, con huella en el nombre y caché
+# larga; nada se carga de un CDN (la política de contenido solo permite el propio origen).
+whitenoise

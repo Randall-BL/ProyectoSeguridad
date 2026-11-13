@@ -1,0 +1,815 @@
+{
+  "matriz": {
+    "fuente": "Parte 1, Entregable 3 (Matriz de control de acceso, grupo 6), sección «La matriz».",
+    "objetos": {
+      "fincas": "Fincas y parcelas",
+      "datos_personales": "Datos personales del dueño",
+      "periodos": "Períodos de medición",
+      "asignaciones": "Asignaciones",
+      "mediciones": "Mediciones",
+      "enmiendas": "Enmiendas",
+      "certificados": "Certificados",
+      "cuentas": "Cuentas y roles",
+      "bitacora": "Bitácora",
+      "alertas": "Alertas de historial"
+    },
+    "roles": {
+      "TEC": "Técnico de campo",
+      "VER": "Verificador",
+      "SUP": "Supervisor de campo",
+      "GER": "Gerencia de Certificación",
+      "ADM": "Administrador de catálogo y cuentas",
+      "AUD": "Auditor externo",
+      "DUE": "Dueño de finca",
+      "SIS": "Procesos del sistema",
+      "OPE": "Operador de plataforma",
+      "PUB": "Público sin autenticar"
+    },
+    "roles_de_la_aplicacion": [
+      "TEC",
+      "VER",
+      "SUP",
+      "GER",
+      "ADM",
+      "AUD",
+      "DUE"
+    ],
+    "celdas": {
+      "TEC": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C1"
+            ]
+          }
+        ],
+        "datos_personales": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C1"
+            ],
+            "nota": "solo contacto"
+          }
+        ],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "asignaciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C1"
+            ],
+            "nota": "las propias"
+          }
+        ],
+        "mediciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C1"
+            ]
+          },
+          {
+            "verbo": "crear",
+            "condiciones": [
+              "C2"
+            ]
+          },
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C2"
+            ]
+          },
+          {
+            "verbo": "enviar",
+            "condiciones": [
+              "C2"
+            ]
+          }
+        ],
+        "enmiendas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C1"
+            ]
+          },
+          {
+            "verbo": "solicitar",
+            "condiciones": [
+              "C7"
+            ]
+          },
+          {
+            "verbo": "corregir",
+            "condiciones": [
+              "C9"
+            ]
+          }
+        ],
+        "certificados": [],
+        "cuentas": [
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C13"
+            ]
+          }
+        ],
+        "bitacora": [],
+        "alertas": []
+      },
+      "VER": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          }
+        ],
+        "datos_personales": [],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "asignaciones": [],
+        "mediciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          },
+          {
+            "verbo": "aprobar",
+            "condiciones": [
+              "C3"
+            ]
+          },
+          {
+            "verbo": "devolver",
+            "condiciones": [
+              "C3"
+            ]
+          }
+        ],
+        "enmiendas": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "solicitar",
+            "condiciones": [
+              "C7"
+            ]
+          },
+          {
+            "verbo": "revisar",
+            "condiciones": [
+              "C10"
+            ]
+          }
+        ],
+        "certificados": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          }
+        ],
+        "cuentas": [
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C13"
+            ]
+          }
+        ],
+        "bitacora": [],
+        "alertas": []
+      },
+      "SUP": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          }
+        ],
+        "datos_personales": [],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "asignaciones": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "crear",
+            "condiciones": [
+              "C19"
+            ]
+          },
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C19"
+            ]
+          }
+        ],
+        "mediciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ],
+            "nota": "solo estado y fechas"
+          }
+        ],
+        "enmiendas": [
+          {
+            "verbo": "leer",
+            "condiciones": [],
+            "nota": "solo estado"
+          }
+        ],
+        "certificados": [],
+        "cuentas": [
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C13"
+            ]
+          }
+        ],
+        "bitacora": [],
+        "alertas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C15"
+            ]
+          },
+          {
+            "verbo": "resolver",
+            "condiciones": [
+              "C15"
+            ]
+          }
+        ]
+      },
+      "GER": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          },
+          {
+            "verbo": "aprobar",
+            "condiciones": [
+              "C11"
+            ]
+          }
+        ],
+        "datos_personales": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          }
+        ],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "abrir",
+            "condiciones": [
+              "C14"
+            ]
+          },
+          {
+            "verbo": "cerrar",
+            "condiciones": [
+              "C14"
+            ]
+          }
+        ],
+        "asignaciones": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "mediciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          }
+        ],
+        "enmiendas": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "solicitar",
+            "condiciones": [
+              "C7"
+            ]
+          },
+          {
+            "verbo": "autorizar",
+            "condiciones": [
+              "C8"
+            ]
+          }
+        ],
+        "certificados": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          }
+        ],
+        "cuentas": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "aprobar",
+            "condiciones": [
+              "C12"
+            ]
+          },
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C13"
+            ]
+          }
+        ],
+        "bitacora": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "alertas": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "resolver",
+            "condiciones": [
+              "C15"
+            ]
+          }
+        ]
+      },
+      "ADM": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          },
+          {
+            "verbo": "proponer",
+            "condiciones": [
+              "C11"
+            ]
+          }
+        ],
+        "datos_personales": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "H"
+            ]
+          },
+          {
+            "verbo": "crear",
+            "condiciones": []
+          },
+          {
+            "verbo": "modificar",
+            "condiciones": []
+          },
+          {
+            "verbo": "eliminar",
+            "condiciones": [
+              "C16"
+            ]
+          }
+        ],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "crear",
+            "condiciones": []
+          },
+          {
+            "verbo": "proponer",
+            "condiciones": [
+              "C14"
+            ]
+          }
+        ],
+        "asignaciones": [],
+        "mediciones": [],
+        "enmiendas": [],
+        "certificados": [],
+        "cuentas": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          },
+          {
+            "verbo": "crear",
+            "condiciones": [
+              "C12"
+            ]
+          },
+          {
+            "verbo": "desactivar",
+            "condiciones": [
+              "C12"
+            ]
+          },
+          {
+            "verbo": "proponer",
+            "condiciones": [
+              "C12"
+            ]
+          },
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C13"
+            ]
+          }
+        ],
+        "bitacora": [],
+        "alertas": []
+      },
+      "AUD": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ],
+        "datos_personales": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          }
+        ],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ],
+        "asignaciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ],
+        "mediciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ],
+        "enmiendas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ],
+        "certificados": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ],
+        "cuentas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C13"
+            ]
+          }
+        ],
+        "bitacora": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ],
+        "alertas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C6"
+            ]
+          },
+          {
+            "verbo": "exportar",
+            "condiciones": [
+              "C18"
+            ]
+          }
+        ]
+      },
+      "DUE": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C5"
+            ]
+          }
+        ],
+        "datos_personales": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C5"
+            ]
+          }
+        ],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "asignaciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C5"
+            ]
+          }
+        ],
+        "mediciones": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C5"
+            ],
+            "nota": "solo aprobadas"
+          }
+        ],
+        "enmiendas": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C5"
+            ]
+          }
+        ],
+        "certificados": [
+          {
+            "verbo": "leer",
+            "condiciones": [
+              "C5"
+            ]
+          }
+        ],
+        "cuentas": [
+          {
+            "verbo": "modificar",
+            "condiciones": [
+              "C13"
+            ]
+          }
+        ],
+        "bitacora": [],
+        "alertas": []
+      },
+      "SIS": {
+        "fincas": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "datos_personales": [
+          {
+            "verbo": "leer",
+            "condiciones": [],
+            "nota": "solo nombre del titular"
+          }
+        ],
+        "periodos": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "asignaciones": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "mediciones": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "enmiendas": [
+          {
+            "verbo": "leer",
+            "condiciones": []
+          }
+        ],
+        "certificados": [
+          {
+            "verbo": "emitir",
+            "condiciones": [
+              "C4"
+            ]
+          },
+          {
+            "verbo": "revocar",
+            "condiciones": [
+              "C4"
+            ]
+          }
+        ],
+        "cuentas": [],
+        "bitacora": [
+          {
+            "verbo": "anexar",
+            "condiciones": []
+          }
+        ],
+        "alertas": [
+          {
+            "verbo": "crear",
+            "condiciones": []
+          }
+        ]
+      },
+      "OPE": {
+        "fincas": [],
+        "datos_personales": [],
+        "periodos": [],
+        "asignaciones": [],
+        "mediciones": [],
+        "enmiendas": [],
+        "certificados": [],
+        "cuentas": [],
+        "bitacora": [],
+        "alertas": []
+      },
+      "PUB": {
+        "fincas": [],
+        "datos_personales": [],
+        "periodos": [],
+        "asignaciones": [],
+        "mediciones": [],
+        "enmiendas": [],
+        "certificados": [
+          {
+            "verbo": "comprobar",
+            "condiciones": [
+              "C20"
+            ]
+          }
+        ],
+        "cuentas": [],
+        "bitacora": [],
+        "alertas": []
+      }
+    },
+    "reautenticacion": [
+      "aprobar",
+      "devolver",
+      "revisar",
+      "autorizar",
+      "abrir",
+      "cerrar",
+      "resolver",
+      "exportar"
+    ],
+    "abstencion": {
+      "regla": "C17",
+      "roles": [
+        "TEC",
+        "VER",
+        "SUP",
+        "GER",
+        "ADM"
+      ],
+      "objetos": [
+        "fincas",
+        "asignaciones",
+        "mediciones",
+        "enmiendas"
+      ]
+    },
+    "lectura_vigilada": "H"
+  }
+}

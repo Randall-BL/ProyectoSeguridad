@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block head_title %}Servicio no disponible{% endblock head_title %}
+{% block content %}
+  <div class="error-pagina">
+    <p class="error-codigo" aria-hidden="true">503</p>
+    <span class="insignia">Error 503</span>
+    <h1>Servicio no disponible</h1>
+    <p>
+      El motor que decide los permisos no respondió, así que la operación no se hizo. Nada se
+      concede sin su respuesta. Intente de nuevo en unos minutos; si el problema sigue, avise al
+      administrador.
+    </p>
+    <div class="acciones"><a class="boton boton-secundario" href="{% url 'inicio' %}">Volver al inicio</a></div>
+  </div>
+{% endblock content %}

@@ -1,0 +1,15 @@
+{% comment %}
+Resumen de los errores de un formulario. Va arriba del formulario, se anuncia al cargar la página
+(role="alert") y enlaza cada error con su campo; los errores siguen también junto a cada campo.
+
+  {% include "nucleo/_resumen_errores.html" with form=form %}
+{% endcomment %}
+{% if form.errors %}
+  <div class="resumen-errores" role="alert" aria-labelledby="resumen-errores-titulo">
+    <h2 id="resumen-errores-titulo">Revise {{ form.errors|length }} dato{{ form.errors|length|pluralize }} antes de continuar</h2>
+    <ul>
+      {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+      {% for campo in form %}{% for error in campo.errors %}<li><a href="#{{ campo.id_for_label }}">{{ campo.label }}: {{ error }}</a></li>{% endfor %}{% endfor %}
+    </ul>
+  </div>
+{% endif %}

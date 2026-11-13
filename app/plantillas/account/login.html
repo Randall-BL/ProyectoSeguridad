@@ -1,0 +1,27 @@
+{% extends "account/base_entrance.html" %}
+{% comment %}
+Como la de allauth, sin la invitación a registrarse: las cuentas las propone ADM y las aprueba GER
+(C12), y la recuperación pasa por los dos (POL-AU-10).
+{% endcomment %}
+{% load allauth %}
+{% block head_title %}Iniciar sesión{% endblock head_title %}
+{% block content %}
+  <span class="insignia">Paso 1 de 2</span>
+  <h1>Iniciar sesión</h1>
+  <p class="intro">Acceso del personal y de los dueños de las fincas. Entre con su nombre de usuario y su contraseña; después se le pedirá el código de su aplicación autenticadora.</p>
+  {% url 'account_login' as login_url %}
+  {% element form form=form method="post" action=login_url tags="entrance,login" %}
+    {% slot body %}
+      {% csrf_token %}
+      {% element fields form=form unlabeled=True %}{% endelement %}
+      {{ redirect_field }}
+    {% endslot %}
+    {% slot actions %}
+      {% element button type="submit" tags="prominent,login" %}Continuar{% endelement %}
+    {% endslot %}
+  {% endelement %}
+  <p class="volver suave">
+    Las cuentas las crea el administrador con aprobación de Gerencia. Si olvidó su contraseña o
+    perdió su teléfono, pida el restablecimiento al administrador.
+  </p>
+{% endblock content %}

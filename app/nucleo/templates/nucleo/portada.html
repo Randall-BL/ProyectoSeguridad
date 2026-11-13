@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block head_title %}Inicio{% endblock head_title %}
+{% block franja %}<span class="luz" aria-hidden="true"></span>En línea<span class="franja-detalle"> · PostgreSQL {{ postgres }} · PostGIS {{ postgis }} · Pérez Zeledón</span>{% endblock franja %}
+{% block menu %}
+  <nav class="menu" aria-label="Portada">
+    <a href="#recorrido">Cómo funciona</a>
+    <a href="#preguntas">Preguntas</a>
+  </nav>
+{% endblock menu %}
+{% block clase_principal %}portada{% endblock clase_principal %}
+{% block body %}
+  {% if messages %}<div class="ancho portada-mensajes">{% include "nucleo/_mensajes.html" %}</div>{% endif %}
+
+  <section class="heroe">
+    <div class="ancho">
+      <h1>Cada tonelada, medida, revisada y firmada.</h1>
+      <p>Verdeazul Carbono registra las mediciones de campo de cada parcela, las somete a una revisión independiente y emite certificados con firma digital que cualquiera puede comprobar.</p>
+      <div class="acciones">
+        <a class="boton boton-primario" href="{% url 'account_login' %}">Iniciar sesión</a>
+        <a class="boton boton-secundario" href="#recorrido">Cómo funciona</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" id="recorrido" aria-labelledby="titulo-recorrido">
+    <div class="ancho">
+      <div class="seccion-titulo">
+        <h2 id="titulo-recorrido">Nada se concede sin pasar por el motor de decisión.</h2>
+        <p>Cada petición se pregunta a la misma matriz de acceso. Si el motor no responde, la operación se detiene y el intento queda en la bitácora.</p>
+      </div>
+      <div class="recorrido">
+        <svg class="lineas" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path d="M34 17 C 42 17, 42 50, 50 50"/><path d="M34 50 L 50 50"/><path d="M34 83 C 42 83, 42 50, 50 50"/>
+          <path d="M50 50 C 58 50, 58 17, 66 17"/><path d="M50 50 L 66 50"/><path d="M50 50 C 58 50, 58 83, 66 83"/>
+        </svg>
+        <ul class="nodos nodos-entrada" aria-label="Lo que el motor revisa">
+          <li class="nodo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><circle cx="8" cy="5" r="3"/><path d="M2.5 14c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/></svg>Técnico asignado</li>
+          <li class="nodo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><path d="M2 13 6 3l4 6 4-3v7Z"/></svg>Finca y parcela</li>
+          <li class="nodo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 1.5v3M11 1.5v3"/></svg>Período abierto</li>
+        </ul>
+        <div class="motor"><div><strong>Motor de decisión</strong><span>OPA · falla cerrado</span></div></div>
+        <ul class="nodos nodos-salida" aria-label="Lo que garantiza">
+          <li class="nodo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><path d="m3 8.5 3 3 7-7"/></svg>Aprobación de otra persona</li>
+          <li class="nodo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><circle cx="8" cy="6.5" r="4"/><path d="m5.8 10-1 4.5L8 13l3.2 1.5-1-4.5"/></svg>Certificado Ed25519</li>
+          <li class="nodo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><path d="M6.5 9.5a2.8 2.8 0 0 0 4 .2l2-2a2.8 2.8 0 0 0-4-4l-1 1"/><path d="M9.5 6.5a2.8 2.8 0 0 0-4-.2l-2 2a2.8 2.8 0 0 0 4 4l1-1"/></svg>Bitácora encadenada</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" aria-label="Garantías">
+    <div class="ancho rasgos">
+      <article class="rasgo">
+        <svg class="icono" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path d="M10 2 3.5 4.5v4.8c0 4 2.8 7.2 6.5 8.2 3.7-1 6.5-4.2 6.5-8.2V4.5L10 2Z"/><path d="m7.3 10 1.9 1.9 3.6-3.7"/></svg>
+        <h3>Cada quien, lo suyo</h3>
+        <p>Siete roles con permisos distintos. Quien registra una medición nunca la aprueba, y las decisiones importantes las firman dos personas.</p>
+      </article>
+      <article class="rasgo">
+        <svg class="icono" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path d="M8 11.5a3.4 3.4 0 0 0 4.9.3l2.4-2.4a3.4 3.4 0 0 0-4.9-4.9l-1.2 1.2"/><path d="M12 8.5a3.4 3.4 0 0 0-4.9-.3l-2.4 2.4a3.4 3.4 0 0 0 4.9 4.9l1.2-1.2"/></svg>
+        <h3>Una bitácora que no se borra</h3>
+        <p>Cada acción queda encadenada con la anterior. Alterar un registro rompe la cadena, y la verificación diaria lo detecta.</p>
+      </article>
+      <article class="rasgo rasgo-destacado">
+        <svg class="icono" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><circle cx="10" cy="8" r="5"/><path d="m7.3 12.3-1.3 5.5L10 16l4 1.8-1.3-5.5"/></svg>
+        <h3>Certificados que cualquiera comprueba</h3>
+        <p>Firmados con Ed25519. Basta el archivo y la clave pública para saber si alguien cambió una sola cifra.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="seccion" id="preguntas" aria-labelledby="titulo-preguntas">
+    <div class="ancho">
+      <div class="seccion-titulo">
+        <h2 id="titulo-preguntas">Preguntas</h2>
+        <p>Lo que suelen preguntar los dueños de las fincas y quienes reciben un certificado.</p>
+      </div>
+      <div class="preguntas">
+        <details>
+          <summary>¿Quién puede aprobar una medición?</summary>
+          <p>Un verificador que no haya escrito ninguna versión de esa medición. El motor lo comprueba en cada petición, también cuando la persona tiene además una habilitación temporal de técnico.</p>
+        </details>
+        <details>
+          <summary>¿Cómo se comprueba un certificado?</summary>
+          <p>Con el archivo del certificado y la clave pública de Verdeazul. Si alguien cambió una cifra, la firma deja de coincidir.</p>
+        </details>
+        <details>
+          <summary>¿Qué pasa si alguien altera la bitácora?</summary>
+          <p>Cada registro guarda el resumen del anterior. Cambiar uno rompe la cadena desde ese punto, y la verificación diaria lo señala.</p>
+        </details>
+        <details>
+          <summary>¿Y si el motor de decisión no responde?</summary>
+          <p>La operación no se hace: el sistema responde que el servicio no está disponible y anota el intento en la bitácora. Nada se concede sin su respuesta.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+{% endblock body %}

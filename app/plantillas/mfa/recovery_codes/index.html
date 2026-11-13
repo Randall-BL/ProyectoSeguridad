@@ -1,0 +1,22 @@
+{% extends "mfa/recovery_codes/base.html" %}
+{% comment %}Como la de allauth, con un botón para seguir después de guardarlos.{% endcomment %}
+{% load allauth static %}
+{% block head_title %}Códigos de recuperación{% endblock head_title %}
+{% block content %}
+  <h1>Códigos de recuperación</h1>
+  <p class="suave">Le quedan {{ unused_codes|length }} de {{ total_count }}. Cada uno sirve una sola vez, para entrar si no tiene el teléfono a mano. Guárdelos fuera de este equipo y no los comparta.</p>
+  {% if can_view_codes %}
+    {% element field id="recovery_codes" type="textarea" rows=unused_codes|length readonly=True %}
+      {% slot label %}Códigos sin usar{% endslot %}
+      {# djlint:off #}
+{% slot value %}{% for code in unused_codes %}{% if forloop.counter0 %}
+{% endif %}{{ code }}{% endfor %}{% endslot %}
+      {# djlint:on #}
+    {% endelement %}
+  {% endif %}
+  <div class="acciones">
+    <a class="boton boton-primario" href="{% url 'inicio' %}">Ya los guardé, continuar</a>
+    {% if can_download_codes %}<a class="boton boton-secundario" href="{% url 'mfa_download_recovery_codes' %}">Descargar</a>{% endif %}
+    {% if can_generate_codes %}<a class="boton boton-secundario" href="{% url 'mfa_generate_recovery_codes' %}">Generar nuevos</a>{% endif %}
+  </div>
+{% endblock content %}

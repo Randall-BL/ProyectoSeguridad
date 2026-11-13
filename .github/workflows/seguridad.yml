@@ -1,9 +1,10 @@
-# Revisiones que corren en cada push a main y en cada PR, aunque alguien no tenga los ganchos locales.
+# Revisiones que corren en cada push a main y a las ramas development-*, y en cada PR, aunque
+# alguien no tenga los ganchos locales.
 name: seguridad
 
 on:
   push:
-    branches: [main]
+    branches: [main, "development-*"]
   pull_request:
 
 permissions:
@@ -40,3 +41,23 @@ jobs:
         run: |
           git log --format=%B > "$RUNNER_TEMP/mensajes.txt"
           sh .githooks/commit-msg "$RUNNER_TEMP/mensajes.txt"
+
+  politica:
+    name: motor de decisión (OPA y Regal)
+    runs-on: ubuntu-latest
+    env:
+      # Las mismas imágenes que se usan en local, fijadas por huella.
+      OPA: openpolicyagent/opa:1.22.3-static@sha256:a6ccb6e0cc91b2d1807b1b65a844b189249b9ab33d126e0bca30c0cf43b0ae07
+      REGAL: ghcr.io/open-policy-agent/regal:0.43.0@sha256:29460f0ec1340d37f6c0c74bcbd88dd232fd8382c7a2337f0684415bd4c46da1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Formato y comprobación estricta
+        run: |
+          docker run --rm -v "$PWD/politica:/politica:ro" "$OPA" fmt --list --fail /politica
+          docker run --rm -v "$PWD/politica:/politica:ro" "$OPA" check --strict /politica
+      - name: Pruebas de la matriz, con cobertura mínima de 95 %
+        run: |
+          docker run --rm -v "$PWD/politica:/politica:ro" "$OPA" test /politica
+          docker run --rm -v "$PWD/politica:/politica:ro" "$OPA" test --coverage --threshold 95 /politica > /dev/null
+      - name: Regal
+        run: docker run --rm -v "$PWD/politica:/politica:ro" "$REGAL" lint --config-file /politica/.regal/config.yaml /politica

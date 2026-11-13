@@ -1,0 +1,27 @@
+{% comment %}
+Tabla de una lista o de una sección. Cada fila trae sus celdas: {"texto", "url", "estado",
+"estado_texto", "numero"}. La primera celda va como encabezado de la fila.
+{% endcomment %}
+{% if tabla.filas %}
+  <div class="tabla-envoltura" role="region" aria-label="{{ tabla.titulo|default:titulo }}" tabindex="0">
+    <table>
+      <thead>
+        <tr>{% for columna in tabla.columnas %}<th scope="col"{% if columna in tabla.numericas %} class="numero"{% endif %}>{{ columna }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for fila in tabla.filas %}
+          <tr>
+            {% for celda in fila %}
+              {% if forloop.first %}<th scope="row">{% else %}<td{% if celda.numero %} class="numero"{% endif %}>{% endif %}
+              {% if celda.estado %}{% include "nucleo/_estado.html" with estado=celda.estado texto=celda.estado_texto %}{% elif celda.url %}<a href="{{ celda.url }}">{{ celda.texto }}</a>{% else %}{{ celda.texto|default:"—" }}{% endif %}
+              {% if forloop.first %}</th>{% else %}</td>{% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if tabla.pie %}<div class="tabla-pie"><span>{{ tabla.pie }}</span></div>{% endif %}
+  </div>
+{% else %}
+  {% include "nucleo/_vacio.html" with titulo=tabla.vacio_titulo|default:"No hay nada que mostrar" texto=tabla.vacio_texto %}
+{% endif %}

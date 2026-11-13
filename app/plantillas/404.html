@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% comment %}
+No encontrado. Es la misma página para lo que no existe y para la lectura que el motor niega por C1
+o C5 (T-08), así que no dice cuál de las dos fue ni repite la dirección pedida.
+{% endcomment %}
+{% block head_title %}Página no encontrada{% endblock head_title %}
+{% block content %}
+  <div class="error-pagina">
+    <p class="error-codigo" aria-hidden="true">404</p>
+    <span class="insignia">Error 404</span>
+    <h1>No encontramos esta página</h1>
+    <p>Revise la dirección o vuelva al inicio.</p>
+    <div class="acciones"><a class="boton boton-secundario" href="{% url 'inicio' %}">Volver al inicio</a></div>
+  </div>
+{% endblock content %}

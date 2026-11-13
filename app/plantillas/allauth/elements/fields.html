@@ -1,0 +1,21 @@
+{% comment %}Cada campo con su etiqueta, su ayuda y sus errores; los errores generales van arriba.{% endcomment %}
+{% if attrs.form.non_field_errors %}
+  <div class="aviso aviso-error" role="alert">{{ attrs.form.non_field_errors }}</div>
+{% endif %}
+{% for campo in attrs.form %}
+  {% if campo.is_hidden %}
+    {{ campo }}
+  {% else %}
+    <div class="campo{% if campo.widget_type == 'checkbox' %} campo-casilla{% endif %}{% if campo.errors %} campo-error{% endif %}">
+      {% if campo.widget_type == "checkbox" %}
+        {{ campo }}
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+      {% else %}
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        {{ campo }}
+      {% endif %}
+      {% if campo.help_text %}<small class="ayuda">{{ campo.help_text }}</small>{% endif %}
+      {% for error in campo.errors %}<p class="error-campo">{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}

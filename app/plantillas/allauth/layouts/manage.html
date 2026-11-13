@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% comment %}
+Gestión de la propia cuenta: segundo factor y contraseña. Mientras la persona no ha activado el
+segundo factor ni elegido rol, solo ve el formulario, sin menú.
+{% endcomment %}
+{% block head_title %}Mi cuenta{% endblock head_title %}
+{% block body %}
+  {% with ruta=request.resolver_match.url_name %}
+    <div class="gestion{% if not rol_activo %} gestion-sola{% endif %}">
+      {% if rol_activo %}
+        <nav class="gestion-menu" aria-label="Mi cuenta">
+          <span class="meta">Mi cuenta</span>
+          <a href="{% url 'mfa_index' %}"{% if ruta|slice:":4" == "mfa_" %} aria-current="page"{% endif %}>Segundo factor</a>
+          <a href="{% url 'account_change_password' %}"{% if ruta == "account_change_password" %} aria-current="page"{% endif %}>Contraseña</a>
+          <a href="{% url 'inicio' %}">Volver al inicio</a>
+        </nav>
+      {% endif %}
+      <div class="gestion-contenido">
+        {% include "nucleo/_mensajes.html" %}
+        {% block content %}{% endblock content %}
+      </div>
+    </div>
+  {% endwith %}
+{% endblock body %}

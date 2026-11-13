@@ -16,8 +16,9 @@ T-37, POL-xx-nn, F1 a F5.
 ## Sprints
 
 Cada sprint cierra con una versión desplegada y etiquetada: siempre hay algo funcionando en la nube.
-Cada tarea terminada es un commit con su número («2.7: …») y se sube en el momento; la casilla del
-todo se marca en el mismo commit. Al cerrar un sprint, la etiqueta de git y la de la imagen en
+Cada tarea terminada es un commit con su número («2.7: …») y se sube en el momento a la rama
+`development-<nombre>` de quien la hace (Randall: `development-yitan`); la casilla del todo se marca
+en el mismo commit. A `main` se fusiona por PR con merge commit. Al cerrar un sprint, la etiqueta de git y la de la imagen en
 Artifact Registry son la misma, y se anota en «Versiones publicadas» del README.
 
 | Sprint | Fechas | Fases | Versión | Listo cuando… |
@@ -129,7 +130,14 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
   fincas puede tener asignadas un técnico. Se agrega para acotar cuánto alcanza una sola cuenta: un
   técnico comprometido o un error de asignación llega a 20 fincas, no a todo el catálogo. Es un
   parámetro, no una constante, por P-02.
-- [ ] D-07… (las que aparezcan: segundo factor, testigo externo, versión de Python, etc.)
+- [ ] **D-07 Segundo factor por código temporal para todos, por ahora.** POL-AU-05 prefiere llaves de
+  acceso (WebAuthn) y las exige para GER, ADM y AUD. La versión entregada usa TOTP con códigos de
+  recuperación para todos los roles: las cuentas de prueba tienen que poder usarse desde cualquier
+  equipo, y una llave de acceso queda atada al dispositivo de quien la registra. Implicación: el código
+  temporal se puede pedir en una página falsa (*phishing*), cosa que la llave de acceso evita; queda
+  como mejora si da el tiempo (allauth ya la soporta). El secreto TOTP se guarda cifrado con una clave
+  de Secret Manager, y nadie puede quitarse el segundo factor.
+- [ ] D-08… (las que aparezcan: testigo externo, versión de Python, etc.)
 
 ---
 
@@ -150,6 +158,11 @@ Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar
   el profesor tiene que poder entrar con cada rol. Recomendado: TOTP en todas las cuentas de prueba y
   entregar la semilla de cada una **en el informe**, nunca en el repositorio. WebAuthn queda como
   mejora si da el tiempo (si no, desviación D-07).
+  - 9-nov: pendiente antes de sembrar Neon: que `sembrar` active el TOTP de cada cuenta y escriba
+    su semilla (URI `otpauth://`) en el archivo de `--salida`, junto a la contraseña.
+  - 12-nov: hecho. La rama `main` de Neon quedó migrada y sembrada con las 12 cuentas, cada una con
+    TOTP y códigos de recuperación. El archivo con contraseñas y semillas está fuera de los dos repos
+    y va al anexo del informe.
 - [ ] **0.5 Cómo se construyen las imágenes.** Recomendado para empezar: un script `infra/deploy.sh`
   con `gcloud builds submit` (Cloud Build). Mejora: GitHub Actions con Workload Identity Federation.
   Nunca una llave JSON de cuenta de servicio guardada como secreto del repositorio si se puede evitar.
@@ -196,12 +209,18 @@ demás es agregar funcionalidad encima.
   *push protection* activos en GitHub.
 - [x] 1.5 Dependabot: alertas y actualizaciones de seguridad activas en *Settings → Code security*, y
   `.github/dependabot.yml` con los ecosistemas `pip`, `docker` y `github-actions`.
+  - 9-nov: Dependabot abrió el PR #1 (Django 5.2.19 → 6.1.3, versión mayor). No se integra: la 5.2.19
+    ya trae el parche de seguridad del 3-nov. Django queda en 5.2 LTS y `dependabot.yml` ignora sus
+    versiones mayores; la regla rige cuando llegue a `main`. Va al informe como evidencia de 1.5.
 - [x] 1.5b Reglas en GitHub: `main` sin force push ni borrado; etiquetas `v*` inmutables. Gancho
   `commit-msg` y revisión en CI que rechazan co-autores ajenos al equipo.
 - [ ] 1.5c Invitar a Javier, Julio y Axel como colaboradores. Cada uno sigue «Configuración del
   repositorio» del README: instalar gitleaks, `git config core.hooksPath .githooks` y su identidad.
-- [ ] 1.6 Entorno local: `docker compose` con PostGIS y OPA, solo para desarrollar (lo que se evalúa es
-  la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización.
+- [x] 1.6 Entorno local: `docker compose` con PostGIS y OPA, solo para desarrollar (lo que se evalúa es
+  la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización. Hecho:
+  `docker-compose.yml` con PostGIS 18 (fijada por huella) y la app; OPA se agrega en el sprint 2.
+  Los puertos escuchan solo en 127.0.0.1 (la base en el 15432). Comprobado: la app corre como
+  `uid=10001` y no puede escribir en `/srv/app`.
 
 **Neon**
 - [x] 1.7 Crear el proyecto y la base `verdeazul`, en la región elegida. Activar la extensión PostGIS.
@@ -282,14 +301,20 @@ demás es agregar funcionalidad encima.
 
 El segundo candado de la arquitectura (F4): la base no confía en la aplicación.
 
-- [ ] 2.1 Modelo de datos de los diez objetos de la matriz: fincas y parcelas (geometría), datos
+- [x] 2.1 Modelo de datos de los diez objetos de la matriz: fincas y parcelas (geometría), datos
   personales del dueño, períodos, asignaciones, mediciones con todas sus versiones, enmiendas con sus
   cuatro pasos, certificados, cuentas y roles (con vínculos declarados y habilitaciones temporales),
   bitácora y alertas. Identificadores UUID, no consecutivos.
-- [ ] 2.2 Estados tal como en la Parte 1: medición (`borrador`, `enviada`, `devuelta`, `aprobada`,
+- [x] 2.2 Estados tal como en la Parte 1: medición (`borrador`, `enviada`, `devuelta`, `aprobada`,
   `excluida`, `sustituida`), período (`planificado`, `abierto`, `cerrado`), certificado (`vigente`,
   `revocado`), y `propuesto` o `aprobado` en catálogo y roles.
-- [ ] 2.3 Usuarios de base, uno por componente, ninguno dueño de las tablas:
+  Hecho en `app/cuentas` y `app/negocio` (migraciones 0001, aplicadas en compose y en la rama `dev`).
+  La geometría es una columna PostGIS `geometry(Polygon,4326)` sin GeoDjango (`negocio/campos.py`),
+  para no meter GDAL en la imagen. Ya quedan en la base: un solo certificado vigente por parcela y
+  período (C4), nadie se asigna a sí mismo (C19), nadie resuelve su propia alerta (C15), la fecha de
+  medición no es posterior al registro (C2), la temporal lleva motivo y fin (C19) y las fechas del
+  período van en orden. `ParametroRol` guarda los umbrales de H1 a H3 y el máximo de 20 asignaciones (K-1).
+- [x] 2.3 Usuarios de base, uno por componente, ninguno dueño de las tablas:
   - `va_migraciones`: dueño del esquema; solo para migrar, nunca en ejecución.
   - `va_app`: lo que la matriz permite; sin `DELETE` en mediciones, enmiendas, certificados, cuentas ni
     bitácora; sin `INSERT` en certificados.
@@ -298,11 +323,24 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     toneladas, período, código del reemplazo; nada del titular, C20).
   - `va_trabajos`: vencimientos, alertas y lectura de la bitácora para verificar la cadena.
   - Opcional: `va_auditor`, conexión de solo lectura para las peticiones de AUD (lo dice la Parte 1).
+  Hecho: `nucleo/migrations/0001` crea `va_app`, `va_emision`, `va_publico` y `va_trabajos` sin LOGIN
+  (la clave la pone `infra/crear-secretos.sh`); `negocio/sql/0002_permisos.sql` da los permisos tabla
+  por tabla. Comprobado como `va_app`: no puede cambiar una versión de medición, emitir un
+  certificado ni borrar una medición.
+
 - [ ] 2.4 Un secreto `db-url-*` por usuario, cada uno accesible solo por su cuenta de servicio.
-- [ ] 2.5 Seguridad por fila: el técnico solo ve filas de sus fincas asignadas (C1) y el dueño solo las
+- [x] 2.5 Seguridad por fila: el técnico solo ve filas de sus fincas asignadas (C1) y el dueño solo las
   de su titular (C5). El sujeto se pasa con `SET LOCAL app.usuario = …` dentro de cada transacción
   (cuidado: con el *pooler* de Neon solo funciona `SET LOCAL` dentro de la transacción).
-- [ ] 2.6 Restricciones del segundo candado:
+  Hecho en `negocio/sql/0003_seguridad_por_fila.sql`: con `app.usuario` y `app.rol` de la
+  transacción, TEC ve solo sus fincas asignadas (y lo que él registró), DUE solo lo de su titular y
+  sus mediciones aprobadas, sin rol no se ve nada, y AUD y DUE no escriben en ninguna tabla del
+  negocio. La bitácora la leen solo GER y AUD.
+  - Del lado de la aplicación (10 nov): `nucleo.basedatos.ContextoDeBase` corre cada petición en una
+    transacción que empieza con `set_config('app.usuario'/'app.rol', …, true)`, el id de la sesión y
+    el rol activo; si la respuesta es un 500, la transacción se deshace. Pruebas en `nucleo/tests.py`.
+
+- [x] 2.6 Restricciones del segundo candado:
   - Índice único parcial: un solo certificado `vigente` por parcela y período (C4).
   - Disparador que rechaza cambios de mediciones con el período `cerrado` y fechas fuera del período (C2, C14).
   - Restricción de que quien decide no figura en un paso anterior (C3, C8, C10), comparando
@@ -313,72 +351,183 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
     usar un disparador con `ST_Overlaps` o `ST_Intersects` sobre el interior.
   - Un rol por persona e identificación única (C12, sección 4 de la matriz).
   - No borrar un titular con certificados dentro del plazo (C16).
-- [ ] 2.7 Bitácora encadenada (POL-BT-01 a 06):
+  Hecho en `negocio/sql/0004_reglas_en_la_base.sql`. Además: C19 (solo a quien tiene TEC vigente;
+  temporal de 15 días como máximo), C8 y C10 en la enmienda, segunda firma de C11, C12 y C14, y los
+  valores iniciales de `ParametroRol`. Escenario de prueba en `db/pruebas/reglas.sql`: todas las
+  reglas niegan donde deben. Aplicado en compose y en la rama `dev`.
+
+- [x] 2.7 Bitácora encadenada (POL-BT-01 a 06):
   - Campos de POL-BT-02 y de la arquitectura §4.5, incluida la huella SHA-256 del registro anterior.
   - Se escribe solo con una función `bitacora_anexar(...)` (`SECURITY DEFINER`) que toma un candado,
     calcula la huella y añade. `va_app` tiene `EXECUTE` sobre la función y nada más sobre la tabla.
   - Disparador que rechaza `UPDATE` y `DELETE` incluso al dueño.
   - La acción y su registro se confirman en la misma transacción (POL-BT-06: sin registro no hay acción).
-- [ ] 2.8 Datos de prueba con los personajes de los casos T-01 a T-37: técnicos A y otro; verificadores
+  Hecho en `bitacora/sql/0001_bitacora.sql` y `bitacora/registro.py`. Comprobado: `va_app` no puede
+  insertar, cambiar ni borrar directo; el dueño choca con el disparador; un registro alterado con el
+  disparador apagado lo detecta `bitacora_verificar()` (criterio de aceptación 4).
+
+- [x] 2.8 Datos de prueba con los personajes de los casos T-01 a T-37: técnicos A y otro; verificadores
   B, C (ex técnica, autora de una versión) y uno más; supervisor S; dos gerentes (G y otro, para T-24);
   un administrador; la auditora E con ventana vigente; dos dueños (D persona física y un representante
   de sociedad). Fincas en Pérez Zeledón con geometría, un período abierto y uno cerrado.
-- [ ] 2.9 ⚠ El script de carga lee las contraseñas de una variable de entorno o las genera e imprime
+  - `manage.py sembrar`: 12 cuentas (`tec.ana`, `tec.tomas`, `ver.bruno`, `ver.carla`, `ver.diego`,
+    `sup.sofia`, `ger.gabriela`, `ger.gerardo`, `adm.alberto`, `aud.elena`, `due.daniel`, `due.rosa`),
+    8 titulares, 25 fincas con 50 parcelas sin traslapes, 2026-I cerrado y 2026-II abierto.
+  - Deja listos T-01 a T-06, T-17, T-27, T-29 y T-38 (T tiene 20 asignaciones activas). Lo comprueba
+    `db/pruebas/semilla.sql`.
+- [x] 2.9 ⚠ El script de carga lee las contraseñas de una variable de entorno o las genera e imprime
   una sola vez. Ninguna contraseña de prueba en el repositorio.
+  - `SEMILLA_CONTRASENA`, `--salida` a un archivo nuevo fuera del repositorio, o impresión solo si la
+    salida es una terminal (nunca en los registros de Cloud Run o de CI). Se niega a correr como `va_*`.
 
 ---
 
 ## 3 · Autenticación y sesión (meta: 10 nov)
 
-- [ ] 3.1 ⚠ Argon2id como primer *hasher* de Django (`argon2-cffi`), con sal por usuario (POL-AU-09).
+- [x] 3.1 ⚠ Argon2id como primer *hasher* de Django (`argon2-cffi`), con sal por usuario (POL-AU-09).
   Comprobar en la base que el campo empieza con `argon2$argon2id$`.
-- [ ] 3.2 Contraseñas: mínimo 12 caracteres, sin reglas de composición, lista de bloqueo de filtradas
+  Hecho: `argon2$argon2id$v=19$m=102400,t=2,p=8$…` (100 MiB, 2 iteraciones, sal propia); PBKDF2
+  queda solo para leer resúmenes viejos. `argon2-cffi` 25.1 fijado con huella e instalado en la imagen.
+- [x] 3.2 Contraseñas: mínimo 12 caracteres, sin reglas de composición, lista de bloqueo de filtradas
   y que no contenga el nombre de la persona, de la empresa ni de una finca (POL-AU-01 a 03).
-- [ ] 3.3 Segundo factor con django-allauth (TOTP y códigos de recuperación; WebAuthn si da el tiempo).
+  Hecho: longitud mínima 12, lista de comunes de Django, parecido con los datos del usuario y
+  `cuentas/validadores.py` contra nombres de la persona, de la empresa y de las fincas. Falta la
+  consulta de filtraciones (HIBP por k-anonimato): se decide en el sprint 5.
+- [x] 3.3 Segundo factor con django-allauth (TOTP y códigos de recuperación; WebAuthn si da el tiempo).
   Sin SMS ni correo (POL-AU-05).
-- [ ] 3.4 Reautenticación con segundo factor en los cinco minutos previos a aprobar, devolver,
+  - allauth 65.21.1: usuario, contraseña y TOTP; 10 códigos de recuperación de respaldo. Secreto TOTP
+    y semilla de los códigos cifrados con Fernet (`MFA_CLAVE`, secreto `mfa-clave`, creado el 12-nov
+    con `infra/crear-secretos.sh`; solo `sa-app` lo lee).
+  - `cuentas.middleware.ExigirSegundoFactor`: sin TOTP solo se puede activarlo o salir. Nadie lo
+    desactiva desde su sesión (POL-AU-10), y no hay registro abierto ni recuperación por correo.
+  - En la base, `va_app` solo puede borrar la fila de códigos de recuperación (RLS en
+    `mfa_authenticator`); el TOTP no se borra desde la aplicación.
+  - WebAuthn no: desviación D-07. Pendiente para 3.7: la protección contra reuso del código y los
+    límites de intentos de allauth usan la caché, que hoy es local a cada instancia (resuelto en 3.7).
+- [x] 3.4 Reautenticación con segundo factor en los cinco minutos previos a aprobar, devolver,
   revisar, autorizar, abrir, cerrar, resolver y exportar (leyenda de la matriz, POL-AU-06).
-- [ ] 3.5 Sesión de servidor en PostgreSQL; identificador nuevo al iniciar sesión; 30 minutos de
+  - `cuentas.decisiones.requiere_segundo_factor`: solo cuenta un código usado en esta sesión hace menos
+    de cinco minutos; la contraseña sola no basta, y un POST sin código reciente no se ejecuta. Cada
+    vista de decisión de la fase 5 lo lleva. Pruebas en `cuentas/tests.py` (12 en total con las de 3.3).
+- [x] 3.5 Sesión de servidor en PostgreSQL; identificador nuevo al iniciar sesión; 30 minutos de
   inactividad y 12 horas como máximo (POL-AU-08).
-- [ ] 3.6 Revocación inmediata: al cambiar rol, asignaciones, contraseña o al dar de baja, se borran
+  - `cuentas.Sesion` reemplaza a `django_session` y guarda de quién es cada sesión (para 3.6). El
+    vencimiento se corre en cada petición; `cuentas.sesiones.LimitarSesion` corta a las 12 horas.
+    Sin «recordarme»; la cookie se llama `__Host-sesion` en la nube. Entrada y salida van a la
+    bitácora con la huella del identificador de sesión. Pendiente para 7.2: `clearsessions`.
+- [x] 3.6 Revocación inmediata: al cambiar rol, asignaciones, contraseña o al dar de baja, se borran
   todas las sesiones de la persona (POL-CA-04, POL-CA-05: «baja el mismo día»).
-- [ ] 3.7 Intentos fallidos: demora creciente desde el quinto y bloqueo de 15 minutos al décimo (POL-AU-07).
-- [ ] 3.8 Exclusión dinámica TEC–VER: con una habilitación temporal, la persona entra como técnico o
+  - `cuentas/revocacion.py`: señales sobre la cuenta (rol, activa, contraseña, vigencia), la
+    propuesta de rol aprobada y la asignación creada o terminada; borra las filas de `cuentas_sesion`
+    en la misma transacción y lo anota en la bitácora con POL-CA-04 o POL-CA-05. Cambiar la propia
+    contraseña también cierra la sesión actual. Pendiente para 7.2: el trabajo de vencimientos usa
+    `update()`, que no dispara señales, así que `va_trabajos` necesitará borrar sesiones él mismo.
+- [x] 3.7 Intentos fallidos: demora creciente desde el quinto y bloqueo de 15 minutos al décimo (POL-AU-07).
+  - `cuentas/intentos.py`: conteo en la base por huella del nombre escrito (exista o no la cuenta):
+    desde el quinto fallo, 30 s, 1, 2, 4 y 8 min de espera; al décimo, 15 min. En espera no se mira
+    ni la contraseña correcta. Se reinicia al entrar o tras un día. Cada fallo va a la bitácora.
+  - La caché de Django pasó a PostgreSQL (`cache_compartida`): los límites de allauth por dirección,
+    los 10 intentos de código TOTP cada 15 minutos y la protección contra reusar un código valen
+    igual en todas las instancias. Resuelve el pendiente que dejó 3.3.
+- [x] 3.8 Exclusión dinámica TEC–VER: con una habilitación temporal, la persona entra como técnico o
   como verificador, nunca como ambos en la misma sesión.
-- [ ] 3.9 AUD fuera de su ventana no puede iniciar sesión (C6, T-09). OPE no tiene cuenta (T-20).
+  - `cuentas/roles.py`: `request.rol_activo` sale de la sesión; con un rol posible se fija solo, con
+    dos se elige en `/cuentas/rol/` una vez por sesión (queda en la bitácora). Si la habilitación
+    vence a mitad de la sesión, se cierra. La semilla le da a C la habilitación para T-26.
+  - Probado en el navegador como `va_app`: la seguridad por fila escondía la habilitación antes de
+    tener rol. Se pregunta con `va_habilitacion_vigente()` (SECURITY DEFINER, `cuentas/sql/0005`),
+    con una prueba que corre como `va_app`.
+- [x] 3.9 AUD fuera de su ventana no puede iniciar sesión (C6, T-09). OPE no tiene cuenta (T-20).
+  - `Usuario.puede_entrar()`: activa, con un rol de la matriz y dentro de su ventana; AUD siempre
+    con ventana. Lo usa el *backend* (`cuentas.autenticacion`), así que una sesión abierta muere al
+    terminar la ventana, y el adaptador, que corta el inicio con contraseña correcta y lo anota con
+    C6. OPE no existe como rol. 43 pruebas en `cuentas/tests.py`.
 
 ---
 
 ## 4 · Motor de decisión: la matriz en OPA (meta: 11 nov)
 
-- [ ] 4.1 `politica/matriz.json`: la matriz transcrita, una entrada por rol, objeto y verbo, con las
+- [x] 4.1 `politica/matriz.json`: la matriz transcrita, una entrada por rol, objeto y verbo, con las
   condiciones de cada celda. Es la fuente única: de aquí salen la política, las pruebas y la tabla de
   cobertura del informe.
-- [ ] 4.2 Reglas Rego con el mismo identificador que en la Parte 1: una regla por condición (C1 a C20) y
+  - Diez sujetos por diez objetos; cada celda es la lista de verbos con sus condiciones (C1–C20, H) y
+    la nota de alcance («solo contacto», «solo aprobadas»…). Suma 102 permisos y 38 celdas vacías,
+    lo mismo que el inventario. También trae los verbos que piden reautenticación y el alcance de C17.
+- [x] 4.2 Reglas Rego con el mismo identificador que en la Parte 1: una regla por condición (C1 a C20) y
   por control de historial (H1 a H4). Niega por omisión. La respuesta incluye la decisión (`conceder`,
   `conceder_con_restriccion`, `denegar`) y la regla que la determinó.
-- [ ] 4.3 C17 (abstención por vínculo) sobre todo verbo distinto de leer de TEC, VER, SUP, GER y ADM en
-  fincas, asignaciones, mediciones y enmiendas.
-- [ ] 4.4 ⚠ Dockerfile de `politica`: imagen oficial de OPA fijada por huella, con la política
+  - `politica/verdeazul/reglas.rego` (C1–C20) y `decision.rego` (celda, C17, POL-AU-06, H1–H3; H4
+    son C3, C8 y C10). Respuesta `{resultado, regla, avisar}` con los cinco resultados graduados de
+    4.9. Formato de la entrada en `politica/LEEME.md`.
+  - 70 pruebas en `decision_test.rego`: la matriz suma 102/38, toda combinación fuera de la matriz se
+    deniega (10 sujetos × 10 objetos × 21 verbos), y los casos T-01 a T-39 que decide el motor.
+    Cobertura 99,3 %; `opa check --strict` y `opa fmt` limpios. OPA 1.22.3 (`-static`, por huella).
+- [x] 4.3 C17 (abstención por vínculo) sobre todo verbo distinto de leer de TEC, VER, SUP, GER y ADM en
+  fincas, asignaciones, mediciones y enmiendas. (En `decision.rego`; caso T-29.)
+- [x] 4.4 ⚠ Dockerfile de `politica`: imagen oficial de OPA fijada por huella, con la política
   incluida, sin root. Publicar como `opa:v…`.
-- [ ] 4.5 Sidecar en `verdeazul-app`: OPA escucha en `localhost:8181`, no se expone fuera de la
+  - `politica/Dockerfile`: `openpolicyagent/opa:1.22.3-static` por huella (sin shell), solo la matriz
+    y las reglas (las pruebas no entran), usuario 1000, sin telemetría. Se publica con el mismo
+    `infra/publicar.sh politica vX.Y.Z`, así que la imagen se llama `politica:v…`. Probada en local:
+    `/health` responde y T-06 sale «denegar, C3».
+- [x] 4.5 Sidecar en `verdeazul-app`: OPA escucha en `localhost:8181`, no se expone fuera de la
   instancia (frontera F3). Arranque ordenado con sonda de inicio: si OPA no está listo, la instancia
   no recibe tráfico (K-3).
-- [ ] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
+  - `infra/app.service.yaml`: contenedor `politica` sin puertos declarados (solo la aplicación
+    recibe tráfico), sondas de inicio y de vida en `/health`, y `container-dependencies` para que la
+    aplicación arranque después. La aplicación lo encuentra en `OPA_URL`. Comprobado el 12-nov en
+    la revisión `verdeazul-app-00003`: los dos contenedores quedan listos y sanos, y la sonda de inicio
+    de OPA pasa antes de que la aplicación reciba tráfico.
+- [x] 4.6 Un único módulo en Django que arma los hechos **desde la base, nunca desde la petición**, y
   pregunta al motor. ⚠ **Si OPA no responde, tarda más que el límite o contesta algo inválido, la
   petición se frena** (K-3, criterio de aceptación 6): 503, registro en la bitácora y nada más. Sin
   decisión por omisión, sin caché de decisiones y sin `try/except` que deje seguir.
-- [ ] 4.7 Decorador o *middleware* `@protegida(accion, objeto)` en toda ruta, y una prueba que recorre
+  - Hecho en la aplicación `autorizacion`: `hechos.py` arma la entrada con funciones de la base
+    (`sql/0001_hechos.sql`, SECURITY DEFINER, solo para `va_app`) que ven las filas reales aunque la
+    seguridad por fila se las esconda a quien pregunta: fincas asignadas, representados, vínculos,
+    técnicos a cargo, historial H1–H3, umbrales y, del objeto, estado y autores de todas las
+    versiones. El id y el rol salen de la sesión.
+  - `motor.py`: límite de 1,5 s, sin proxies; cualquier error, respuesta inválida o resultado
+    desconocido es `MotorSinRespuesta`. `respuestas.sin_motor` responde 503 y anota «K-3 motor sin
+    respuesta» en la bitácora. 16 pruebas: un OPA falso lento, caído, con error, con basura o sin
+    decisión, y una prueba de punta a punta contra el OPA real (`OPA_PRUEBAS=1`) con T-05 y T-06.
+  - Probado en el navegador apagando el contenedor de OPA: el inicio responde 503 y la bitácora
+    anota «K-3 motor sin respuesta». Ahí apareció un error: el contexto de base deshacía la
+    transacción de todo 5xx y se llevaba esa denegación; ahora el 503 del motor la conserva y solo
+    el 500 deshace. Con prueba.
+- [x] 4.7 Decorador o *middleware* `@protegida(accion, objeto)` en toda ruta, y una prueba que recorre
   todas las URL y falla si alguna no lo declara (criterio de aceptación 2).
-- [ ] 4.8 Historial (H1 a H3): eventos de lectura, fincas vistas por sujeto en 90 días, umbrales por rol
+  - `autorizacion.proteccion.protegida(accion, tipo, objeto=…, cambio=…)`: la vista corre solo con
+    «conceder»; «pedir segundo factor» manda a reautenticarse; la lectura denegada por C1 o C5
+    responde 404, igual que lo inexistente (T-08); el resto, 403 con la regla, y todo queda en la
+    bitácora. `TodaRutaDeclarada` recorre las rutas: las propias declaran su protección salvo
+    inicio, salud y elegir rol, y de allauth solo están las de cuenta y segundo factor.
+- [x] 4.8 Historial (H1 a H3): eventos de lectura, fincas vistas por sujeto en 90 días, umbrales por rol
   en una tabla que aprueba GER (40, 60 y 80 por día; jornada de lunes a viernes, 6:00 a 19:00, hora de
   Costa Rica). En la misma tabla va el máximo de asignaciones activas por técnico, 20 (K-1). Para la
   demostración, umbrales bajos en un rol de prueba.
-- [ ] 4.9 Respuesta graduada: conceder; conceder y avisar; pedir segundo factor y motivo; restringir las
+  - `@protegida` anota cada lectura de un detalle con finca (`autorizacion/historial.py`); la base
+    cuenta fincas distintas en 24 h (denegadas doble), en 60 min, si la finca es nueva en 90 días y
+    si se está fuera de la jornada del rol (`va_hechos_sujeto`). Los umbrales y la jornada salen de
+    `negocio_parametrorol` (valores iniciales de 2.6). Falta la pantalla de GER para cambiarlos (5.x)
+    y bajar los umbrales de un rol de prueba para la demostración.
+- [x] 4.9 Respuesta graduada: conceder; conceder y avisar; pedir segundo factor y motivo; restringir las
   fincas nuevas hasta el siguiente día hábil.
-- [ ] 4.10 La interfaz pregunta al motor qué botones mostrar, solo por comodidad: lo que protege es la
+  - El motor responde el nivel (4.2) y `@protegida` lo aplica: avisar y restringir crean una
+    `Alerta` con su control y nivel (con motivo, «verificación»); pedir motivo exige primero el
+    código reciente y después un motivo que viaja con la misma petición (`motivo.html`); restringir
+    responde 403 «hasta el siguiente día hábil». 5 pruebas en `RespuestaGraduada`.
+- [x] 4.10 La interfaz pregunta al motor qué botones mostrar, solo por comodidad: lo que protege es la
   decisión en el servidor.
-- [ ] 4.11 `opa test` con cobertura, `opa check --strict` y Regal en CI.
+  - El inicio pide al motor las celdas del rol activo (`/v1/data/matriz/celdas/<rol>`) y las
+    muestra con sus reglas; sin motor, también responde 503 (K-3). Los botones de cada pantalla de
+    la fase 5 harán lo mismo. Las pruebas de `cuentas` no dependen del motor (lo simulan).
+- [x] 4.11 `opa test` con cobertura, `opa check --strict` y Regal en CI.
+  - Trabajo `politica` en `seguridad.yml`: `opa fmt --fail`, `check --strict`, las 70 pruebas y
+    cobertura mínima de 95 % (hoy 99,3 %), y Regal 0.43.0 sin hallazgos. OPA y Regal por huella.
+    Regal pidió ordenar `reglas.rego` (las reglas juntas, las auxiliares al final), un punto de
+    entrada declarado y valores por omisión en vez de `else`; las pruebas tienen excepciones de
+    estilo en `politica/.regal/config.yaml`.
 
 ---
 
@@ -386,34 +535,65 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
 
 Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejercitar cada permiso.
 
-- [ ] 5.1 Inicio por rol con las acciones que tiene. Respuesta «no encontrado» igual para lo ajeno y lo
+- [x] 5.1 Inicio por rol con las acciones que tiene. Respuesta «no encontrado» igual para lo ajeno y lo
   inexistente (T-08).
-- [ ] 5.2 Catálogo: ADM propone alta de finca, cambio de titular o de geometría; GER aprueba (C11).
+  - 12-nov: el inicio muestra lo que el motor da al rol y el menú lleva a cada pantalla de su rol; lo ajeno y lo inexistente responden la misma 404 (T-08, probado).
+- [x] 5.2 Catálogo: ADM propone alta de finca, cambio de titular o de geometría; GER aprueba (C11).
   Parcelas con mediciones no se editan: versión nueva.
-- [ ] 5.3 Cuentas: ADM crea, propone roles y desactiva; GER aprueba; nadie toca su propia cuenta (C12).
+  - 12-nov: `flujos/vistas/fincas.py`. Alta de finca con su primera parcela (WKT), cambio de titular y parcela nueva que reemplaza a otra; GER aprueba desde la ficha. T-15 probado.
+- [x] 5.3 Cuentas: ADM crea, propone roles y desactiva; GER aprueba; nadie toca su propia cuenta (C12).
   Cada quien cambia su contraseña, sus factores y su declaración de vínculos (C13); retirar un vínculo lo aprueba GER.
-- [ ] 5.4 Períodos: ADM registra apertura y cierre con las fechas de la coordinación; GER aprueba. No
+  - 12-nov: `flujos/vistas/cuentas.py`, en `/personal/`. La cuenta nace sin rol y con una contraseña inicial que se muestra una sola vez; `/mis-vinculos/` para C13. T-16 y T-35 probados.
+- [x] 5.4 Períodos: ADM registra apertura y cierre con las fechas de la coordinación; GER aprueba. No
   existe reabrir. Al cerrar, los borradores nunca enviados pasan a `excluida` (C14, T-22).
-- [ ] 5.5 Asignaciones: SUP crea ordinarias y temporales (motivo y fecha de fin, 15 días máximo,
+  - 12-nov: `flujos/vistas/periodos.py`. T-22 probado: al cerrar, el borrador de A pasa a excluida.
+- [x] 5.5 Asignaciones: SUP crea ordinarias y temporales (motivo y fecha de fin, 15 días máximo,
   renovable); nadie se asigna a sí mismo; vencen solas (C19, T-27, T-28). Un técnico tiene como máximo
   20 asignaciones activas; la pantalla muestra cuántas lleva (K-1, T-38, T-39).
-- [ ] 5.6 Mediciones: TEC crea, modifica (versión nueva) y envía; fecha de medición declarada y fecha
+  - 12-nov: `flujos/vistas/asignaciones.py`, con la tabla de activas por técnico. Vencen solas para el acceso (C1 mira las fechas); marcarlas terminadas es del trabajo 7.2. T-28 y T-38 probados.
+- [x] 5.6 Mediciones: TEC crea, modifica (versión nueva) y envía; fecha de medición declarada y fecha
   de registro del servidor (C2, T-30). VER aprueba o devuelve con observaciones (C3); el formulario de
   aprobación no lleva ningún campo de aprobador, que sale de la sesión (K-2, T-40). Más de cinco días
   hábiles entre las dos fechas pide motivo.
-- [ ] 5.7 Enmiendas: solicitar (TEC, VER o GER, C7), corregir en 10 días hábiles como versión propuesta
+  - 12-nov: `flujos/vistas/mediciones.py`. Recorrido con va_app: A registra y envía, C aprueba con reautenticación y motivo fuera de jornada. Encontrado y corregido: la seguridad por fila no dejaba a ningún técnico insertar una medición (`negocio/sql/0005`). T-01, T-03, T-05, T-06, T-29, T-40 probados.
+- [x] 5.7 Enmiendas: solicitar (TEC, VER o GER, C7), corregir en 10 días hábiles como versión propuesta
   (C9), revisión técnica independiente con cálculo de materialidad (C10), autorización final de GER que
   registra si el certificado fue comercializado (C8).
-- [ ] 5.8 Alertas: SUP atiende las de sus técnicos; GER las demás y las que SUP no resuelva en dos días
+  - 12-nov: `flujos/vistas/enmiendas.py`. Material si cambia un dato del cálculo de toneladas. La revocación y reemisión del certificado afectado es de 6.5.
+- [x] 5.8 Alertas: SUP atiende las de sus técnicos; GER las demás y las que SUP no resuelva en dos días
   hábiles; nadie resuelve una sobre sí mismo (C15, T-36).
-- [ ] 5.9 Datos personales: ADM los mantiene; supresión solo si no hay obligación de conservar (C16, T-37).
-- [ ] 5.10 DUE ve lo de sus fincas y solo mediciones aprobadas (C5).
+  - 12-nov: `flujos/vistas/alertas.py`; la escalada a GER se calcula al leer (dos días hábiles). T-36 probado.
+- [x] 5.9 Datos personales: ADM los mantiene; supresión solo si no hay obligación de conservar (C16, T-37).
+  - 12-nov: `flujos/vistas/titulares.py`. T-37 probado.
+- [x] 5.10 DUE ve lo de sus fincas y solo mediciones aprobadas (C5).
+  - 12-nov: por la seguridad por fila y C5 en el motor; T-08 probado.
 - [ ] 5.11 AUD ve todo y exporta paquetes sellados, con su identidad, sin datos personales y con la
   huella en la bitácora (C18, T-31).
-- [ ] 5.12 GER y AUD leen la bitácora; cada lectura queda registrada (POL-BT-05).
-- [ ] 5.13 ⚠ Todo acceso a datos por el ORM o con consultas parametrizadas. Prohibido `raw()` con
+  - 12-nov: exportación por objeto en `/exportar/<objeto>/` (`flujos/vistas/exportar.py`) con la identidad del auditor, sin datos personales y con su huella SHA-256 en la bitácora y en ExportacionAuditoria (T-31 probado). Falta el sello con la clave de Verdeazul (6.10).
+- [x] 5.12 GER y AUD leen la bitácora; cada lectura queda registrada (POL-BT-05).
+  - 12-nov: `/bitacora/` con la comprobación de la cadena; cada lectura se registra.
+- [x] 5.13 ⚠ Todo acceso a datos por el ORM o con consultas parametrizadas. Prohibido `raw()` con
   cadenas armadas, `extra()`, `eval` y `pickle` sobre datos externos (regla de Bandit y Ruff).
-- [ ] 5.14 Sin el sitio de administración de Django: edita cualquier tabla saltándose las reglas.
+  - 12-nov: revisado con grep: ningún raw(), extra(), eval ni pickle, y todo cursor.execute va con parámetros. Bandit y Ruff entran al CI en 8.8.
+- [x] 5.14 Sin el sitio de administración de Django: edita cualquier tabla saltándose las reglas.
+  - 12-nov: `nucleo.tests.SinSitioDeAdministracion`.
+- [x] 5.15 Diseño de la interfaz, adelantado el 10 nov: plantilla base con encabezado y menú por rol
+  activo, estilos propios en `nucleo/static/verdeazul/` servidos por WhiteNoise (con huella en el
+  nombre, sin CDN ni estilos en línea, listos para una CSP estricta), claro y oscuro, y adaptados al
+  teléfono. Las pantallas de allauth (entrar, código, activar TOTP, códigos de recuperación,
+  contraseña, salir) usan el mismo diseño y no ofrecen desactivar el segundo factor. Portada sin
+  sesión; inicio con el rol activo, la sesión (inicio, cierre a los 30 min o a las 12 h) y el
+  segundo factor; elección de rol en tarjetas. Pendiente para 9.x: el QR del TOTP es una imagen
+  `data:`, así que la CSP necesita `img-src 'self' data:`.
+  Rediseño el 10 nov sobre el estilo «Monad» (styles.refero.design), en 7 commits `5.15:`:
+  - lienzo pergamino, titulares en serif y la interfaz en mono, con fuentes del sistema;
+  - el azul solo para la acción principal; modo claro y oscuro según el sistema, con contraste AA medido;
+  - página 404 propia que no dice más que la de Django.
+  Componentes para las pantallas de esta fase:
+  - `nucleo/_estado.html`: insignia de cada estado, con ícono y texto;
+  - `nucleo/_resumen_errores.html` y `nucleo/_vacio.html`;
+  - tablas, migas y paginación;
+  - todos juntos en `nucleo/muestrario.html`, sin ruta y probado.
 
 ---
 
@@ -468,8 +648,11 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     (K-2).
   - T-41: con OPA detenido, cualquier rol pide cualquier acción. Se frena con 503, no se ejecuta nada
     y queda en la bitácora (K-3).
-- [ ] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
+  - 12-nov: `flujos.tests.CasosDeLaParte1`, con el motor real, cubre T-01, T-02, T-03, T-05, T-06, T-08, T-10, T-15, T-16, T-22, T-27, T-28, T-29, T-31, T-35, T-36, T-37, T-38 y T-40; T-41 está en nucleo y autorizacion. En Rego ya pasan T-01 a T-39. Faltan de punta a punta los demás.
+- [x] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
+  - Cubierto en `politica/verdeazul/decision_test.rego`: toda combinación fuera de la matriz se deniega, y las 38 celdas vacías están contadas.
 - [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
+  - 12-nov: `flujos.tests.CadaPermisoTieneRuta` exige una ruta protegida para cada permiso de los siete roles de la aplicación. Falta el caso feliz uno por uno.
 - [ ] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
   restricciones): las dos copias de la regla no pueden divergir (RR-10).
 - [ ] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una

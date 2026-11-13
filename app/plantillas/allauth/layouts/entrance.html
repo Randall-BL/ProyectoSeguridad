@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% comment %}
+Entrada: iniciar sesión, código del segundo factor y reautenticación. A la izquierda el formulario;
+a la derecha, en la única tarjeta de color, lo que protege el sistema.
+{% endcomment %}
+{% block clase_cuerpo %}entrada{% endblock clase_cuerpo %}
+{% block franja %}<span class="luz" aria-hidden="true"></span>Acceso al sistema<span class="franja-detalle"> · contraseña y segundo factor obligatorio</span>{% endblock franja %}
+{% block menu %}{% endblock menu %}
+{% block body %}
+  <div class="entrada-rejilla">
+    <div class="entrada-formulario">
+      {% include "nucleo/_mensajes.html" %}
+      {% block content %}{% endblock content %}
+    </div>
+    <aside class="entrada-panel" aria-labelledby="titulo-garantias">
+      <h2 id="titulo-garantias">Cada tonelada, medida, revisada y firmada.</h2>
+      <ul class="garantias">
+        <li>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path d="M10 2 3.5 4.5v4.8c0 4 2.8 7.2 6.5 8.2 3.7-1 6.5-4.2 6.5-8.2V4.5L10 2Z"/><path d="m7.3 10 1.9 1.9 3.6-3.7"/></svg>
+          <div><strong>Segundo factor obligatorio</strong><span>Contraseña y el código de su aplicación autenticadora.</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path d="M8 11.5a3.4 3.4 0 0 0 4.9.3l2.4-2.4a3.4 3.4 0 0 0-4.9-4.9l-1.2 1.2"/><path d="M12 8.5a3.4 3.4 0 0 0-4.9-.3l-2.4 2.4a3.4 3.4 0 0 0 4.9 4.9l1.2-1.2"/></svg>
+          <div><strong>Bitácora encadenada</strong><span>Cada acción queda registrada y nadie la puede borrar.</span></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><circle cx="10" cy="8" r="5"/><path d="m7.3 12.3-1.3 5.5L10 16l4 1.8-1.3-5.5"/></svg>
+          <div><strong>Certificados firmados</strong><span>La firma digital delata cualquier alteración.</span></div>
+        </li>
+      </ul>
+    </aside>
+  </div>
+{% endblock body %}

@@ -1,6 +1,8 @@
 """Ajustes de la aplicación. Todo lo sensible llega por variables de entorno: en Cloud Run las
 inyecta Secret Manager; en local salen de .env, que git ignora."""
 
+import base64
+import hashlib
 import os
 from pathlib import Path
 from urllib.parse import parse_qsl, unquote, urlsplit
@@ -51,17 +53,110 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "allauth",
+    "allauth.account",
+    "allauth.mfa",
     "nucleo",
+    "cuentas",
+    "negocio",
+    "bitacora",
+    "autorizacion",
+    "flujos",
+]
+
+AUTH_USER_MODEL = "cuentas.Usuario"
+# El de allauth, más la ventana de la cuenta y el rol (tarea 3.9).
+AUTHENTICATION_BACKENDS = ["cuentas.autenticacion.Autenticacion"]
+LOGIN_URL = "account_login"
+LOGIN_REDIRECT_URL = "inicio"
+
+# --- Inicio de sesión y segundo factor (POL-AU-05, POL-AU-06, POL-AU-10) ----------------------
+# Se entra con el nombre de usuario; el correo no sirve para entrar ni para recuperar la cuenta.
+ACCOUNT_ADAPTER = "cuentas.adaptadores.AdaptadorCuentas"
+ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_SIGNUP_FIELDS = ["username*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_REAUTHENTICATION_TIMEOUT = 5 * 60
+# Segundo factor obligatorio: código temporal (TOTP) con códigos de recuperación de respaldo. Sin
+# SMS ni correo. Las llaves de acceso (WebAuthn) quedan para después (desviación D-07).
+MFA_ADAPTER = "cuentas.adaptadores.AdaptadorSegundoFactor"
+MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+MFA_TOTP_ISSUER = "Verdeazul Carbono"
+# Clave Fernet con la que se cifran los secretos TOTP en la base. En Cloud Run llega de Secret
+# Manager; en local, sin la variable, se deriva de la llave de Django.
+MFA_CLAVE = os.environ.get("MFA_CLAVE") or (
+    base64.urlsafe_b64encode(hashlib.sha256(f"mfa:{SECRET_KEY}".encode()).digest()).decode()
+    if DEBUG
+    else _entorno("MFA_CLAVE")
+)
+
+# --- Sesión (POL-AU-08, tarea 3.5) ------------------------------------------------------------
+# En PostgreSQL, con la cuenta a la que pertenece (cuentas.Sesion). Vence a los 30 minutos sin
+# actividad (la fecha se corre en cada petición) y a las 12 horas de iniciada (LimitarSesion). La
+# cookie muere al cerrar el navegador: no hay «recordarme».
+SESSION_ENGINE = "cuentas.sesiones"
+SESSION_COOKIE_AGE = 30 * 60
+SESSION_SAVE_EVERY_REQUEST = True
+SESION_MAXIMA = 12 * 60 * 60
+ACCOUNT_SESSION_REMEMBER = False
+# Cambiar la contraseña cierra todas las sesiones, también la actual (tarea 3.6).
+ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True
+# El prefijo __Host- obliga al navegador a aceptarla solo por HTTPS, sin dominio y para todo el
+# sitio. En local, sin HTTPS, no se puede usar.
+SESSION_COOKIE_NAME = "sesion" if DEBUG else "__Host-sesion"
+
+# --- Intentos fallidos y caché compartida (POL-AU-07, tarea 3.7) ------------------------------
+# El conteo de fallos por nombre de usuario, con la demora y el bloqueo, vive en la base
+# (cuentas.intentos). Además, allauth limita por dirección y, para el código del segundo factor,
+# 10 intentos por persona cada 15 minutos. Esos límites y la protección contra reusar un código TOTP
+# usan la caché, que tiene que ser la misma en todas las instancias de Cloud Run: por eso está en
+# PostgreSQL y no en la memoria de cada proceso.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "cache_compartida",
+        "OPTIONS": {"MAX_ENTRIES": 10000},
+    }
+}
+ACCOUNT_RATE_LIMITS = {"login": "30/m/ip", "login_failed": "20/m/ip,10/15m/key"}
+
+# --- Contraseñas (POL-AU-01 a 03 y 09) --------------------------------------------------------
+# Argon2id con sal por usuario: lento y con mucha memoria a propósito (Morris y Thompson, 1979).
+# Los demás quedan solo para leer resúmenes viejos y convertirlos al iniciar sesión.
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
+# Longitud mínima de 12 y sin reglas de composición: se rechazan las comunes y las que contienen
+# nombres propios, no las que «les falta un símbolo».
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 12},
+    },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "cuentas.validadores.SinNombresPropios"},
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+    "cuentas.sesiones.LimitarSesion",
+    "cuentas.middleware.ExigirSegundoFactor",
+    "cuentas.roles.FijarRolActivo",
+    "nucleo.basedatos.ContextoDeBase",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 ROOT_URLCONF = "verdeazul.urls"
 WSGI_APPLICATION = "verdeazul.wsgi.application"
@@ -69,11 +164,42 @@ WSGI_APPLICATION = "verdeazul.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        # Plantillas propias que reemplazan las de allauth.
+        "DIRS": [BASE_DIR / "plantillas"],
         "APP_DIRS": True,
-        "OPTIONS": {"context_processors": ["django.template.context_processors.request"]},
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "nucleo.contexto.verdeazul",
+            ]
+        },
     }
 ]
+
+# --- Motor de decisión (fase 4) ---------------------------------------------------------------
+# OPA corre en la misma instancia (contenedor auxiliar en Cloud Run). Si no contesta en el límite,
+# la petición se frena (K-3): 1,5 segundos, dentro de los 1 a 2 que fija el diseño.
+OPA_URL = os.environ.get("OPA_URL", "http://localhost:8181")
+OPA_LIMITE = float(os.environ.get("OPA_LIMITE", "1.5"))
+
+# --- Archivos estáticos -----------------------------------------------------------------------
+# Estilos e imágenes propios (y los de allauth), servidos por WhiteNoise desde la misma imagen:
+# nombres con huella, comprimidos y con caché larga. Nada se carga de un CDN. collectstatic corre
+# al construir la imagen; en local y en las pruebas, sin colectar, se leen de cada aplicación.
+STATIC_URL = "estatico/"
+STATIC_ROOT = BASE_DIR / "estatico"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        if DEBUG
+        else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
+WHITENOISE_USE_FINDERS = DEBUG
+WHITENOISE_AUTOREFRESH = DEBUG
 
 DATABASES = {"default": _base_desde_url(_entorno("DATABASE_URL"))}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

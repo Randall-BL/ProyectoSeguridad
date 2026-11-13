@@ -47,6 +47,14 @@ Con eso, cada commit pasa por dos revisiones antes de crearse:
 El flujo `.github/workflows/seguridad.yml` repite las dos revisiones sobre toda la historia en cada
 push a `main` y en cada PR, por si alguien no instaló los ganchos.
 
+## Ramas
+
+- Cada integrante trabaja en su rama `development-<nombre>` (por ejemplo, `development-yitan`) y
+  hace un commit por tarea del [todo.md](todo.md), con su número al inicio del mensaje («2.7: …»).
+- A `main` se llega por PR desde esa rama, fusionando con **merge commit**, no con squash: así los
+  commits etiquetados (`v0.2.0`, …) siguen en la historia de `main`.
+- El CI corre en cada push a `main` y a las ramas `development-*`, y en cada PR.
+
 ## Reglas del repositorio
 
 - **Ningún secreto en el repositorio, nunca.** El repositorio es público. Las credenciales viven en
@@ -58,6 +66,29 @@ push a `main` y en cada PR, por si alguien no instaló los ganchos.
   Artifact Registry.
 - **Dependabot** revisa cada lunes las dependencias de pip, las imágenes base de Docker y las acciones
   de GitHub (`.github/dependabot.yml`), y abre PR de seguridad cuando hay una alerta.
+
+## Desarrollo local
+
+Con Docker Desktop abierto:
+
+```
+DJANGO_SECRET_KEY=<cualquier valor largo> docker compose up --build
+```
+
+La app queda en http://127.0.0.1:8000 y la base (PostGIS 18, sin contraseña, solo local) en
+`127.0.0.1:15432`. La llave se puede poner en `.env`, que git ignora.
+
+Para crear las tablas y cargar los personajes de los casos de prueba (una sola vez por base):
+
+```
+docker compose exec app python manage.py migrate
+docker compose exec app python manage.py sembrar
+```
+
+`sembrar` genera una contraseña por cuenta y la imprime una sola vez en la terminal. Con
+`--salida RUTA` la escribe en un archivo nuevo, que no puede quedar dentro del repositorio, y con la
+variable `SEMILLA_CONTRASENA` todas las cuentas usan esa. `db/pruebas/semilla.sql` comprueba que los
+datos cargados dejan listos los casos de la matriz. `docker compose down -v` borra la base local.
 
 ## Despliegue
 
@@ -76,7 +107,7 @@ sh infra/crear-secretos.sh   # secretos en Secret Manager y usuario de base va_a
 
 **Cada versión:**
 
-1. Commit y push a `main`.
+1. Commit y push (a `main` o a la rama `development-<nombre>`).
 2. `sh infra/publicar.sh app vX.Y.Z`: Cloud Build construye la imagen y la publica como
    `app:vX.Y.Z` y `app:git-<commit>`, y pone la etiqueta `vX.Y.Z` en git, en el mismo commit.
 3. `sh infra/desplegar.sh app vX.Y.Z`: aplica `infra/app.service.yaml` con esa imagen.
@@ -95,3 +126,5 @@ Cada etiqueta de git corresponde a la imagen con la misma etiqueta en
 | Versión | Commit | Fecha | Qué trae |
 |---|---|---|---|
 | `v0.1.0` | `6a0a1f8` | 2026-11-06 | «Hola»: Django por HTTPS en Cloud Run, que lee Neon con la cadena de Secret Manager; imagen sin root |
+| `v0.2.0` | `383da2f` (`app`), `7b5df6e` (`politica`) | 2026-11-12 | Base con seguridad por fila y bitácora encadenada, Argon2id y TOTP obligatorio, sesión revocable, OPA como contenedor auxiliar que decide cada petición y frena todo si no responde (T-41), interfaz nueva. La imagen de la política salió de `7b5df6e`, que solo cambia `.gcloudignore`: los archivos de la política son los mismos de `383da2f` |
+| `v0.3.0` | `c8d05be` | 2026-11-12 | Los flujos de la fase 5 con una ruta protegida por cada permiso de los siete roles: catálogo, períodos, asignaciones, mediciones, enmiendas, cuentas, datos personales, alertas, bitácora y exportación del auditor. Corrige la seguridad por fila que impedía a un técnico registrar mediciones |

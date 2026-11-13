@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load allauth %}
+{% block head_title %}{{ titulo }}{% endblock head_title %}
+{% block content %}
+  {% include "flujos/_migas.html" %}
+  <div class="encabezado-pagina">
+    <div>
+      <h1>{{ titulo }}</h1>
+      {% if descripcion %}<p>{{ descripcion }}</p>{% endif %}
+    </div>
+  </div>
+  {% if datos %}
+    <dl class="datos formulario">
+      {% for etiqueta, valor in datos %}<div><dt>{{ etiqueta }}</dt><dd>{{ valor|default:"—" }}</dd></div>{% endfor %}
+    </dl>
+  {% endif %}
+  <form class="formulario" method="post" novalidate>
+    {% csrf_token %}
+    {% include "nucleo/_resumen_errores.html" with form=form %}
+    {% element fields form=form %}{% endelement %}
+    <div class="acciones">
+      <button class="boton {% if peligro %}boton-peligro{% else %}boton-primario{% endif %}" type="submit">{{ boton }}</button>
+      {% if cancelar %}<a class="boton boton-secundario" href="{{ cancelar }}">Cancelar</a>{% endif %}
+    </div>
+  </form>
+{% endblock content %}

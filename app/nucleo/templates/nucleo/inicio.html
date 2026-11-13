@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block head_title %}Inicio{% endblock head_title %}
+{% block franja %}<span class="luz" aria-hidden="true"></span>Sesión de {{ user.get_full_name|default:user.username }}{% if inicio_sesion %}<span class="franja-detalle"> · se cierra a las {{ fin_sesion|time:"H:i" }} o tras {{ inactividad_min }} min sin actividad</span>{% endif %}{% endblock franja %}
+{% block content %}
+  <div class="encabezado-pagina">
+    <div>
+      <h1>{{ saludo }}, {{ user.first_name|default:user.username }}</h1>
+      <p>{{ que_hace }}</p>
+    </div>
+    <span class="estado"><span class="luz" aria-hidden="true"></span>En línea · PostgreSQL {{ postgres }} · PostGIS {{ postgis }}</span>
+  </div>
+
+  <div class="rejilla-2">
+    <section class="bloque" aria-labelledby="titulo-permisos">
+      <h2 id="titulo-permisos">Lo que puede hacer su rol</h2>
+      {% if permisos %}
+        <p class="bloque-nota">Lo responde el motor de decisión con la misma matriz que aplica en cada petición. El código junto a una acción es la regla que la condiciona; H1–H3 son lecturas vigiladas por el historial.</p>
+        <ul class="permisos">
+          {% for permiso in permisos %}
+            <li>
+              <span class="objeto">{{ permiso.objeto }}</span>
+              <span class="verbos">
+                {% for verbo in permiso.verbos %}
+                  <span class="insignia"{% if verbo.condiciones %} title="Regla {{ verbo.condiciones|join:', ' }}"{% endif %}>{{ verbo.nombre }}{% if verbo.condiciones %} · {{ verbo.condiciones|join:", " }}{% endif %}</span>
+                {% endfor %}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        {% include "nucleo/_vacio.html" with titulo="Todavía no hay pantallas para su rol" texto="Las pantallas de cada flujo llegan con la versión 0.3.0." %}
+      {% endif %}
+    </section>
+
+    <section class="tarjeta" aria-labelledby="titulo-sesion">
+      <h2 id="titulo-sesion">Su sesión</h2>
+      <dl class="datos">
+        <div>
+          <dt>Rol activo</dt>
+          <dd>{{ rol_activo_nombre }}{% if con_habilitacion %} <span class="insignia">Con habilitación</span>{% endif %}</dd>
+        </div>
+        {% if inicio_sesion %}
+          <div><dt>Inició</dt><dd>{{ inicio_sesion|date:"j \d\e F, H:i" }}</dd></div>
+          <div><dt>Se cierra</dt><dd>a los {{ inactividad_min }} minutos sin actividad, o a las {{ fin_sesion|time:"H:i" }}</dd></div>
+        {% endif %}
+        <div>
+          <dt>Segundo factor</dt>
+          <dd>{% if totp_activo %}<span class="insignia insignia-llena"><span aria-hidden="true">✓</span> Activo</span>{% else %}<span class="insignia insignia-aviso"><span aria-hidden="true">!</span> Sin activar</span>{% endif %}</dd>
+        </div>
+        <div><dt>Recuperación</dt><dd>{{ codigos_sin_usar }} código{{ codigos_sin_usar|pluralize }} sin usar</dd></div>
+      </dl>
+      <div class="acciones">
+        <a class="boton boton-secundario boton-chico" href="{% url 'mfa_index' %}">Segundo factor</a>
+        <a class="boton boton-secundario boton-chico" href="{% url 'account_change_password' %}">Cambiar contraseña</a>
+      </div>
+    </section>
+  </div>
+{% endblock content %}

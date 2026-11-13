@@ -1,0 +1,23 @@
+{% extends "mfa/base_entrance.html" %}
+{% load allauth %}
+{% block head_title %}Código de verificación{% endblock head_title %}
+{% block content %}
+  <span class="insignia">Paso 2 de 2</span>
+  <h1>Código de verificación</h1>
+  <p class="intro">Escriba el código de seis dígitos que muestra su aplicación autenticadora. Si no tiene el teléfono, use uno de sus códigos de recuperación.</p>
+  {% url 'mfa_authenticate' as action_url %}
+  {% element form form=form method="post" action=action_url %}
+    {% slot body %}
+      {% csrf_token %}
+      {% element fields form=form unlabeled=True %}{% endelement %}
+    {% endslot %}
+    {% slot actions %}
+      {% element button type="submit" tags="primary,mfa,login" %}Entrar{% endelement %}
+      {% element button type="submit" form="logout-from-stage" tags="link,mfa,cancel" %}Cancelar{% endelement %}
+    {% endslot %}
+  {% endelement %}
+  <form id="logout-from-stage" method="post" action="{% url 'account_logout' %}">
+    <input type="hidden" name="next" value="{% url 'account_login' %}">
+    {% csrf_token %}
+  </form>
+{% endblock content %}

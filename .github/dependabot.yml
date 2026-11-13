@@ -17,6 +17,12 @@ updates:
       day: "monday"
       timezone: "America/Costa_Rica"
     open-pull-requests-limit: 5
+    # Django se queda en 5.2 LTS (soporte hasta abril de 2028): Django publica cada parche de
+    # seguridad también para 5.2, así que basta con los parches. Saltar a 6.x sería una versión
+    # mayor a pocos días de la entrega.
+    ignore:
+      - dependency-name: "django"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "docker"
     directories:

@@ -39,3 +39,11 @@ if ! existe db-url-app; then
     postgresql "$clave" "$host_pool" "$CA_IMAGEN" | crear db-url-app
 fi
 permitir db-url-app "$SA_APP"
+
+# Clave Fernet que cifra en la base los secretos TOTP y las semillas de los códigos de recuperación
+# (POL-AU-05): 32 bytes al azar en base64 URL. Perderla obliga a enrolar de nuevo a todo el mundo.
+if ! existe mfa-clave; then
+  python -c "import base64, secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode(), end='')" \
+    | crear mfa-clave
+fi
+permitir mfa-clave "$SA_APP"

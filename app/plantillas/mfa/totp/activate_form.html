@@ -1,0 +1,28 @@
+{% extends "mfa/totp/base.html" %}
+{% load allauth %}
+{% block head_title %}Activar el segundo factor{% endblock head_title %}
+{% block content %}
+  <span class="insignia insignia-aviso"><span aria-hidden="true">!</span> Obligatorio para usar el sistema</span>
+  <h1>Active su aplicación autenticadora</h1>
+  <p class="suave">Todas las cuentas usan contraseña y un código temporal. Sin SMS ni correo: el código lo genera su teléfono.</p>
+  <ol class="pasos">
+    <li>Abra una aplicación autenticadora: Google Authenticator, Microsoft Authenticator, Aegis o 1Password.</li>
+    <li>Escanee el código QR, o escriba a mano la clave secreta.</li>
+    <li>Escriba abajo el código de seis dígitos que le muestra la aplicación.</li>
+  </ol>
+  {% url 'mfa_activate_totp' as action_url %}
+  {% element form form=form method="post" action=action_url %}
+    {% slot body %}
+      {% element img src=totp_svg_data_uri alt="Código QR para la aplicación autenticadora" tags="mfa,totp,qr" %}{% endelement %}
+      {% csrf_token %}
+      {% element field id="authenticator_secret" type="text" value=form.secret disabled=True %}
+        {% slot label %}Clave secreta{% endslot %}
+        {% slot help_text %}Sirve para configurar la aplicación a mano. No la comparta ni la guarde junto a su contraseña.{% endslot %}
+      {% endelement %}
+      {% element fields form=form %}{% endelement %}
+    {% endslot %}
+    {% slot actions %}
+      {% element button type="submit" tags="prominent" %}Activar{% endelement %}
+    {% endslot %}
+  {% endelement %}
+{% endblock content %}

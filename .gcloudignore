@@ -2,5 +2,6 @@
 # .neon, .git ni los documentos.
 /*
 !/app/
+!/politica/
 !/.dockerignore
 **/__pycache__/

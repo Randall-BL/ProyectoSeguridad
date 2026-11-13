@@ -1,0 +1,86 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block head_title %}Inicio{% endblock head_title %} · Verdeazul Carbono</title>
+  <link rel="icon" href="{% static 'verdeazul/marca.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'verdeazul/verdeazul.css' %}">
+  {% block extra_head %}{% endblock extra_head %}
+</head>
+<body class="{% block clase_cuerpo %}{% endblock clase_cuerpo %}">
+  <a class="solo-lector" href="#principal">Ir al contenido</a>
+  {% block encabezado %}
+    {% comment %}
+    Franja superior: de quién es la sesión o, sin sesión, qué es el sistema. La portada y el inicio
+    la amplían con el estado de la base y la hora de cierre de la sesión.
+    {% endcomment %}
+    <div class="franja">
+      <div class="ancho">
+        <span>
+          {% block franja %}
+            {% if user.is_authenticated %}
+              <span class="luz" aria-hidden="true"></span>Sesión de {{ user.get_full_name|default:user.username }}<span class="franja-detalle"> · {{ rol_activo_nombre|default:"sin rol elegido" }}</span>
+            {% else %}
+              Registro y certificación de carbono<span class="franja-detalle"> · Pérez Zeledón</span>
+            {% endif %}
+          {% endblock franja %}
+        </span>
+        <span class="franja-version">Versión {{ version_app }}</span>
+      </div>
+    </div>
+    <header class="barra">
+      <div class="ancho">
+        <a class="marca" href="{% url 'inicio' %}"><img src="{% static 'verdeazul/marca.svg' %}" alt="">Verdeazul Carbono</a>
+        {% block menu %}
+          {% if menu_principal %}
+            <nav class="menu" aria-label="Principal">
+              {% for opcion in menu_principal %}
+                <a href="{{ opcion.url }}"{% if opcion.actual %} aria-current="page"{% endif %}>{{ opcion.texto }}</a>
+              {% endfor %}
+            </nav>
+          {% endif %}
+        {% endblock menu %}
+        {% if user.is_authenticated %}
+          <div class="persona">
+            <div class="persona-datos">
+              <strong>{{ user.get_full_name|default:user.username }}</strong>
+              <span>{{ rol_activo_nombre|default:"Sin rol elegido" }}</span>
+            </div>
+            <a class="avatar" href="{% url 'mfa_index' %}" title="Mi cuenta" aria-label="Mi cuenta">{% if user.first_name %}{{ user.first_name|first }}{{ user.last_name|first }}{% else %}{{ user.username|first }}{% endif %}</a>
+            <form method="post" action="{% url 'account_logout' %}">
+              {% csrf_token %}
+              <button class="boton boton-secundario boton-chico" type="submit">Salir</button>
+            </form>
+          </div>
+        {% else %}
+          <div class="persona">
+            <a class="boton boton-secundario boton-chico" href="{% url 'account_login' %}">Iniciar sesión</a>
+          </div>
+        {% endif %}
+      </div>
+    </header>
+  {% endblock encabezado %}
+  <main id="principal" class="{% block clase_principal %}contenido{% endblock clase_principal %}">
+    {% block body %}
+      {% include "nucleo/_mensajes.html" %}
+      {% block content %}{% endblock content %}
+    {% endblock body %}
+  </main>
+  <footer class="pie">
+    <div class="ancho">
+      <div class="pie-marca">
+        <a class="marca" href="{% url 'inicio' %}"><img src="{% static 'verdeazul/marca.svg' %}" alt="">Verdeazul Carbono</a>
+        <p class="pie-lema">Registro y certificación de carbono</p>
+      </div>
+      <dl>
+        <div><dt>Curso</dt><dd>CE-1115 Seguridad de la Información</dd></div>
+        <div><dt>Grupo</dt><dd>6</dd></div>
+        <div><dt>Versión</dt><dd>{{ version_app }}{% if commit_app %} · {{ commit_app }}{% endif %}</dd></div>
+      </dl>
+    </div>
+  </footer>
+  {% block extra_body %}{% endblock extra_body %}
+</body>
+</html>

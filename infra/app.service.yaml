@@ -16,8 +16,11 @@ spec:
         autoscaling.knative.dev/minScale: "0"
         autoscaling.knative.dev/maxScale: "2"
         run.googleapis.com/startup-cpu-boost: "true"
+        # La aplicación arranca solo cuando el motor de decisión pasó su sonda de inicio: sin OPA,
+        # la instancia no recibe tráfico (K-3).
+        run.googleapis.com/container-dependencies: '{"app":["politica"]}'
     spec:
-      # Su propia cuenta de servicio, nunca la de Compute: solo puede leer sus dos secretos.
+      # Su propia cuenta de servicio, nunca la de Compute: solo puede leer sus tres secretos.
       serviceAccountName: sa-app@verdeazul-ce1115-g6.iam.gserviceaccount.com
       containerConcurrency: 40
       timeoutSeconds: 60
@@ -45,7 +48,34 @@ spec:
                 secretKeyRef:
                   name: db-url-app
                   key: "1"
+            - name: MFA_CLAVE
+              valueFrom:
+                secretKeyRef:
+                  name: mfa-clave
+                  key: "1"
+            # El motor de decisión, en la misma instancia (tarea 4.5).
+            - name: OPA_URL
+              value: http://localhost:8181
           resources:
             limits:
               cpu: "1"
               memory: 512Mi
+        # Motor de decisión (OPA) como contenedor auxiliar. No declara puertos: desde internet solo
+        # se llega a la aplicación, y la aplicación le pregunta por localhost (frontera F3).
+        - name: politica
+          image: us-east1-docker.pkg.dev/verdeazul-ce1115-g6/verdeazul/politica:__VERSION__
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            periodSeconds: 2
+            failureThreshold: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            periodSeconds: 30
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: 256Mi

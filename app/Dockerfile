@@ -25,6 +25,10 @@ RUN pip install --require-hashes -r requirements.txt
 # El código queda de root y sin permiso de escritura para el usuario que corre la aplicación.
 COPY app/ .
 
+# Estilos e imágenes con huella en el nombre, comprimidos, para WhiteNoise. Los ajustes exigen estas
+# variables, pero collectstatic no se conecta a nada: llevan valores de relleno, no secretos.
+RUN DJANGO_SECRET_KEY=solo-para-collectstatic MFA_CLAVE=solo-para-collectstatic     DATABASE_URL=postgresql://localhost/sin-base     python manage.py collectstatic --noinput --verbosity 0
+
 # Mínimo privilegio: la aplicación no corre como root.
 RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin verdeazul
 USER 10001
