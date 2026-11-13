@@ -76,7 +76,7 @@ DJANGO_SECRET_KEY=<cualquier valor largo> docker compose up --build
 ```
 
 La app queda en http://127.0.0.1:8000 y la base (PostGIS 18, sin contraseña, solo local) en
-`127.0.0.1:55432`. La llave se puede poner en `.env`, que git ignora.
+`127.0.0.1:15432`. La llave se puede poner en `.env`, que git ignora.
 
 Para crear las tablas y cargar los personajes de los casos de prueba (una sola vez por base):
 

@@ -216,7 +216,7 @@ demás es agregar funcionalidad encima.
 - [x] 1.6 Entorno local: `docker compose` con PostGIS y OPA, solo para desarrollar (lo que se evalúa es
   la nube). Dejar el `.venv` fuera de OneDrive o excluido de la sincronización. Hecho:
   `docker-compose.yml` con PostGIS 18 (fijada por huella) y la app; OPA se agrega en el sprint 2.
-  Los puertos escuchan solo en 127.0.0.1 (la base en el 55432). Comprobado: la app corre como
+  Los puertos escuchan solo en 127.0.0.1 (la base en el 15432). Comprobado: la app corre como
   `uid=10001` y no puede escribir en `/srv/app`.
 
 **Neon**
