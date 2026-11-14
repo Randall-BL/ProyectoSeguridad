@@ -655,13 +655,29 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 ## 7 · Trabajos programados y testigo (meta: 14 nov)
 
-- [ ] 7.1 ⚠ Imagen `trabajos:v…` y Cloud Run Jobs con `sa-trabajos`, disparados por Cloud Scheduler
+- [x] 7.1 ⚠ Imagen `trabajos:v…` y Cloud Run Jobs con `sa-trabajos`, disparados por Cloud Scheduler
   (la capa gratuita cubre pocos trabajos: agruparlos en uno o dos).
-- [ ] 7.2 Vencimientos: asignaciones temporales, habilitaciones de técnico, ventanas de auditor y cuentas
+  - 13-nov: un solo trabajo, `verdeazul-trabajos` (`trabajos/diario.py`, `infra/trabajos.job.yaml`), con el
+    usuario `va_trabajos`. `infra/desplegar.sh trabajos vX` crea el trabajo y el disparador
+    `verdeazul-diario` (2:30, hora de Costa Rica), que lo inicia con la identidad de `sa-trabajos`. Cada
+    paso corre en su transacción y deja su registro SIS en la bitácora; uno que falla no frena los demás,
+    pero la ejecución termina con error. También pide a la emisión lo que quedó pendiente.
+- [x] 7.2 Vencimientos: asignaciones temporales, habilitaciones de técnico, ventanas de auditor y cuentas
   sin uso en 45 días (POL-CA-06).
-- [ ] 7.3 Verificación diaria de la cadena de la bitácora y aviso si se rompe (criterio de aceptación 4).
-- [ ] 7.4 Escalamiento de alertas que SUP no resolvió en dos días hábiles (C15).
-- [ ] 7.5 Testigo externo según la decisión 0.6.
+  - 13-nov: termina las temporales vencidas, cierra las sesiones de quien perdió una asignación o una
+    habilitación, desactiva auditores fuera de su ventana y cuentas con 45 días sin uso, y borra las
+    sesiones expiradas. `va_trabajos` no puede más que eso (prueba en `flujos/tests_trabajos.py`).
+- [x] 7.3 Verificación diaria de la cadena de la bitácora y aviso si se rompe (criterio de aceptación 4).
+  - 13-nov: si `bitacora_verificar()` encuentra un registro alterado, lo anota, escribe un ERROR en Cloud
+    Logging con el número y la ejecución termina fallida.
+- [x] 7.4 Escalamiento de alertas que SUP no resolvió en dos días hábiles (C15).
+  - 13-nov: marca `escalada_en` (negocio 0006) y lo anota; GER las ve en su lista y el motor recibe
+    `escalada` también con esa marca.
+- [x] 7.5 Testigo externo según la decisión 0.6.
+  - 13-nov: sello RFC 3161 de una TSA pública (DigiCert y, si no responde, FreeTSA) sobre la huella del último
+    registro, guardado en `bitacora_testigo` (solo se agrega). La solicitud se arma en DER a mano
+    (`trabajos/tsa.py`) y se revisa estado, huella y nonce. Se comprueba sin Verdeazul con
+    `openssl ts -verify -digest <huella> -in sello.tsr ...`.
 
 ---
 
