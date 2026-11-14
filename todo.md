@@ -328,7 +328,9 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   por tabla. Comprobado como `va_app`: no puede cambiar una versión de medición, emitir un
   certificado ni borrar una medición.
 
-- [ ] 2.4 Un secreto `db-url-*` por usuario, cada uno accesible solo por su cuenta de servicio.
+- [x] 2.4 Un secreto `db-url-*` por usuario, cada uno accesible solo por su cuenta de servicio.
+  - 13-nov: `db-url-app`, `db-url-emision`, `db-url-publico` y `db-url-trabajos`, cada uno con un solo lector
+    (`sa-app`, `sa-emision`, `sa-publico` y `sa-trabajos`), comprobado con `gcloud secrets get-iam-policy`.
 - [x] 2.5 Seguridad por fila: el técnico solo ve filas de sus fincas asignadas (C1) y el dueño solo las
   de su titular (C5). El sujeto se pasa con `SET LOCAL app.usuario = …` dentro de cada transacción
   (cuidado: con el *pooler* de Neon solo funciona `SET LOCAL` dentro de la transacción).
