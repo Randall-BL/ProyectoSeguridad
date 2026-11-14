@@ -712,12 +712,18 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     (71/71). Hay que publicar `politica` y `app` en la próxima versión.
 - [x] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
   - Cubierto en `politica/verdeazul/decision_test.rego`: toda combinación fuera de la matriz se deniega, y las 38 celdas vacías están contadas.
-- [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
+- [x] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
   - 12-nov: `flujos.tests.CadaPermisoTieneRuta` exige una ruta protegida para cada permiso de los siete roles de la aplicación. Falta el caso feliz uno por uno.
   - 13-nov: `flujos.tests_casos.CasoFelizPorPermiso` se genera desde `matriz.json`: con cada rol, cada pantalla
     sin objeto que la matriz le concede (listas, formularios de alta, exportaciones) responde 200 con el motor
     real. Cubre 68 permisos; las acciones sobre un objeto tienen su caso feliz en los T-xx (aprobar,
     corregir, revisar, autorizar, asignar, cerrar, resolver, suprimir…).
+  - 14-nov: completos. Los 91 permisos de los siete roles de la aplicación: 68 por pantalla
+    (`CasoFelizPorPermiso`) y los 23 que se ejercen sobre un objeto con una prueba cada uno,
+    `test_<rol>_<verbo>_<objeto>` en `flujos.tests_casos.CasoFelizSobreObjetos`; una prueba más exige que
+    ninguno quede sin la suya. Los 10 de SIS los ejercen el servicio de emisión (leer, emitir, revocar:
+    `tests_certificados`, T-25), la bitácora (anexar, en cada acción) y los controles de historial (crear
+    alertas: T-18, T-19); el de PUB (comprobar), `publico/test_servicio.py` y T-32.
 - [x] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
   restricciones): las dos copias de la regla no pueden divergir (RR-10).
   - 14-nov: `flujos.tests_equivalencia` hace cada intento dos veces, por la ruta con el motor real y directo en

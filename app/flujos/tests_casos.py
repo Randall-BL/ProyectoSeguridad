@@ -21,13 +21,14 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from cuentas.models import Usuario
+from cuentas.models import PropuestaRol, Usuario
 from flujos.tests import MATRIZ, MOTIVO, _opa_disponible, _rutas
 from flujos.tests_certificados import como, emitir
 from negocio.models import (
     Alerta,
     Asignacion,
     Certificado,
+    DatosPersonales,
     Enmienda,
     EventoLectura,
     Finca,
@@ -35,7 +36,9 @@ from negocio.models import (
     ParametroRol,
     Parcela,
     Periodo,
+    PropuestaCatalogo,
     PropuestaPeriodo,
+    Titular,
 )
 
 if emitir is not None:
@@ -96,6 +99,15 @@ class ConPersonajes(TestCase):
         return self.client.post(reverse("autorizar_enmienda", args=[enmienda.pk]), {**MOTIVO, "comercializado": "no"})
 
 
+
+    def _cerrar_2026_ii(self):
+        self._como("adm.alberto", "ADM")
+        periodo = Periodo.objects.get(nombre="2026-II")
+        self.client.post(reverse("proponer_periodo", args=[periodo.pk]), {**MOTIVO, "accion": "cerrar"})
+        registro = PropuestaPeriodo.objects.get(periodo=periodo, accion="cerrar", estado="propuesto")
+        self._como("ger.gerardo", "GER")
+        self.client.post(reverse("cerrar_periodo", args=[registro.pk]), MOTIVO)
+        self.assertEqual(Periodo.objects.get(pk=periodo.pk).estado, "cerrado")
 
 @skipUnless(_opa_disponible(), "requiere el motor real (OPA) en OPA_URL")
 class CasosQueFaltaban(ConPersonajes):
@@ -192,15 +204,6 @@ class CasosQueFaltaban(ConPersonajes):
         self._como("tec.ana", "TEC")
         respuesta = self.client.get(reverse("modificar_medicion", args=[borrador.pk]))
         self.assertIn(respuesta.status_code, (403, 404))  # C2; tras el cierre, A ya no tiene F-001 (C1)
-
-    def _cerrar_2026_ii(self):
-        self._como("adm.alberto", "ADM")
-        periodo = Periodo.objects.get(nombre="2026-II")
-        self.client.post(reverse("proponer_periodo", args=[periodo.pk]), {**MOTIVO, "accion": "cerrar"})
-        registro = PropuestaPeriodo.objects.get(periodo=periodo, accion="cerrar", estado="propuesto")
-        self._como("ger.gerardo", "GER")
-        self.client.post(reverse("cerrar_periodo", args=[registro.pk]), MOTIVO)
-        self.assertEqual(Periodo.objects.get(pk=periodo.pk).estado, "cerrado")
 
     def test_t21_lo_devuelto_no_se_modifica_despues_del_cierre_procede_una_enmienda(self):
         self._como("ver.diego", "VER")
@@ -348,3 +351,191 @@ class CasoFelizPorPermiso(ConPersonajes):
                     cubiertos.add((rol, objeto, verbo))
         self.assertGreater(len(cubiertos), 40)
         print(f"\n8.3: {len(cubiertos)} permisos con su caso feliz por pantalla")
+
+
+def permisos_sobre_objetos():
+    """Los permisos de los roles de la aplicación que no tienen una pantalla sin objeto: se ejercen
+    sobre una medición, una enmienda, una cuenta… Cada uno necesita su prueba con nombre propio."""
+    matriz = json.loads(MATRIZ.read_text(encoding="utf-8"))["matriz"]
+    con_pantalla = {getattr(r.callback, "protegida", None) for r in _rutas() if not r.pattern.converters} - {None}
+    return sorted((rol, p["verbo"], objeto) for rol in matriz["roles_de_la_aplicacion"]
+                  for objeto, lista in matriz["celdas"].get(rol, {}).items() for p in lista
+                  if (p["verbo"], objeto) not in con_pantalla)
+
+
+@skipUnless(_opa_disponible() and MATRIZ.exists(), "requiere el motor real (OPA) y matriz.json")
+class CasoFelizSobreObjetos(ConPersonajes):
+    """8.3, segunda mitad: una prueba por cada permiso que se ejerce sobre un objeto, llamada
+    test_<rol>_<verbo>_<objeto>. Pasa por la ruta y el motor real y comprueba que el cambio quedó."""
+
+    def test_cada_permiso_sobre_un_objeto_tiene_su_prueba(self):
+        faltan = [f"test_{rol.lower()}_{verbo}_{objeto}" for rol, verbo, objeto in permisos_sobre_objetos()
+                  if not hasattr(self, f"test_{rol.lower()}_{verbo}_{objeto}")]
+        self.assertEqual(faltan, [])
+
+    def _version(self, m, **cambios):
+        v = m.version_vigente
+        return {**MOTIVO, "fecha_medicion": v.fecha_medicion.isoformat(), "arboles": v.arboles,
+                "dap_promedio_cm": v.dap_promedio_cm, "altura_promedio_m": v.altura_promedio_m,
+                "toneladas_co2": v.toneladas_co2, "motivo_tardio": "Medición de campo digitada tarde", **cambios}
+
+    # TEC -----------------------------------------------------------------------------------------------
+
+    def test_tec_crear_mediciones(self):
+        ana = self._como("tec.ana", "TEC")
+        parcela = Parcela.objects.get(finca__codigo="F-004", codigo="P-1", activa=True)
+        self.assertEqual(self.client.post(reverse("nueva_medicion", args=[parcela.pk]), {
+            "fecha_medicion": timezone.localdate().isoformat(), "arboles": 80, "dap_promedio_cm": "19.0",
+            "altura_promedio_m": "11.5", "toneladas_co2": "28.000"}).status_code, 302)
+        self.assertTrue(Medicion.objects.filter(parcela=parcela, creada_por=ana, periodo__nombre="2026-II").exists())
+
+    def test_tec_modificar_mediciones(self):
+        self._como("tec.ana", "TEC")
+        m = self._medicion("F-001", "P-2", "2026-II")
+        antes = m.versiones.count()
+        self.assertEqual(self.client.post(reverse("modificar_medicion", args=[m.pk]),
+                                          self._version(m, arboles=m.version_vigente.arboles + 1)).status_code, 302)
+        self.assertEqual(m.versiones.count(), antes + 1)
+
+    def test_tec_enviar_mediciones(self):
+        self._como("tec.ana", "TEC")
+        m = self._medicion("F-001", "P-2", "2026-II")
+        self.assertEqual(self.client.post(reverse("enviar_medicion", args=[m.pk]), MOTIVO).status_code, 302)
+        self.assertEqual(Medicion.objects.get(pk=m.pk).estado, "enviada")
+
+    def test_tec_solicitar_enmiendas(self):
+        e = self._solicitar("tec.ana", "TEC")  # A registró la medición de 2026-I y es la responsable
+        self.assertEqual((e.estado, e.solicitada_por.username), ("solicitada", "tec.ana"))
+
+    def test_tec_corregir_enmiendas(self):
+        e = self._solicitar("ger.gabriela", "GER")
+        self.assertEqual(self._corregir(e, "15.000").status_code, 302)
+        self.assertEqual(Enmienda.objects.get(pk=e.pk).estado, "corregida")
+
+    # VER -----------------------------------------------------------------------------------------------
+
+    def test_ver_aprobar_mediciones(self):
+        self._como("ver.diego", "VER")
+        m = self._medicion("F-001", "P-1", "2026-II")
+        self.assertEqual(self.client.post(reverse("aprobar_medicion", args=[m.pk]), MOTIVO).status_code, 302)
+        self.assertEqual(Medicion.objects.get(pk=m.pk).estado, "aprobada")
+
+    def test_ver_devolver_mediciones(self):
+        self._como("ver.diego", "VER")
+        m = self._medicion("F-001", "P-1", "2026-II")
+        self.assertEqual(self.client.post(reverse("devolver_medicion", args=[m.pk]),
+                                          {**MOTIVO, "observaciones": "Revise el DAP"}).status_code, 302)
+        self.assertEqual(Medicion.objects.get(pk=m.pk).estado, "devuelta")
+
+    def test_ver_solicitar_enmiendas(self):
+        e = self._solicitar("ver.diego", "VER")
+        self.assertEqual(e.solicitada_por.username, "ver.diego")
+
+    def test_ver_revisar_enmiendas(self):
+        e = self._solicitar("ger.gabriela", "GER")
+        self._corregir(e, "15.000")
+        self.assertEqual(self._revisar(e, "ver.carla").status_code, 302)
+        self.assertEqual(Enmienda.objects.get(pk=e.pk).estado, "revisada")
+
+    # SUP -----------------------------------------------------------------------------------------------
+
+    def test_sup_modificar_asignaciones(self):
+        self._como("sup.sofia", "SUP")
+        a = Asignacion.objects.get(tecnico__username="tec.ana", finca__codigo="F-004", periodo__nombre="2026-II")
+        self.assertEqual(self.client.post(reverse("terminar_asignacion", args=[a.pk]), MOTIVO).status_code, 302)
+        self.assertIsNotNone(Asignacion.objects.get(pk=a.pk).terminada_en)
+
+    def test_sup_resolver_alertas(self):
+        sofia = self._como("sup.sofia", "SUP")
+        a = Alerta.objects.create(sujeto=Usuario.objects.get(username="tec.ana"), control="H1", nivel="aviso")
+        self.client.post(reverse("resolver_alerta", args=[a.pk]), {**MOTIVO, "resolucion": "Revisado con la técnica"})
+        self.assertEqual(Alerta.objects.get(pk=a.pk).resuelta_por, sofia)
+
+    # GER -----------------------------------------------------------------------------------------------
+
+    def test_ger_aprobar_fincas(self):
+        self._como("adm.alberto", "ADM")
+        self.client.post(reverse("proponer_finca"), {
+            **MOTIVO, "codigo": "F-901", "nombre": "Prueba", "titular": Titular.objects.get(codigo="T-003").pk,
+            "ubicacion": "Rivas", "parcela": "P-1",
+            "geometria": "POLYGON((-83.60 9.60,-83.59 9.60,-83.59 9.61,-83.60 9.61,-83.60 9.60))"})
+        propuesta = PropuestaCatalogo.objects.get(finca__codigo="F-901")
+        self._como("ger.gabriela", "GER")
+        self.client.post(reverse("aprobar_catalogo", args=[propuesta.pk]), MOTIVO)
+        self.assertEqual(Finca.objects.get(codigo="F-901").estado, "aprobado")
+
+    def test_ger_abrir_periodos(self):
+        self._como("adm.alberto", "ADM")
+        self.client.post(reverse("crear_periodo"), {**MOTIVO, "nombre": "2027-I", "inicio": "2027-01-04",
+                                                    "fin_medicion": "2027-06-11", "cierre_registro": "2027-06-18"})
+        periodo = Periodo.objects.get(nombre="2027-I")
+        self.client.post(reverse("proponer_periodo", args=[periodo.pk]), {**MOTIVO, "accion": "abrir"})
+        registro = PropuestaPeriodo.objects.get(periodo=periodo, accion="abrir", estado="propuesto")
+        self._como("ger.gerardo", "GER")
+        self.assertEqual(self.client.post(reverse("abrir_periodo", args=[registro.pk]), MOTIVO).status_code, 302)
+        self.assertEqual(Periodo.objects.get(pk=periodo.pk).estado, "abierto")
+
+    def test_ger_cerrar_periodos(self):
+        self._cerrar_2026_ii()
+
+    def test_ger_solicitar_enmiendas(self):
+        e = self._solicitar("ger.gabriela", "GER")
+        self.assertEqual(e.solicitada_por.username, "ger.gabriela")
+
+    def test_ger_autorizar_enmiendas(self):
+        e = self._solicitar("ger.gabriela", "GER")
+        self._corregir(e, self._medicion().version_vigente.toneladas_co2)
+        self._revisar(e, "ver.carla")
+        self.assertEqual(self._autorizar(e, "ger.gerardo").status_code, 302)
+        self.assertEqual(Enmienda.objects.get(pk=e.pk).estado, "autorizada")
+
+    def test_ger_aprobar_cuentas(self):
+        tomas = Usuario.objects.get(username="tec.tomas")
+        self._como("adm.alberto", "ADM")
+        self.client.post(reverse("proponer_rol", args=[tomas.pk]), {**MOTIVO, "rol": "SUP"})
+        propuesta = PropuestaRol.objects.get(usuario=tomas, rol="SUP")
+        self._como("ger.gabriela", "GER")
+        self.assertEqual(self.client.post(reverse("aprobar_rol", args=[propuesta.pk]), MOTIVO).status_code, 302)
+        self.assertEqual(Usuario.objects.get(pk=tomas.pk).rol, "SUP")
+
+    def test_ger_resolver_alertas(self):
+        gabriela = self._como("ger.gabriela", "GER")
+        a = Alerta.objects.create(sujeto=Usuario.objects.get(username="ver.bruno"), control="H1", nivel="aviso")
+        self.client.post(reverse("resolver_alerta", args=[a.pk]), {**MOTIVO, "resolucion": "Lote de la semana"})
+        self.assertEqual(Alerta.objects.get(pk=a.pk).resuelta_por, gabriela)
+
+    # ADM -----------------------------------------------------------------------------------------------
+
+    def test_adm_modificar_datos_personales(self):
+        self._como("adm.alberto", "ADM")
+        t = Titular.objects.get(codigo="T-002")
+        datos = DatosPersonales.objects.get(titular=t)
+        self.assertEqual(self.client.post(reverse("editar_titular", args=[t.pk]), {
+            **MOTIVO, "nombre": "Nombre corregido", "identificacion": datos.identificacion,
+            "telefono": "2222-0000"}).status_code, 302)
+        self.assertEqual(DatosPersonales.objects.get(titular=t).nombre, "Nombre corregido")
+
+    def test_adm_eliminar_datos_personales(self):
+        self._como("adm.alberto", "ADM")
+        t = Titular.objects.get(codigo="T-003")
+        self.client.post(reverse("suprimir_titular", args=[t.pk]), MOTIVO)
+        self.assertIsNotNone(DatosPersonales.objects.get(titular=t).suprimido_en)
+
+    def test_adm_proponer_periodos(self):
+        self._como("adm.alberto", "ADM")
+        periodo = Periodo.objects.get(nombre="2026-II")
+        self.assertEqual(self.client.post(reverse("proponer_periodo", args=[periodo.pk]),
+                                          {**MOTIVO, "accion": "cerrar"}).status_code, 302)
+        self.assertTrue(PropuestaPeriodo.objects.filter(periodo=periodo, accion="cerrar", estado="propuesto").exists())
+
+    def test_adm_desactivar_cuentas(self):
+        self._como("adm.alberto", "ADM")
+        tomas = Usuario.objects.get(username="tec.tomas")
+        self.assertEqual(self.client.post(reverse("desactivar_cuenta", args=[tomas.pk]), MOTIVO).status_code, 302)
+        self.assertFalse(Usuario.objects.get(pk=tomas.pk).is_active)
+
+    def test_adm_proponer_cuentas(self):
+        self._como("adm.alberto", "ADM")
+        tomas = Usuario.objects.get(username="tec.tomas")
+        self.assertEqual(self.client.post(reverse("proponer_rol", args=[tomas.pk]), {**MOTIVO, "rol": "SUP"}).status_code, 302)
+        self.assertTrue(PropuestaRol.objects.filter(usuario=tomas, rol="SUP", estado="propuesta").exists())
