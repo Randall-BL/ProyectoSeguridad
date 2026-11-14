@@ -62,6 +62,7 @@ urlpatterns = [
     # Certificados (lectura; la emisión es del sistema, fase 6)
     path("certificados/", certificados.lista, name="certificados"),
     path("certificados/<uuid:certificado>/", certificados.ficha, name="certificado"),
+    path("certificados/<uuid:certificado>/descargar/", certificados.descargar, name="descargar_certificado"),
     # Cuentas (5.3)
     path("personal/", cuentas.lista, name="cuentas"),
     path("personal/nueva/", cuentas.crear, name="crear_cuenta"),

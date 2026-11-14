@@ -16,6 +16,7 @@ from flujos.comun import accion, anotar, celda, escribir, nombre, tabla, verbos,
 from flujos.vistas.mediciones import FormularioVersion, _version
 from flujos.vistas.asignaciones import _tecnicos
 from negocio.models import Enmienda, EstadoEnmienda, Medicion, VersionMedicion
+from nucleo import emision
 
 
 class FormularioSolicitud(forms.Form):
@@ -211,9 +212,11 @@ def autorizar(request, enmienda):
                    despues={"version_vigente": propuesta.numero if propuesta else None, "material": e.material})
 
         if escribir(request, "autorizar", "enmiendas", e.pk, autorizar_)[1]:
+            # 6.5: si cambian las toneladas, el sistema revoca y reemite; si no, anota la enmienda.
+            emision.despues_de_confirmar("/reemitir", {"enmienda": str(e.pk)})
             mensaje = "Enmienda autorizada; la versión corregida es la vigente."
             if e.material:
-                mensaje += " Si la medición tenía certificado, el sistema lo revoca y reemite (fase 6)."
+                mensaje += " Si la medición tenía certificado, el sistema lo revoca y emite su reemplazo."
             return volver(request, reverse("enmienda", args=[e.pk]), mensaje)
         return redirect("enmienda", e.pk)
     return render(request, "flujos/formulario.html", {

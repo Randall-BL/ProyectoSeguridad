@@ -27,7 +27,7 @@ Artifact Registry son la misma, y se anota en «Versiones publicadas» del READM
 | 1 · «Hola» en la nube | 7–9 nov | 1 | `v0.1.0` | La URL `*.run.app` abre por HTTPS, lee Neon con la cadena que llega desde Secret Manager, y la imagen corre sin root |
 | 2 · Base, identidad y motor | 9–11 nov | 2, 3, 4 | `v0.2.0` | Usuarios de base, seguridad por fila, bitácora encadenada, Argon2id y TOTP; OPA como sidecar decidiendo; OPA caído frena todo (T-41) |
 | 3 · Flujos y matriz completa | 11–13 nov | 5, y 8.1 a 8.4 a la par | `v0.3.0` | Los 102 permisos se ejercitan desde la interfaz; T-01 a T-40 pasan |
-| 4 · Certificados y trabajos | 13–15 nov | 6, 7 | `v0.4.0` | Emitir, verificar, el alterado falla, comprobación pública, verificador de consola, trabajos programados |
+| 4 · Certificados y trabajos | 13–15 nov | 6, 7 | `v0.4.0` | Emitir, verificar, el alterado falla, comprobación pública, verificador de consola, trabajos programados **Hecho el 13-nov:** `v0.4.0` desplegada desde `c9bc8a4`; el trabajo diario ya emitió y selló en Cloud Run |
 | 5 · Endurecimiento | 16–17 nov | 9, y 8.5 a 8.9 | **`v1.0.0`** | Trivy, ZAP, gitleaks sobre la historia, alerta de Dependabot atendida, tabla de cobertura |
 | 6 · Informe y defensa | 17–19 nov | 10, 11 | — | Informe, capturas, anexo de credenciales fuera del repo, ensayo, prueba desde otra red |
 
@@ -328,7 +328,9 @@ El segundo candado de la arquitectura (F4): la base no confía en la aplicación
   por tabla. Comprobado como `va_app`: no puede cambiar una versión de medición, emitir un
   certificado ni borrar una medición.
 
-- [ ] 2.4 Un secreto `db-url-*` por usuario, cada uno accesible solo por su cuenta de servicio.
+- [x] 2.4 Un secreto `db-url-*` por usuario, cada uno accesible solo por su cuenta de servicio.
+  - 13-nov: `db-url-app`, `db-url-emision`, `db-url-publico` y `db-url-trabajos`, cada uno con un solo lector
+    (`sa-app`, `sa-emision`, `sa-publico` y `sa-trabajos`), comprobado con `gcloud secrets get-iam-policy`.
 - [x] 2.5 Seguridad por fila: el técnico solo ve filas de sus fincas asignadas (C1) y el dueño solo las
   de su titular (C5). El sujeto se pasa con `SET LOCAL app.usuario = …` dentro de cada transacción
   (cuidado: con el *pooler* de Neon solo funciona `SET LOCAL` dentro de la transacción).
@@ -567,9 +569,10 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   - 12-nov: `flujos/vistas/titulares.py`. T-37 probado.
 - [x] 5.10 DUE ve lo de sus fincas y solo mediciones aprobadas (C5).
   - 12-nov: por la seguridad por fila y C5 en el motor; T-08 probado.
-- [ ] 5.11 AUD ve todo y exporta paquetes sellados, con su identidad, sin datos personales y con la
+- [x] 5.11 AUD ve todo y exporta paquetes sellados, con su identidad, sin datos personales y con la
   huella en la bitácora (C18, T-31).
   - 12-nov: exportación por objeto en `/exportar/<objeto>/` (`flujos/vistas/exportar.py`) con la identidad del auditor, sin datos personales y con su huella SHA-256 en la bitácora y en ExportacionAuditoria (T-31 probado). Falta el sello con la clave de Verdeazul (6.10).
+  - 13-nov: sellado con 6.10.
 - [x] 5.12 GER y AUD leen la bitácora; cada lectura queda registrada (POL-BT-05).
   - 12-nov: `/bitacora/` con la comprobación de la cadena; cada lectura se registra.
 - [x] 5.13 ⚠ Todo acceso a datos por el ORM o con consultas parametrizadas. Prohibido `raw()` con
@@ -599,40 +602,87 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 ## 6 · Certificados firmados y comprobación (meta: 14 nov)
 
-- [ ] 6.1 ⚠ Generar la clave Ed25519 en Cloud Shell y subirla directamente a Secret Manager como
+- [x] 6.1 ⚠ Generar la clave Ed25519 en Cloud Shell y subirla directamente a Secret Manager como
   `firma-clave-privada` (por la entrada estándar, sin dejarla en disco). Solo `sa-emision` tiene acceso.
-- [ ] 6.2 Publicar la clave pública y su huella: en el README, en `docs/` y en una ruta
+  - 13-nov: `infra/crear-secretos.sh` la genera con `infra/clave_firma.py` y la manda por una tubería a
+    Secret Manager (no en Cloud Shell, pero igual sin tocar el disco ni la pantalla), y después comprueba
+    que la guardada corresponde a la pública. Huella `5fb2e24f…166d0f`. Solo `sa-emision` la lee.
+  - El mismo script creó `va_emision`, `va_publico` y `va_trabajos` con LOGIN en Neon (`db/roles/servicio.sql`,
+    antes `va_app.sql`) y sus secretos `db-url-emision`, `db-url-publico` y `db-url-trabajos`, cada uno
+    legible solo por su cuenta de servicio.
+- [x] 6.2 Publicar la clave pública y su huella: en el README, en `docs/` y en una ruta
   `/.well-known/verdeazul-clave.pem` del servicio público. No es secreta.
-- [ ] 6.3 Servicio de emisión (`verdeazul-emision`): sin acceso público; solo `sa-app` tiene
+  - 13-nov: README («Certificados: clave pública y verificación»), `docs/verdeazul-clave-publica.pem` y la
+    misma copia junto al verificador; una prueba exige que las dos sean iguales.
+- [x] 6.3 Servicio de emisión (`verdeazul-emision`): sin acceso público; solo `sa-app` tiene
   `run.invoker`. Recibe el identificador de una medición aprobada, comprueba C4 con su propio usuario de
   base, firma e inserta. Ninguna persona puede invocar la emisión directamente.
-- [ ] 6.4 Contenido firmado: código, parcela, finca (por código), período, toneladas, fecha de emisión,
+  - 13-nov: `emision/` (Flask + gunicorn, imagen sin root). `run.invoker` solo para `sa-app` y `sa-trabajos`
+    (`infra/desplegar.sh`), y el servicio vuelve a revisar la cuenta del token (`INVOCADORES`) y la anota
+    en la bitácora. Segundo candado en la base: el disparador `regla_certificado` (`negocio/sql/0006`)
+    rechaza un certificado que no corresponda a la medición aprobada, aunque venga de `va_emision`.
+  - Pruebas: `flujos/tests_certificados.py` (con los usuarios de base reales: T-07, C4 en la base, nadie
+    más emite) y `emision/test_servicio.py` (quién puede invocarlo).
+- [x] 6.4 Contenido firmado: código, parcela, finca (por código), período, toneladas, fecha de emisión,
   nombre de quien aprobó (POL-CE-04), código del certificado al que reemplaza, algoritmo, identificador
   de la clave, clave pública y firma.
-- [ ] 6.5 Revocar y reemitir en una sola transacción cuando una enmienda autorizada cambia las toneladas;
+- [x] 6.5 Revocar y reemitir en una sola transacción cuando una enmienda autorizada cambia las toneladas;
   los dos quedan enlazados y ninguno se borra (C4, T-25). Si no cambian, se anota la enmienda.
-- [ ] 6.6 Verificación en `verdeazul-publico` («dado el archivo»): se sube el certificado y responde si la
+  - 13-nov: `POST /reemitir` (`emision/emitir.py`). T-25 probado contra la base; llamar dos veces no
+    duplica. `POST /emitir-pendientes` recupera lo que quedó sin emitir si una llamada falló.
+- [x] 6.6 Verificación en `verdeazul-publico` («dado el archivo»): se sube el certificado y responde si la
   firma es válida, si el contenido fue modificado y **si la clave incrustada es la de Verdeazul**. Sin esa
   última comprobación, cualquiera podría firmar un certificado falso con su propia clave e incrustarla.
-- [ ] 6.7 Comprobación por código (C20): sello válido, estado, toneladas, período y, si fue revocado, el
+  - 13-nov: `publico/` (Flask, sin JavaScript, CSP `default-src 'none'`). El archivo no se guarda; si la
+    firma no corresponde, no se muestra el contenido. 15 pruebas en `publico/test_servicio.py`.
+- [x] 6.7 Comprobación por código (C20): sello válido, estado, toneladas, período y, si fue revocado, el
   código del reemplazo. Sin listados, búsquedas ni datos del titular. Límite de ritmo por origen.
-- [ ] 6.8 `verificador/`: programa de línea de comandos que verifica un certificado sin conexión al
+  - 13-nov: `va_comprobar(codigo)` (SECURITY DEFINER, código exacto, sin LIKE) es lo único que puede
+    llamar `va_publico`. El servicio vuelve a verificar la firma guardada, valida la forma del código antes
+    de ir a la base y limita a 10 consultas por minuto por origen (último valor de X-Forwarded-For, el que
+    agrega Cloud Run), en memoria y con `maxScale` 1. T-32 probado contra la base y en el servicio.
+- [x] 6.8 `verificador/`: programa de línea de comandos que verifica un certificado sin conexión al
   sistema. Es lo que haría un comprador en otro país.
-- [ ] 6.9 Demostración preparada: un certificado válido, el mismo con una tonelada cambiada (debe
+- [x] 6.9 Demostración preparada: un certificado válido, el mismo con una tonelada cambiada (debe
   fallar) y uno revocado consultado por código (T-32).
-- [ ] 6.10 Sellar los paquetes de exportación del auditor con la misma clave, por el servicio de emisión (C18).
+  - 13-nov: `docs/demostracion/` con el certificado real `VA-2026-I-QXWJWM9G` del despliegue y su copia
+    alterada (comprobados con el verificador y en el servicio público). El revocado se hace en vivo con
+    la enmienda de cuatro personas; los pasos están en `docs/demostracion/LEEME.md`.
+- [x] 6.10 Sellar los paquetes de exportación del auditor con la misma clave, por el servicio de emisión (C18).
+  - 13-nov: la aplicación manda al servicio solo la huella del paquete y agrega el sello que recibe; si el
+    servicio no responde, no se entrega nada (503) y la denegación queda en la bitácora. El verificador de
+    consola también verifica paquetes. Además, aprobar una medición pide la emisión y autorizar una
+    enmienda pide la reemisión, después de confirmar la transacción (`nucleo/emision.py`, token de
+    identidad de sa-app); si la llamada falla, la recupera el trabajo diario. Quien puede leer un
+    certificado descarga su archivo firmado y tiene el enlace a la comprobación pública.
 
 ---
 
 ## 7 · Trabajos programados y testigo (meta: 14 nov)
 
-- [ ] 7.1 ⚠ Imagen `trabajos:v…` y Cloud Run Jobs con `sa-trabajos`, disparados por Cloud Scheduler
+- [x] 7.1 ⚠ Imagen `trabajos:v…` y Cloud Run Jobs con `sa-trabajos`, disparados por Cloud Scheduler
   (la capa gratuita cubre pocos trabajos: agruparlos en uno o dos).
-- [ ] 7.2 Vencimientos: asignaciones temporales, habilitaciones de técnico, ventanas de auditor y cuentas
+  - 13-nov: un solo trabajo, `verdeazul-trabajos` (`trabajos/diario.py`, `infra/trabajos.job.yaml`), con el
+    usuario `va_trabajos`. `infra/desplegar.sh trabajos vX` crea el trabajo y el disparador
+    `verdeazul-diario` (2:30, hora de Costa Rica), que lo inicia con la identidad de `sa-trabajos`. Cada
+    paso corre en su transacción y deja su registro SIS en la bitácora; uno que falla no frena los demás,
+    pero la ejecución termina con error. También pide a la emisión lo que quedó pendiente.
+- [x] 7.2 Vencimientos: asignaciones temporales, habilitaciones de técnico, ventanas de auditor y cuentas
   sin uso en 45 días (POL-CA-06).
-- [ ] 7.3 Verificación diaria de la cadena de la bitácora y aviso si se rompe (criterio de aceptación 4).
-- [ ] 7.4 Escalamiento de alertas que SUP no resolvió en dos días hábiles (C15).
-- [ ] 7.5 Testigo externo según la decisión 0.6.
+  - 13-nov: termina las temporales vencidas, cierra las sesiones de quien perdió una asignación o una
+    habilitación, desactiva auditores fuera de su ventana y cuentas con 45 días sin uso, y borra las
+    sesiones expiradas. `va_trabajos` no puede más que eso (prueba en `flujos/tests_trabajos.py`).
+- [x] 7.3 Verificación diaria de la cadena de la bitácora y aviso si se rompe (criterio de aceptación 4).
+  - 13-nov: si `bitacora_verificar()` encuentra un registro alterado, lo anota, escribe un ERROR en Cloud
+    Logging con el número y la ejecución termina fallida.
+- [x] 7.4 Escalamiento de alertas que SUP no resolvió en dos días hábiles (C15).
+  - 13-nov: marca `escalada_en` (negocio 0006) y lo anota; GER las ve en su lista y el motor recibe
+    `escalada` también con esa marca.
+- [x] 7.5 Testigo externo según la decisión 0.6.
+  - 13-nov: sello RFC 3161 de una TSA pública (DigiCert y, si no responde, FreeTSA) sobre la huella del último
+    registro, guardado en `bitacora_testigo` (solo se agrega). La solicitud se arma en DER a mano
+    (`trabajos/tsa.py`) y se revisa estado, huella y nonce. Se comprueba sin Verdeazul con
+    `openssl ts -verify -digest <huella> -in sello.tsr ...`.
 
 ---
 
@@ -649,10 +699,19 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   - T-41: con OPA detenido, cualquier rol pide cualquier acción. Se frena con 503, no se ejecuta nada
     y queda en la bitácora (K-3).
   - 12-nov: `flujos.tests.CasosDeLaParte1`, con el motor real, cubre T-01, T-02, T-03, T-05, T-06, T-08, T-10, T-15, T-16, T-22, T-27, T-28, T-29, T-31, T-35, T-36, T-37, T-38 y T-40; T-41 está en nucleo y autorizacion. En Rego ya pasan T-01 a T-39. Faltan de punta a punta los demás.
+  - 13-nov: `flujos.tests_casos` agrega T-04, T-11, T-12, T-13, T-14, T-17, T-23, T-24, T-30 y T-39 por las rutas
+    con el motor real; T-07, T-25 y T-32 están en `flujos.tests_certificados` (contra la base con `va_emision`
+    y `va_publico`) y T-25 además de punta a punta, de la enmienda a la reemisión; T-09 en `cuentas.tests` y
+    en el trabajo diario. De punta a punta faltan T-18, T-19, T-33 y T-34 (controles de historial, que piden
+    simular muchas lecturas o la hora), T-20 (OPE no tiene cuenta), T-21 y T-26; los siete pasan en Rego.
 - [x] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
   - Cubierto en `politica/verdeazul/decision_test.rego`: toda combinación fuera de la matriz se deniega, y las 38 celdas vacías están contadas.
 - [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
   - 12-nov: `flujos.tests.CadaPermisoTieneRuta` exige una ruta protegida para cada permiso de los siete roles de la aplicación. Falta el caso feliz uno por uno.
+  - 13-nov: `flujos.tests_casos.CasoFelizPorPermiso` se genera desde `matriz.json`: con cada rol, cada pantalla
+    sin objeto que la matriz le concede (listas, formularios de alta, exportaciones) responde 200 con el motor
+    real. Cubre 68 permisos; las acciones sobre un objeto tienen su caso feliz en los T-xx (aprobar,
+    corregir, revisar, autorizar, asignar, cerrar, resolver, suprimir…).
 - [ ] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
   restricciones): las dos copias de la regla no pueden divergir (RR-10).
 - [ ] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una

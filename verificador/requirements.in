@@ -1,0 +1,2 @@
+# Verificador de consola y formato del certificado. Se fija con sh infra/fijar-dependencias.sh verificador
+cryptography

@@ -2,6 +2,12 @@
 # Así nunca viajan .env.local, .neon, .git ni los documentos.
 *
 !app/
+!emision/
+!publico/
+!trabajos/
+!verificador/verdeazul_certificado.py
+!verificador/verdeazul-clave-publica.pem
+**/test_*.py
 !politica/matriz.json
 !politica/verdeazul/
 politica/verdeazul/*_test.rego

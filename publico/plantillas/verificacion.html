@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}{{ "Certificado válido" if resultado.valido else "Certificado no válido" }}{% endblock %}
+{% block contenido %}
+<p class="migas"><a href="{{ url_for('inicio') }}">Comprobar</a> / Con el archivo</p>
+<div class="veredicto {{ 'veredicto-bien' if resultado.valido else 'veredicto-mal' }}" role="status">
+  <h1 class="veredicto-titulo"><span aria-hidden="true">{{ "✓" if resultado.valido else "✕" }}</span>
+    {{ "Certificado válido" if resultado.valido else "Certificado no válido" }}</h1>
+  <p>{{ resultado.motivo }}</p>
+</div>
+
+<h2>Lo que se revisó</h2>
+<ul class="revision">
+  <li><span class="marca-{{ 'si' if resultado.formato else 'no' }}">{{ "Sí" if resultado.formato else "No" }}</span> Tiene la forma de un certificado de Verdeazul</li>
+  <li><span class="marca-{{ 'si' if resultado.firma_valida else 'no' }}">{{ "Sí" if resultado.firma_valida else "No" }}</span> La firma corresponde al contenido: nadie lo modificó</li>
+  <li><span class="marca-{{ 'si' if resultado.clave_de_verdeazul else 'no' }}">{{ "Sí" if resultado.clave_de_verdeazul else "No" }}</span> La clave que firmó es la de Verdeazul (<code>{{ clave_id[:16] }}…</code>)</li>
+</ul>
+
+{% if contenido and resultado.firma_valida %}
+<h2>Lo que dice el certificado</h2>
+<dl class="datos">
+  <dt>Código</dt><dd><code>{{ contenido.codigo }}</code></dd>
+  <dt>Finca y parcela</dt><dd>{{ contenido.finca }} · {{ contenido.parcela }}</dd>
+  <dt>Período</dt><dd>{{ contenido.periodo }}</dd>
+  <dt>Toneladas de CO₂</dt><dd>{{ contenido.toneladas_co2 }}</dd>
+  <dt>Emitido</dt><dd>{{ contenido.emitido_en }}</dd>
+  {% if contenido.reemplaza %}<dt>Reemplaza a</dt><dd><code>{{ contenido.reemplaza }}</code></dd>{% endif %}
+</dl>
+{% if resultado.valido %}
+<p class="nota">Un archivo válido puede haber sido revocado después de emitido.</p>
+<p><a class="boton boton-secundario" href="{{ url_for('comprobar', codigo=contenido.codigo) }}">Comprobar si sigue vigente</a></p>
+{% endif %}
+{% endif %}
+<p><a href="{{ url_for('inicio') }}">Comprobar otro certificado</a></p>
+{% endblock %}

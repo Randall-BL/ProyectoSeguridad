@@ -56,6 +56,12 @@ spec:
             # El motor de decisión, en la misma instancia (tarea 4.5).
             - name: OPA_URL
               value: http://localhost:8181
+            # Servicio privado de emisión (lo invoca con el token de identidad de sa-app) y la
+            # comprobación pública, a la que enlaza cada certificado (fase 6).
+            - name: EMISION_URL
+              value: https://verdeazul-emision-708901712393.us-east1.run.app
+            - name: PUBLICO_URL
+              value: https://verdeazul-publico-708901712393.us-east1.run.app
           resources:
             limits:
               cpu: "1"

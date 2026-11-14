@@ -1,0 +1,16 @@
+{
+  "contenido": {
+    "algoritmo": "Ed25519",
+    "aprobado_por": "Bruno Solís Badilla",
+    "clave_id": "5fb2e24fa692518552f64842ecdaa94af05f6b87d035f66efaa0513a1b166d0f",
+    "clave_publica": "4W/eeOeYlcyBg2bBdLpiTTdILrdZ1FpAusrTS2VKaHY=",
+    "codigo": "VA-2026-I-QXWJWM9G",
+    "emitido_en": "2026-11-14T00:08:57Z",
+    "finca": "F-001",
+    "parcela": "P-1",
+    "periodo": "2026-I",
+    "reemplaza": null,
+    "toneladas_co2": "56.895"
+  },
+  "firma": "4lPqeE5exsN8ZbOXsp9zW0zfCpa5Zvayx4wQ4DqlHvO/8EiIoqac2+zpULvRcfjPzdKtm4m39DyO+bfMWWItCQ=="
+}

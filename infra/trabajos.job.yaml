@@ -1,0 +1,36 @@
+# Trabajo diario (fase 7) como Cloud Run Job, con su propia cuenta (sa-trabajos) y su usuario de
+# base (va_trabajos). Lo arranca Cloud Scheduler una vez al día; infra/desplegar.sh crea las dos
+# cosas. Si la cadena de la bitácora está rota o un paso falla, la ejecución termina con error.
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: verdeazul-trabajos
+  labels:
+    cloud.googleapis.com/location: us-east1
+spec:
+  template:
+    spec:
+      taskCount: 1
+      template:
+        spec:
+          serviceAccountName: sa-trabajos@verdeazul-ce1115-g6.iam.gserviceaccount.com
+          maxRetries: 1
+          timeoutSeconds: 600
+          containers:
+            - name: trabajos
+              image: us-east1-docker.pkg.dev/verdeazul-ce1115-g6/verdeazul/trabajos:__VERSION__
+              env:
+                - name: EMISION_URL
+                  value: https://verdeazul-emision-708901712393.us-east1.run.app
+                # Testigo externo (7.5): autoridades de sellado de tiempo públicas, en orden.
+                - name: TSA_URLS
+                  value: http://timestamp.digicert.com,https://freetsa.org/tsr
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-url-trabajos
+                      key: "1"
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 512Mi

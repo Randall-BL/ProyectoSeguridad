@@ -218,7 +218,8 @@ def alerta(request, alerta):
     a = Alerta.objects.filter(pk=alerta).select_related("sujeto").first()
     if a is None:
         return None
-    escalada = a.resuelta_en is None and dias_habiles(a.creada_en, None) > 2
+    # La marca el trabajo diario (7.4); mientras no corre, se calcula igual que él.
+    escalada = a.resuelta_en is None and (a.escalada_en is not None or dias_habiles(a.creada_en, None) > 2)
     return {
         "id": str(alerta),
         "sujeto_alerta": str(a.sujeto_id),
@@ -235,6 +236,7 @@ def alertas_visibles(request, consulta):
     if rol == "SUP":
         return consulta.filter(sujeto__supervisor=request.user)
     if rol == "GER":
-        escaladas = [a.pk for a in consulta.filter(resuelta_en__isnull=True) if dias_habiles(a.creada_en, None) > 2]
-        return consulta.filter(Q(sujeto__supervisor__isnull=True) | Q(pk__in=escaladas))
+        escaladas = [a.pk for a in consulta.filter(resuelta_en__isnull=True, escalada_en__isnull=True)
+                     if dias_habiles(a.creada_en, None) > 2]
+        return consulta.filter(Q(sujeto__supervisor__isnull=True) | Q(escalada_en__isnull=False) | Q(pk__in=escaladas))
     return consulta
