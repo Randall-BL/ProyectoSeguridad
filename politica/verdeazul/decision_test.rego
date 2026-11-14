@@ -470,6 +470,14 @@ test_t19_h3_fuera_de_jornada_muchas_fincas_nuevas if {
 	resultado(entrada) == ["pedir_segundo_factor_y_motivo", "H3"]
 }
 
+test_t33_despues_de_confirmar_h3_las_fincas_nuevas_se_restringen if {
+	fuera := {"fuera_de_jornada": true, "fincas_60min": 21, "mayoria_nuevas_90d": true, "h3_confirmada": true}
+	entrada := pedido(ver_bruno, "leer", {"tipo": "fincas", "finca": f1, "titular": t1})
+	resultado(con_historial(entrada, object.union(fuera, {"finca_nueva": true}))) == ["restringir", "H3"]
+	resultado(con_historial(entrada, object.union(fuera, {"finca_nueva": false}))) == ["pedir_segundo_factor_y_motivo", "H3"]
+	resultado(con_historial(entrada, object.union(fuera, {"finca_nueva": true, "h3_confirmada": false}))) == ["pedir_segundo_factor_y_motivo", "H3"]
+}
+
 test_t34_h2_aprobar_un_domingo if {
 	entrada := con_historial(pedido(ver_bruno, "aprobar", medicion("enviada", [ana], {})), {"fuera_de_jornada": true})
 	resultado(entrada) == ["pedir_segundo_factor_y_motivo", "H2"]

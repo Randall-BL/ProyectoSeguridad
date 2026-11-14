@@ -1,8 +1,8 @@
 """Pruebas del núcleo: el contexto de base de cada petición (tarea 2.5)."""
 
 import secrets
-from unittest import mock
 from datetime import date
+from unittest import mock
 
 from django import forms
 from django.contrib.auth.models import AnonymousUser

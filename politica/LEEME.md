@@ -41,7 +41,7 @@ sale de la sesión del servidor (K-2), y el estado y los autores del objeto, de 
   "objeto": {"tipo": "clave de matriz.objetos", "finca": "uuid", "titular": "uuid", "…": "según el tipo"},
   "cambio": {"lo que se quiere escribir y que la regla revisa: fecha_medicion, tipo, motivo, dias, accion"},
   "motivo": "texto, cuando H1, H2 o H3 lo piden",
-  "historial": {"fincas_24h": 0, "finca_nueva": false, "fuera_de_jornada": false, "fincas_60min": 0, "mayoria_nuevas_90d": false},
+  "historial": {"fincas_24h": 0, "finca_nueva": false, "fuera_de_jornada": false, "fincas_60min": 0, "mayoria_nuevas_90d": false, "h3_confirmada": false},
   "parametros": {"h1_aviso": 40, "h1_verificacion": 60, "h1_restriccion": 80, "h3_fincas_hora": 10, "max_asignaciones_activas": 20},
   "hoy": "AAAA-MM-DD, en la hora de Costa Rica"
 }

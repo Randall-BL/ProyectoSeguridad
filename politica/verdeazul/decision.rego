@@ -48,6 +48,9 @@ decision := _respuesta("denegar", "matriz") if {
 	abstencion
 } else := _respuesta("denegar", fallida) if {
 	fallida
+} else := _respuesta("restringir", "H3") if {
+	h3_repetida
+	input.historial.finca_nueva
 } else := _respuesta("restringir", "H1") if {
 	h1_nivel == "restriccion"
 	input.historial.finca_nueva
@@ -99,15 +102,28 @@ h1_nivel := "restriccion" if {
 # Lo que pide segundo factor y motivo: H1 en su segundo nivel, H2 (una decisión fuera de la
 # jornada del rol) y H3 (fuera de jornada, muchas fincas en una hora y casi todas nuevas).
 regla_graduada := "H3" if {
-	vigilada
-	input.historial.fuera_de_jornada
-	input.historial.fincas_60min > input.parametros.h3_fincas_hora
-	input.historial.mayoria_nuevas_90d
+	h3_activa
 } else := "H1" if {
 	h1_nivel == "verificacion"
 } else := "H2" if {
 	input.accion in matriz.reautenticacion
 	input.historial.fuera_de_jornada
+}
+
+# H3: fuera de jornada, más fincas en una hora que el umbral del rol y casi todas nuevas.
+h3_activa if {
+	vigilada
+	input.historial.fuera_de_jornada
+	input.historial.fincas_60min > input.parametros.h3_fincas_hora
+	input.historial.mayoria_nuevas_90d
+}
+
+# T-33: si ya confirmó con motivo un H3 en las últimas 24 horas y sigue abriendo fincas nuevas, ya
+# no basta otro motivo: las fincas nuevas se restringen y queda la alerta. Las que ya consultó
+# vuelven a pedir motivo.
+h3_repetida if {
+	h3_activa
+	input.historial.h3_confirmada == true
 }
 
 justificada if {

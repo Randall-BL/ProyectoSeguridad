@@ -6,7 +6,7 @@ import os
 import secrets
 import threading
 import time
-from datetime import date, timedelta
+from datetime import timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest import skipUnless
 

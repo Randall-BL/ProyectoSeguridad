@@ -688,7 +688,7 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 ## 8 · Pruebas de la matriz (continuo; cerrar el 15 nov)
 
-- [ ] 8.1 Los 37 casos T-01 a T-37 como pruebas automáticas, con el mismo identificador, más los
+- [x] 8.1 Los 37 casos T-01 a T-37 como pruebas automáticas, con el mismo identificador, más los
   cuatro de los cambios K-1 a K-3:
   - T-38: SUP intenta dar a un técnico con 20 asignaciones activas la número 21. Deniega (K-1, C19).
   - T-39: el técnico tiene 20 asignaciones, una temporal vence y SUP crea otra. Concede: las vencidas
@@ -704,26 +704,71 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     y `va_publico`) y T-25 además de punta a punta, de la enmienda a la reemisión; T-09 en `cuentas.tests` y
     en el trabajo diario. De punta a punta faltan T-18, T-19, T-33 y T-34 (controles de historial, que piden
     simular muchas lecturas o la hora), T-20 (OPE no tiene cuenta), T-21 y T-26; los siete pasan en Rego.
+  - 14-nov: completos los 41. `flujos.tests_casos` agrega T-18, T-19, T-21, T-26, T-33 y T-34; los de historial
+    ajustan los umbrales y la jornada en `ParametroRol` (los aprueba GER) en vez de cargar 60 lecturas o
+    depender de la hora. T-20 está en `cuentas.tests`. T-33 no estaba implementado: después de confirmar un H3
+    la política volvía a pedir motivo en vez de restringir. Ahora el hecho `h3_confirmada`
+    (`autorizacion/sql/0003`) y la regla `h3_repetida` restringen las fincas nuevas; prueba nueva en Rego
+    (71/71). Hay que publicar `politica` y `app` en la próxima versión.
 - [x] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
   - Cubierto en `politica/verdeazul/decision_test.rego`: toda combinación fuera de la matriz se deniega, y las 38 celdas vacías están contadas.
-- [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
+- [x] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
   - 12-nov: `flujos.tests.CadaPermisoTieneRuta` exige una ruta protegida para cada permiso de los siete roles de la aplicación. Falta el caso feliz uno por uno.
   - 13-nov: `flujos.tests_casos.CasoFelizPorPermiso` se genera desde `matriz.json`: con cada rol, cada pantalla
     sin objeto que la matriz le concede (listas, formularios de alta, exportaciones) responde 200 con el motor
     real. Cubre 68 permisos; las acciones sobre un objeto tienen su caso feliz en los T-xx (aprobar,
     corregir, revisar, autorizar, asignar, cerrar, resolver, suprimir…).
-- [ ] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
+  - 14-nov: completos. Los 91 permisos de los siete roles de la aplicación: 68 por pantalla
+    (`CasoFelizPorPermiso`) y los 23 que se ejercen sobre un objeto con una prueba cada uno,
+    `test_<rol>_<verbo>_<objeto>` en `flujos.tests_casos.CasoFelizSobreObjetos`; una prueba más exige que
+    ninguno quede sin la suya. Los 10 de SIS los ejercen el servicio de emisión (leer, emitir, revocar:
+    `tests_certificados`, T-25), la bitácora (anexar, en cada acción) y los controles de historial (crear
+    alertas: T-18, T-19); el de PUB (comprobar), `publico/test_servicio.py` y T-32.
+- [x] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
   restricciones): las dos copias de la regla no pueden divergir (RR-10).
-- [ ] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una
+  - 14-nov: `flujos.tests_equivalencia` hace cada intento dos veces, por la ruta con el motor real y directo en
+    la base como `va_app` sin el motor, y exige la misma regla: C1, C5, C2/C14, C3, C4, C8, C10, C15, C16, C19 y
+    K-1 (14 pruebas). Encontró una divergencia: la seguridad por fila de C1 y C5 y el disparador de C19 usaban
+    `current_date` (UTC) y el motor la fecha de Costa Rica, así que de 18:00 a medianoche una temporal que
+    vence hoy desaparecía en la base y no en el motor. Corregido en `negocio/sql/0007`; la prueba usa dos
+    zonas horarias extremas para fallar a cualquier hora con el código viejo (comprobado).
+- [x] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una
   respuesta inválida); con la bitácora sin poder escribir, la operación se rechaza; un registro
   alterado rompe la cadena.
-- [ ] 8.6 Cambio de identificador con cada rol (IDOR), a mano o con OWASP ZAP (criterio de aceptación 3).
-- [ ] 8.7 Generar la tabla de cobertura del informe a partir de `matriz.json` y del resultado de las
+  - 14-nov: el motor apagado, lento, con error, con algo que no es JSON, sin decisión o con un resultado
+    inventado están en `autorizacion.tests.FalloCerrado` (T-41). `bitacora.tests` agrega: con la bitácora sin
+    poder escribir, una aprobación no ocurre ni deja nada; nadie, ni el dueño, modifica, borra o vacía un
+    registro; y un registro alterado (desactivando antes el disparador, que exige ser dueño) lo delatan
+    `bitacora_verificar()`, la pantalla de GER y AUD y el trabajo diario, que termina con error.
+- [x] 8.6 Cambio de identificador con cada rol (IDOR), a mano o con OWASP ZAP (criterio de aceptación 3).
+  - 14-nov: `flujos.tests_idor` recorre, con cada uno de los siete roles, las 33 rutas que reciben un identificador
+    con el de un objeto ajeno y con uno que no existe, como `va_app` y con la seguridad por fila activa (174
+    combinaciones). Nada se ejecuta y la base queda igual. Encontró que TEC y DUE podían distinguir lo ajeno
+    de lo inexistente fuera de las lecturas (403 contra 404), es decir, saber qué identificadores existen.
+    Corregido en `autorizacion/proteccion.py`: si el rol no tiene el verbo, se deniega antes de buscar el
+    objeto; y si se deniega una acción sobre algo que la persona ni siquiera puede leer (C1, C5), responde
+    404, igual que si no existiera. La pasada con ZAP sobre la URL pública queda en 9.4.
+- [x] 8.7 Generar la tabla de cobertura del informe a partir de `matriz.json` y del resultado de las
   pruebas: permiso, dónde está (regla Rego, vista, restricción de base) y qué prueba lo comprueba.
-- [ ] 8.8 CI en GitHub Actions: ruff, bandit, mypy, pip-audit, pytest, `opa test`, gitleaks y Trivy
+  - 14-nov: `infra/cobertura.py` genera `docs/cobertura.md` y `.csv`: los 102 permisos con su regla en Rego, su
+    ruta o componente, el candado de la base y su prueba; las reglas C1–C20, H1–H4 y K-3 con sus casos T; los
+    41 casos con sus pruebas; y las 38 celdas denegadas. Marca cada prueba con el resultado de la corrida
+    (Django `-v 2`, unittest `-v` y `opa test -v`). El CI la genera en cada push y la deja como artefacto.
+- [x] 8.8 CI en GitHub Actions: ruff, bandit, mypy, pip-audit, pytest, `opa test`, gitleaks y Trivy
   sobre las imágenes.
-- [ ] 8.9 **Nada de pruebas de carga contra Cloud Run ni Neon**: se pagan. Las pruebas corren en local o
+  - 14-nov: `seguridad.yml` suma tres trabajos a gitleaks, autores y política: revisión estática (ruff con
+    las reglas de bandit, bandit, mypy y pip-audit sobre los seis `requirements.txt`, con las herramientas
+    fijadas por huella en `infra/ci`), pruebas (Django con PostgreSQL y el OPA real, los servicios en su
+    propio entorno, `opa test -v` y la tabla de cobertura) y Trivy 0.76.1 sobre las cinco imágenes (falla
+    con HIGH o CRITICAL que tengan arreglo). Para dejarlo en verde: las imágenes de Python ya no llevan pip
+    (sus copias de urllib3 y msgpack tenían vulnerabilidades), aplican los parches de Debian que la base
+    todavía no trae (zlib) y usan la base del 8-nov. Una excepción justificada en `politica/.trivyignore`:
+    CVE-2026-78661 en `x/net/html` dentro de OPA, sin arreglo en ninguna versión publicada y sin HTML que
+    analizar en este despliegue.
+- [x] 8.9 **Nada de pruebas de carga contra Cloud Run ni Neon**: se pagan. Las pruebas corren en local o
   contra la rama `dev`.
+  - 14-nov: se cumplió. Todas las pruebas corren contra la base de compose o el PostgreSQL del CI; contra la
+    nube solo hubo comprobaciones puntuales de humo del despliegue.
 
 ---
 

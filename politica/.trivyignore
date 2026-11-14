@@ -1,0 +1,7 @@
+# Excepción revisada para el escaneo de la imagen politica (tarea 8.8).
+# CVE-2026-78661: golang.org/x/net/html (denegación de servicio al analizar HTML) dentro del binario
+# de OPA. Sigue en OPA 1.22.3 y en 1.22.4, la última publicada al 14-nov-2026. En Verdeazul, OPA es
+# un contenedor auxiliar que solo escucha en localhost, sin puerto expuesto, y evalúa únicamente
+# nuestra política: no analiza HTML que venga de nadie. Se quita cuando una versión de OPA lo
+# corrija (Dependabot revisa la imagen cada semana).
+CVE-2026-78661

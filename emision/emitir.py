@@ -198,20 +198,22 @@ def pendientes(conexion):
 
 def emitir_pendientes(conexion, clave, origen=ORIGEN):
     mediciones, enmiendas = pendientes(conexion)
-    hechos = {"emitidos": [], "reemitidos": [], "rechazados": 0}
+    emitidos: list[str] = []
+    reemitidos: list[str | None] = []
+    rechazados = 0
     for medicion in mediciones:
         try:
-            hechos["emitidos"].append(emitir(conexion, medicion, clave, origen)["codigo"])
+            emitidos.append(emitir(conexion, medicion, clave, origen)["codigo"])
         except NoSeEmite as error:
             anotar_denegacion(conexion, "emitir", "mediciones", medicion, str(error), origen)
-            hechos["rechazados"] += 1
+            rechazados += 1
     for enmienda in enmiendas:
         try:
-            hechos["reemitidos"].append(reemitir(conexion, enmienda, clave, origen).get("codigo"))
+            reemitidos.append(reemitir(conexion, enmienda, clave, origen).get("codigo"))
         except NoSeEmite as error:
             anotar_denegacion(conexion, "reemitir", "enmiendas", enmienda, str(error), origen)
-            hechos["rechazados"] += 1
-    return hechos
+            rechazados += 1
+    return {"emitidos": emitidos, "reemitidos": reemitidos, "rechazados": rechazados}
 
 
 HUELLA = re.compile(r"^[0-9a-f]{64}$")

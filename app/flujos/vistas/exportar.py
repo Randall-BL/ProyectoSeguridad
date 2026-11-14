@@ -16,7 +16,6 @@ from django.views.decorators.http import require_http_methods
 from autorizacion.proteccion import protegida
 from bitacora.models import Registro
 from flujos.comun import anotar
-from nucleo import emision
 from negocio.models import (
     Alerta,
     Asignacion,
@@ -27,6 +26,7 @@ from negocio.models import (
     Medicion,
     Periodo,
 )
+from nucleo import emision
 
 
 def _fecha(valor):

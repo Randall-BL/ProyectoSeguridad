@@ -69,7 +69,7 @@ def ficha(request, periodo):
               celda(estado=x.estado, estado_texto=x.get_estado_display())] for x in propuestas]
     acciones = []
     if "proponer" in permitidos and p.estado in TRANSICION:
-        acciones.append(accion(f"Registrar {TRANSICION[p.estado].label.lower()}", reverse("proponer_periodo", args=[p.pk]), primaria=True))
+        acciones.append(accion(f"Registrar {TRANSICION[p.estado].label.lower()}", reverse("proponer_periodo", args=[p.pk]), primaria=True))  # type: ignore[attr-defined]
     for x in propuestas:
         if x.estado == EstadoCatalogo.PROPUESTO and x.accion in permitidos:
             acciones.append(accion(f"Aprobar: {x.get_accion_display().lower()}", reverse(f"{x.accion}_periodo", args=[x.pk]),

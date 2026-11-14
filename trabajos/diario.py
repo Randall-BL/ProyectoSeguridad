@@ -29,8 +29,6 @@ import psycopg
 import tsa
 
 ORIGEN = "verdeazul-trabajos"
-ZONA = "America/Costa_Rica"
-HOY = f"(now() AT TIME ZONE '{ZONA}')::date"
 METADATOS = ("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity"
              "?audience={}")
 
@@ -76,8 +74,8 @@ def _cerrar_sesiones(cur, usuarios, regla):
 
 
 def vencer_temporales(cur):
-    cur.execute(f"""UPDATE negocio_asignacion SET terminada_en = now()
-                    WHERE tipo = 'temporal' AND terminada_en IS NULL AND hasta < {HOY}
+    cur.execute("""UPDATE negocio_asignacion SET terminada_en = now()
+                    WHERE tipo = 'temporal' AND terminada_en IS NULL AND hasta < va_hoy()
                     RETURNING id, tecnico_id""")
     filas = cur.fetchall()
     for asignacion, _ in filas:
@@ -88,8 +86,8 @@ def vencer_temporales(cur):
 def habilitaciones_vencidas(cur):
     """La habilitación de técnico vence sola por fecha en cada petición (3.8); aquí se anota y se
     cierran las sesiones de quien la tenía hasta ayer."""
-    cur.execute(f"""SELECT id, usuario_id FROM cuentas_propuestarol
-                    WHERE es_habilitacion AND estado = 'aprobada' AND fin_habilitacion = {HOY} - 1""")
+    cur.execute("""SELECT id, usuario_id FROM cuentas_propuestarol
+                    WHERE es_habilitacion AND estado = 'aprobada' AND fin_habilitacion = va_hoy() - 1""")
     filas = cur.fetchall()
     for propuesta, _ in filas:
         anotar(cur, "vencer", "habilitaciones", propuesta, "POL-CA-04")
@@ -122,11 +120,11 @@ def sesiones_expiradas(cur):
 
 
 def escalar_alertas(cur):
-    cur.execute(f"""UPDATE negocio_alerta a SET escalada_en = now()
+    cur.execute("""UPDATE negocio_alerta a SET escalada_en = now()
                     FROM cuentas_usuario u
                     WHERE u.id = a.sujeto_id AND u.supervisor_id IS NOT NULL
                       AND a.resuelta_en IS NULL AND a.escalada_en IS NULL
-                      AND va_dias_habiles((a.creada_en AT TIME ZONE '{ZONA}')::date, {HOY}) > 2
+                      AND va_dias_habiles((a.creada_en AT TIME ZONE 'America/Costa_Rica')::date, va_hoy()) > 2
                     RETURNING a.id""")
     filas = cur.fetchall()
     for (alerta,) in filas:
@@ -143,12 +141,12 @@ def emisiones_pendientes(_cur=None):
         return {"omitido": "sin EMISION_URL"}
     cabeceras = {"Content-Type": "application/json"}
     if base.startswith("https://"):
-        pedido = urllib.request.Request(METADATOS.format(urllib.parse.quote(base, safe="")),
+        pedido = urllib.request.Request(METADATOS.format(urllib.parse.quote(base, safe="")),  # noqa: S310
                                         headers={"Metadata-Flavor": "Google"})
-        with urllib.request.urlopen(pedido, timeout=5) as respuesta:  # noqa: S310 - dirección fija
+        with urllib.request.urlopen(pedido, timeout=5) as respuesta:  # noqa: S310  # nosec B310
             cabeceras["Authorization"] = "Bearer " + respuesta.read().decode()
-    pedido = urllib.request.Request(base + "/emitir-pendientes", data=b"{}", headers=cabeceras, method="POST")
-    with urllib.request.urlopen(pedido, timeout=120) as respuesta:  # noqa: S310 - URL de la configuración
+    pedido = urllib.request.Request(base + "/emitir-pendientes", data=b"{}", headers=cabeceras, method="POST")  # noqa: S310
+    with urllib.request.urlopen(pedido, timeout=120) as respuesta:  # noqa: S310  # nosec B310
         return json.loads(respuesta.read())
 
 

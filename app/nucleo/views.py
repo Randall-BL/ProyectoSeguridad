@@ -13,7 +13,6 @@ from cuentas.models import Rol
 from cuentas.roles import QUE_HACE, habilitacion_vigente
 from cuentas.sesiones import INICIO
 
-
 # Orden de los objetos como en la matriz de la Parte 1.
 ORDEN_OBJETOS = [
     "fincas", "datos_personales", "periodos", "asignaciones", "mediciones",

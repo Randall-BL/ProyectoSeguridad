@@ -90,6 +90,21 @@ docker compose exec app python manage.py sembrar
 variable `SEMILLA_CONTRASENA` todas las cuentas usan esa. `db/pruebas/semilla.sql` comprueba que los
 datos cargados dejan listos los casos de la matriz. `docker compose down -v` borra la base local.
 
+## Pruebas
+
+- **Aplicación** (en `app/`, con la base de compose y OPA en `OPA_URL`): `python manage.py test`.
+  `OPA_PRUEBAS=1` activa además la prueba de punta a punta del motor. Son 190 pruebas: los 41 casos
+  T-01 a T-41, el caso feliz de los 102 permisos, la equivalencia entre el motor y la base, el cambio
+  de identificador con cada rol, la bitácora, la emisión y el trabajo diario. Algunas toman los roles
+  `va_app`, `va_emision`, `va_publico` y `va_trabajos`, así que el usuario de las pruebas tiene que
+  ser superusuario de la base local.
+- **Servicios:** `python -m unittest -v` dentro de `verificador/`, `emision/`, `publico/` y `trabajos/`.
+- **Política:** `opa test politica` (71 pruebas, cobertura mínima de 95 %).
+- **Tabla de cobertura de la matriz:** [docs/cobertura.md](docs/cobertura.md), generada con
+  `infra/cobertura.py` a partir del código y de los registros de una corrida.
+- **CI** (`.github/workflows/seguridad.yml`): en cada push corre todo lo anterior, además de gitleaks
+  sobre la historia, ruff, bandit, mypy, pip-audit y Trivy sobre las cinco imágenes.
+
 ## Despliegue
 
 **URL pública:** https://verdeazul-app-708901712393.us-east1.run.app

@@ -1,0 +1,6 @@
+# Herramientas de revisión del CI (tarea 8.8). requirements.txt sale de aquí, con la versión y la
+# huella de cada paquete fijadas: sh infra/fijar-dependencias.sh infra/ci
+bandit
+mypy
+pip-audit
+ruff
