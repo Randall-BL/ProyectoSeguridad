@@ -641,8 +641,11 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     agrega Cloud Run), en memoria y con `maxScale` 1. T-32 probado contra la base y en el servicio.
 - [x] 6.8 `verificador/`: programa de línea de comandos que verifica un certificado sin conexión al
   sistema. Es lo que haría un comprador en otro país.
-- [ ] 6.9 Demostración preparada: un certificado válido, el mismo con una tonelada cambiada (debe
+- [x] 6.9 Demostración preparada: un certificado válido, el mismo con una tonelada cambiada (debe
   fallar) y uno revocado consultado por código (T-32).
+  - 13-nov: `docs/demostracion/` con el certificado real `VA-2026-I-QXWJWM9G` del despliegue y su copia
+    alterada (comprobados con el verificador y en el servicio público). El revocado se hace en vivo con
+    la enmienda de cuatro personas; los pasos están en `docs/demostracion/LEEME.md`.
 - [x] 6.10 Sellar los paquetes de exportación del auditor con la misma clave, por el servicio de emisión (C18).
   - 13-nov: la aplicación manda al servicio solo la huella del paquete y agrega el sello que recibe; si el
     servicio no responde, no se entrega nada (503) y la denegación queda en la bitácora. El verificador de
