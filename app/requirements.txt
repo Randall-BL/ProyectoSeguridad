@@ -226,7 +226,7 @@ django==5.2.19 \
     # via
     #   -r requirements.in
     #   django-allauth
-django-allauth==65.21.1 \
+django-allauth[mfa]==65.21.1 \
     --hash=sha256:128344e260a22b62796747be0a2249ad9488a509c1aa34ab35e3fcf22862dd9e \
     --hash=sha256:7bdf018c9f3f0a32c80677f84e7777272d9c833b180bd6734314c4831c802a9e
     # via -r requirements.in
@@ -234,15 +234,15 @@ fido2==2.2.1 \
     --hash=sha256:85787428a94c3f8eaf72f0ff30afba983b559a1b1b795c93318c81b4ad4062c4 \
     --hash=sha256:ed397da981b9ab133da6ead7309e41f924b566b749956129efe286fae097749f
     # via django-allauth
-gunicorn==26.2.0 \
-    --hash=sha256:62b864895d9ebff0b2f9867ba04fe811c93121596540830c9c916d0769668447 \
-    --hash=sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3
+gunicorn==27.0.0 \
+    --hash=sha256:1380f2f520abc3beb9e72cd2e728bd2d08a19b3ff6ac03ebd8da71d1798a4008 \
+    --hash=sha256:88d52e7c60b3af07bc8db431fbb450a94780f2cbe7c420c7cf1891392661c591
     # via -r requirements.in
-psycopg==3.3.8 \
+psycopg[binary]==3.3.8 \
     --hash=sha256:86c135a9a6f5e98404975c5787e620bf436a7807e088baebd1b20fa48d3b4b4f \
     --hash=sha256:ca50af6072ba9ea6866f33021975230c2555d7bfdb9d8f94ca3af5c3d1bf2167
     # via -r requirements.in
-psycopg-binary==3.3.8 ; implementation_name != 'pypy' \
+psycopg-binary==3.3.8 \
     --hash=sha256:00c226f718901ce022bcee2e0779dc2f0a6d8bcedd5a3818e21ff25564efaa97 \
     --hash=sha256:0332e83c2e78b1c8c00c1095688f9b332bdde9d5e9d61b8ce1cdcaf716a19b9e \
     --hash=sha256:09676448a9bbc5c09ce8d578a6958a0bb8175e63c94edf6d88a62d2b07fadd23 \
@@ -310,7 +310,7 @@ psycopg-binary==3.3.8 ; implementation_name != 'pypy' \
     --hash=sha256:fc9b9922899a3ca6193fd1d96920329c10acb72d3fad0dbc87b1ecdd8a791c14 \
     --hash=sha256:fe26e72b87ca280e538f4f78d1a956df0ae6ed51aab73ccc4c1dcf6f25256438
     # via psycopg
-pycparser==3.12 ; implementation_name != 'PyPy' \
+pycparser==3.12 \
     --hash=sha256:a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e \
     --hash=sha256:f03387877eab82ce01bbdfd0ba7252ee55a90b1c708d5129e2ce915475cf1db6
     # via cffi
