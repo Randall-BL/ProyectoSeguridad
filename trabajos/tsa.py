@@ -69,9 +69,9 @@ def sellar(huella_hex, url, tiempo=20):
     y la huella y el nonce pedidos dentro del sello."""
     huella = bytes.fromhex(huella_hex)
     nonce = secrets.randbits(63)
-    peticion = urllib.request.Request(url, data=solicitud(huella, nonce), method="POST",
+    peticion = urllib.request.Request(url, data=solicitud(huella, nonce), method="POST",  # noqa: S310
                                       headers={"Content-Type": "application/timestamp-query"})
-    with urllib.request.urlopen(peticion, timeout=tiempo) as respuesta:  # noqa: S310 - TSA de la configuración
+    with urllib.request.urlopen(peticion, timeout=tiempo) as respuesta:  # noqa: S310  # nosec B310
         cuerpo = respuesta.read()
     if estado(cuerpo) not in (0, 1):
         raise ValueError(f"La TSA rechazó la solicitud (estado {estado(cuerpo)}).")

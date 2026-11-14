@@ -13,8 +13,8 @@ from autorizacion.proteccion import protegida
 from cuentas.models import Usuario
 from flujos import hechos as h
 from flujos.comun import accion, anotar, celda, escribir, nombre, tabla, verbos, volver
-from flujos.vistas.mediciones import FormularioVersion, _version
 from flujos.vistas.asignaciones import _tecnicos
+from flujos.vistas.mediciones import FormularioVersion, _version
 from negocio.models import Enmienda, EstadoEnmienda, Medicion, VersionMedicion
 from nucleo import emision
 

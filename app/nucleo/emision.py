@@ -25,9 +25,9 @@ class SinEmision(Exception):
 
 
 def _token(audiencia):
-    peticion = urllib.request.Request(METADATOS.format(urllib.parse.quote(audiencia, safe="")),
+    peticion = urllib.request.Request(METADATOS.format(urllib.parse.quote(audiencia, safe="")),  # noqa: S310
                                       headers={"Metadata-Flavor": "Google"})
-    with urllib.request.urlopen(peticion, timeout=3) as respuesta:  # noqa: S310 - dirección fija
+    with urllib.request.urlopen(peticion, timeout=3) as respuesta:  # noqa: S310  # nosec B310
         return respuesta.read().decode()
 
 
@@ -43,9 +43,9 @@ def llamar(ruta, datos, timeout=20):
             cabeceras["Authorization"] = f"Bearer {_token(base)}"
         except OSError as error:
             raise SinEmision(f"No se obtuvo el token de identidad: {error}") from error
-    peticion = urllib.request.Request(base + ruta, data=json.dumps(datos).encode(), headers=cabeceras, method="POST")
+    peticion = urllib.request.Request(base + ruta, data=json.dumps(datos).encode(), headers=cabeceras, method="POST")  # noqa: S310
     try:
-        with urllib.request.urlopen(peticion, timeout=timeout) as respuesta:  # noqa: S310 - URL de la configuración
+        with urllib.request.urlopen(peticion, timeout=timeout) as respuesta:  # noqa: S310  # nosec B310
             return respuesta.status, json.loads(respuesta.read() or b"{}")
     except urllib.error.HTTPError as error:
         if error.code >= 500:

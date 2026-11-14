@@ -12,6 +12,7 @@ updates:
       - "/publico"
       - "/trabajos"
       - "/verificador"
+      - "/infra/ci"
     schedule:
       interval: "weekly"
       day: "monday"

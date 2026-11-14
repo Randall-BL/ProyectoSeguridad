@@ -73,7 +73,7 @@ class FormatoDelCertificado(unittest.TestCase):
         self.assertFalse(vc.verificar(alterado, self.publica)["valido"])
 
     def test_el_sello_de_un_paquete_cubre_su_contenido(self):
-        paquete = {"objeto": "fincas", "filas": [{"codigo": "F-0001"}]}
+        paquete: dict = {"objeto": "fincas", "filas": [{"codigo": "F-0001"}]}
         sello = vc.sellar(vc.huella_de(paquete), self.clave)
         self.assertTrue(vc.verificar_sello(paquete, sello, self.publica)["valido"])
         archivo = json.dumps({**paquete, "sello": sello})

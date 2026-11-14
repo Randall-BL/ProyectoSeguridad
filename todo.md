@@ -754,8 +754,17 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     ruta o componente, el candado de la base y su prueba; las reglas C1–C20, H1–H4 y K-3 con sus casos T; los
     41 casos con sus pruebas; y las 38 celdas denegadas. Marca cada prueba con el resultado de la corrida
     (Django `-v 2`, unittest `-v` y `opa test -v`). El CI la genera en cada push y la deja como artefacto.
-- [ ] 8.8 CI en GitHub Actions: ruff, bandit, mypy, pip-audit, pytest, `opa test`, gitleaks y Trivy
+- [x] 8.8 CI en GitHub Actions: ruff, bandit, mypy, pip-audit, pytest, `opa test`, gitleaks y Trivy
   sobre las imágenes.
+  - 14-nov: `seguridad.yml` suma tres trabajos a gitleaks, autores y política: revisión estática (ruff con
+    las reglas de bandit, bandit, mypy y pip-audit sobre los seis `requirements.txt`, con las herramientas
+    fijadas por huella en `infra/ci`), pruebas (Django con PostgreSQL y el OPA real, los servicios en su
+    propio entorno, `opa test -v` y la tabla de cobertura) y Trivy 0.76.1 sobre las cinco imágenes (falla
+    con HIGH o CRITICAL que tengan arreglo). Para dejarlo en verde: las imágenes de Python ya no llevan pip
+    (sus copias de urllib3 y msgpack tenían vulnerabilidades), aplican los parches de Debian que la base
+    todavía no trae (zlib) y usan la base del 8-nov. Una excepción justificada en `politica/.trivyignore`:
+    CVE-2026-78661 en `x/net/html` dentro de OPA, sin arreglo en ninguna versión publicada y sin HTML que
+    analizar en este despliegue.
 - [ ] 8.9 **Nada de pruebas de carga contra Cloud Run ni Neon**: se pagan. Las pruebas corren en local o
   contra la rama `dev`.
 

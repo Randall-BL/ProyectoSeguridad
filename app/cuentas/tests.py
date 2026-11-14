@@ -12,19 +12,19 @@ from allauth.mfa.adapter import get_adapter
 from allauth.mfa.models import Authenticator
 from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.cache import cache, caches
 from django.core.cache.backends.db import DatabaseCache
 from django.db import connection
-from django.contrib.auth.models import AnonymousUser
-from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 
 from bitacora.models import Registro
-from cuentas.decisiones import requiere_segundo_factor
 from cuentas import intentos
+from cuentas.decisiones import requiere_segundo_factor
 from cuentas.models import EstadoPropuesta, IntentosAcceso, PropuestaRol, Rol, Sesion, Usuario
 from cuentas.roles import ROL_ACTIVO, habilitacion_vigente
 from cuentas.sesiones import INICIO

@@ -1,6 +1,6 @@
 # Imagen del servicio de emisión (componente SIS de la Parte 1). Se construye desde la raíz del
 # repositorio: docker build -f emision/Dockerfile .
-FROM python:3.14-slim@sha256:af8a5aa14780025dbfbcfbc81bd8a91ebd87711dd5b0f48ed71090949dd7cb1d
+FROM python:3.14-slim@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f
 
 ARG APP_VERSION=local
 ARG APP_COMMIT=""
@@ -17,9 +17,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /srv/emision
 
+# Los parches de seguridad de Debian que la imagen base todavía no trae (Trivy, 8.8).
+RUN apt-get update && apt-get --yes upgrade && rm -rf /var/lib/apt/lists/*
+
 # Solo entran paquetes con la versión y la huella de requirements.txt.
 COPY emision/requirements.txt .
-RUN pip install --require-hashes -r requirements.txt
+# Después se quita pip: la imagen no instala nada al correr, y pip trae sus propias copias de
+# urllib3 y msgpack, que Trivy marcaba con vulnerabilidades (8.8).
+RUN pip install --require-hashes -r requirements.txt && pip uninstall --yes pip
 
 # El formato del certificado es el mismo módulo que usan el servicio público y el verificador.
 COPY verificador/verdeazul_certificado.py emision/emitir.py emision/servicio.py emision/gunicorn.conf.py ./

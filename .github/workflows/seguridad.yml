@@ -61,3 +61,105 @@ jobs:
           docker run --rm -v "$PWD/politica:/politica:ro" "$OPA" test --coverage --threshold 95 /politica > /dev/null
       - name: Regal
         run: docker run --rm -v "$PWD/politica:/politica:ro" "$REGAL" lint --config-file /politica/.regal/config.yaml /politica
+
+  revision:
+    name: revisión estática (ruff, bandit, mypy, pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: Herramientas con versión y huella fijas
+        run: pip install --require-hashes -r infra/ci/requirements.txt
+      - name: Ruff
+        run: ruff check app emision publico trabajos verificador infra
+      - name: Bandit
+        run: bandit -q -c pyproject.toml -r app emision publico trabajos verificador infra -x "*/tests*.py,*/test_*.py,*/migrations/*"
+      - name: Mypy
+        run: |
+          (cd app && mypy --config-file ../pyproject.toml --exclude migrations .)
+          for d in verificador emision publico trabajos; do (cd "$d" && MYPYPATH=../verificador mypy --config-file ../pyproject.toml .); done
+          mypy --config-file pyproject.toml infra/cobertura.py infra/clave_firma.py
+      - name: Vulnerabilidades conocidas en las dependencias fijadas
+        run: |
+          for d in app emision publico trabajos verificador infra/ci; do
+            pip-audit -r "$d/requirements.txt" --require-hashes --disable-pip --progress-spinner off
+          done
+
+  pruebas:
+    name: pruebas (Django con OPA y PostgreSQL, servicios) y tabla de cobertura
+    runs-on: ubuntu-latest
+    services:
+      db:
+        # La misma imagen que docker-compose, fijada por huella. Superusuario solo aquí: las pruebas
+        # toman los roles va_app, va_emision, va_publico y va_trabajos con SET ROLE.
+        image: postgis/postgis:18-3.6@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+        env:
+          POSTGRES_DB: verdeazul
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d verdeazul" --health-interval 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres@127.0.0.1:5432/verdeazul?sslmode=disable
+      DJANGO_SECRET_KEY: solo-para-las-pruebas-del-ci-no-es-un-secreto-0123456789
+      DJANGO_DEBUG: "True"
+      OPA_URL: http://127.0.0.1:8181
+      OPA_PRUEBAS: "1"
+      PYTHONUTF8: "1"
+      OPA: openpolicyagent/opa:1.22.3-static@sha256:a6ccb6e0cc91b2d1807b1b65a844b189249b9ab33d126e0bca30c0cf43b0ae07
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: Motor de decisión real, con la imagen de la política
+        run: |
+          docker build -q -f politica/Dockerfile -t verdeazul-politica:ci .
+          docker run -d --name opa -p 127.0.0.1:8181:8181 verdeazul-politica:ci
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8181/health && break; sleep 1; done
+      - name: Dependencias con versión y huella fijas
+        run: pip install --require-hashes -r app/requirements.txt
+      - name: Pruebas de Django
+        working-directory: app
+        run: python manage.py test --noinput --verbosity 2 2>&1 | tee "$RUNNER_TEMP/django.log"; test "${PIPESTATUS[0]}" -eq 0
+      - name: Pruebas de los servicios, en su propio entorno con sus versiones
+        run: |
+          python -m venv "$RUNNER_TEMP/servicios"
+          "$RUNNER_TEMP/servicios/bin/pip" install --require-hashes -r emision/requirements.txt
+          for d in verificador emision publico trabajos; do
+            (cd "$d" && "$RUNNER_TEMP/servicios/bin/python" -m unittest -v) 2>&1 | tee "$RUNNER_TEMP/$d.log"
+            test "${PIPESTATUS[0]}" -eq 0
+          done
+      - name: Pruebas de la política con detalle
+        run: docker run --rm -v "$PWD/politica:/politica:ro" "$OPA" test -v /politica > "$RUNNER_TEMP/opa.log"
+      - name: Tabla de cobertura de la matriz (8.7)
+        if: always()
+        run: python infra/cobertura.py --resultados "$RUNNER_TEMP"/*.log --salida "$RUNNER_TEMP/cobertura.md"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: cobertura
+          path: |
+            ${{ runner.temp }}/cobertura.md
+            ${{ runner.temp }}/cobertura.csv
+            ${{ runner.temp }}/*.log
+
+  imagenes:
+    name: Trivy sobre las cinco imágenes
+    runs-on: ubuntu-latest
+    env:
+      TRIVY: aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Construir y revisar cada imagen
+        run: |
+          for c in app politica emision publico trabajos; do
+            docker build -q -f "$c/Dockerfile" -t "verdeazul-$c:ci" .
+            ignorar=""
+            if [ -f "$c/.trivyignore" ]; then ignorar="--ignorefile /repo/$c/.trivyignore"; fi
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/repo:ro" "$TRIVY" image \
+              --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 $ignorar "verdeazul-$c:ci"
+          done
