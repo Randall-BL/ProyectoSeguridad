@@ -55,9 +55,6 @@ class ConPersonajes(TestCase):
     def _regla(self, respuesta):
         return respuesta.context["regla"] if respuesta.context and "regla" in respuesta.context else None
 
-
-@skipUnless(_opa_disponible(), "requiere el motor real (OPA) en OPA_URL")
-class CasosQueFaltaban(ConPersonajes):
     def _medicion(self, finca="F-001", parcela="P-1", periodo="2026-I"):
         return Medicion.objects.get(parcela__finca__codigo=finca, parcela__codigo=parcela, periodo__nombre=periodo)
 
@@ -86,6 +83,10 @@ class CasosQueFaltaban(ConPersonajes):
         self._como(quien, "GER")
         return self.client.post(reverse("autorizar_enmienda", args=[enmienda.pk]), {**MOTIVO, "comercializado": "no"})
 
+
+
+@skipUnless(_opa_disponible(), "requiere el motor real (OPA) en OPA_URL")
+class CasosQueFaltaban(ConPersonajes):
     # C7 a C10 ---------------------------------------------------------------------------------------
 
     def test_t11_un_tecnico_no_pide_enmienda_de_lo_que_midio_otro(self):
