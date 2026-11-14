@@ -765,8 +765,10 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     todavía no trae (zlib) y usan la base del 8-nov. Una excepción justificada en `politica/.trivyignore`:
     CVE-2026-78661 en `x/net/html` dentro de OPA, sin arreglo en ninguna versión publicada y sin HTML que
     analizar en este despliegue.
-- [ ] 8.9 **Nada de pruebas de carga contra Cloud Run ni Neon**: se pagan. Las pruebas corren en local o
+- [x] 8.9 **Nada de pruebas de carga contra Cloud Run ni Neon**: se pagan. Las pruebas corren en local o
   contra la rama `dev`.
+  - 14-nov: se cumplió. Todas las pruebas corren contra la base de compose o el PostgreSQL del CI; contra la
+    nube solo hubo comprobaciones puntuales de humo del despliegue.
 
 ---
 
