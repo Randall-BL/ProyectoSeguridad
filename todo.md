@@ -740,7 +740,14 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     poder escribir, una aprobación no ocurre ni deja nada; nadie, ni el dueño, modifica, borra o vacía un
     registro; y un registro alterado (desactivando antes el disparador, que exige ser dueño) lo delatan
     `bitacora_verificar()`, la pantalla de GER y AUD y el trabajo diario, que termina con error.
-- [ ] 8.6 Cambio de identificador con cada rol (IDOR), a mano o con OWASP ZAP (criterio de aceptación 3).
+- [x] 8.6 Cambio de identificador con cada rol (IDOR), a mano o con OWASP ZAP (criterio de aceptación 3).
+  - 14-nov: `flujos.tests_idor` recorre, con cada uno de los siete roles, las 33 rutas que reciben un identificador
+    con el de un objeto ajeno y con uno que no existe, como `va_app` y con la seguridad por fila activa (174
+    combinaciones). Nada se ejecuta y la base queda igual. Encontró que TEC y DUE podían distinguir lo ajeno
+    de lo inexistente fuera de las lecturas (403 contra 404), es decir, saber qué identificadores existen.
+    Corregido en `autorizacion/proteccion.py`: si el rol no tiene el verbo, se deniega antes de buscar el
+    objeto; y si se deniega una acción sobre algo que la persona ni siquiera puede leer (C1, C5), responde
+    404, igual que si no existiera. La pasada con ZAP sobre la URL pública queda en 9.4.
 - [ ] 8.7 Generar la tabla de cobertura del informe a partir de `matriz.json` y del resultado de las
   pruebas: permiso, dónde está (regla Rego, vista, restricción de base) y qué prueba lo comprueba.
 - [ ] 8.8 CI en GitHub Actions: ruff, bandit, mypy, pip-audit, pytest, `opa test`, gitleaks y Trivy

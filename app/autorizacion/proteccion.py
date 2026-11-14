@@ -15,9 +15,24 @@ from django.utils.http import urlencode
 
 from autorizacion import hechos, historial, motor, respuestas
 
-# Lecturas denegadas por alcance: se responde «no encontrado», igual que si no existiera, para no
-# revelar qué existe fuera del alcance de la persona (T-08).
+# Lo que está fuera del alcance de la persona responde «no encontrado», igual que si no existiera,
+# para no revelar qué existe (T-08, 8.6): las lecturas denegadas por alcance y cualquier otra acción
+# sobre un objeto que la persona ni siquiera puede leer.
 ALCANCE = {"C1", "C5"}
+
+
+def _celda(request, tipo):
+    """Los verbos de la celda del rol activo sobre el objeto, una vez por petición."""
+    if not hasattr(request, "_celdas"):
+        request._celdas = motor.permisos_del_rol(request.rol_activo)
+    return {permiso["verbo"] for permiso in request._celdas.get(tipo, [])}
+
+
+def _fuera_de_alcance(request, hechos_objeto, motivo):
+    """Si una acción sobre un objeto se denegó, ¿la persona podría al menos leerlo? Se pregunta al
+    mismo motor; si ni eso, para ella el objeto no existe (8.6)."""
+    lectura = motor.preguntar(hechos.entrada(request, "leer", hechos_objeto, None, motivo))
+    return not lectura.concedida and lectura.regla in ALCANCE
 
 
 def _a_reautenticar(request):
@@ -53,6 +68,15 @@ def protegida(accion, tipo, *, objeto=None, cambio=None, formulario=False):
                 return redirect_to_login(request.get_full_path())
             if formulario and request.method == "GET":
                 return _formulario_vacio(request, accion, tipo, vista, args, kwargs)
+            # 8.6: si el rol no tiene ese verbo, se deniega antes de buscar el objeto, así un
+            # identificador ajeno y uno inexistente responden igual.
+            if objeto:
+                try:
+                    en_la_celda = accion in _celda(request, tipo)
+                except motor.MotorSinRespuesta as error:
+                    return respuestas.sin_motor(request, accion, {"tipo": tipo}, str(error))
+                if not en_la_celda:
+                    return respuestas.denegada(request, accion, {"tipo": tipo}, motor.Decision("denegar", "matriz", False))
             hechos_objeto = objeto(request, **kwargs) if objeto else {"coleccion": True}
             if hechos_objeto is None:
                 raise Http404
@@ -78,12 +102,20 @@ def protegida(accion, tipo, *, objeto=None, cambio=None, formulario=False):
                 return _a_reautenticar(request)
             if decision.resultado == "pedir_segundo_factor_y_motivo":
                 return respuestas.pedir_motivo(request, accion, hechos_objeto, decision)
-            if accion == "leer" and decision.regla in ALCANCE and objeto:
+            if objeto and accion == "leer" and decision.regla in ALCANCE:
                 respuestas.anotar_denegacion(request, accion, hechos_objeto, decision)
                 raise Http404
+            if objeto and accion != "leer":
+                try:
+                    oculto = _fuera_de_alcance(request, hechos_objeto, motivo)
+                except motor.MotorSinRespuesta as error:
+                    return respuestas.sin_motor(request, accion, hechos_objeto, str(error))
+                if oculto:
+                    respuestas.anotar_denegacion(request, accion, hechos_objeto, decision)
+                    raise Http404
             return respuestas.denegada(request, accion, hechos_objeto, decision)
 
-        envoltura.protegida = (accion, tipo)
+        envoltura.protegida = (accion, tipo)  # type: ignore[attr-defined]
         return envoltura
 
     return decorador
