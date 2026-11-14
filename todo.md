@@ -748,8 +748,12 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     Corregido en `autorizacion/proteccion.py`: si el rol no tiene el verbo, se deniega antes de buscar el
     objeto; y si se deniega una acción sobre algo que la persona ni siquiera puede leer (C1, C5), responde
     404, igual que si no existiera. La pasada con ZAP sobre la URL pública queda en 9.4.
-- [ ] 8.7 Generar la tabla de cobertura del informe a partir de `matriz.json` y del resultado de las
+- [x] 8.7 Generar la tabla de cobertura del informe a partir de `matriz.json` y del resultado de las
   pruebas: permiso, dónde está (regla Rego, vista, restricción de base) y qué prueba lo comprueba.
+  - 14-nov: `infra/cobertura.py` genera `docs/cobertura.md` y `.csv`: los 102 permisos con su regla en Rego, su
+    ruta o componente, el candado de la base y su prueba; las reglas C1–C20, H1–H4 y K-3 con sus casos T; los
+    41 casos con sus pruebas; y las 38 celdas denegadas. Marca cada prueba con el resultado de la corrida
+    (Django `-v 2`, unittest `-v` y `opa test -v`). El CI la genera en cada push y la deja como artefacto.
 - [ ] 8.8 CI en GitHub Actions: ruff, bandit, mypy, pip-audit, pytest, `opa test`, gitleaks y Trivy
   sobre las imágenes.
 - [ ] 8.9 **Nada de pruebas de carga contra Cloud Run ni Neon**: se pagan. Las pruebas corren en local o

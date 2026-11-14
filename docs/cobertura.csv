@@ -1,0 +1,103 @@
+rol,objeto,verbo,condiciones,rego,ruta,base,prueba,casos,resultado
+TEC,fincas,leer,C1,politica/verdeazul/reglas.rego:17,"fincas, finca",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0005_tec_inserta_medicion.sql:4; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,"T-01, T-02, T-27",pasó
+TEC,datos_personales,leer,C1,politica/verdeazul/reglas.rego:17,"titulares, titular",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0005_tec_inserta_medicion.sql:4; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,"T-01, T-02, T-27",pasó
+TEC,periodos,leer,—,matriz.json,"periodos, periodo",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+TEC,asignaciones,leer,C1,politica/verdeazul/reglas.rego:17,asignaciones,app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0005_tec_inserta_medicion.sql:4; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,"T-01, T-02, T-27",pasó
+TEC,mediciones,leer,C1,politica/verdeazul/reglas.rego:17,"mediciones, medicion",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0005_tec_inserta_medicion.sql:4; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,"T-01, T-02, T-27",pasó
+TEC,mediciones,crear,C2,politica/verdeazul/reglas.rego:34,nueva_medicion,app/negocio/sql/0004_reglas_en_la_base.sql:6,test_tec_crear_mediciones,"T-01, T-03, T-04, T-21, T-30",pasó
+TEC,mediciones,modificar,C2,politica/verdeazul/reglas.rego:34,modificar_medicion,app/negocio/sql/0004_reglas_en_la_base.sql:6,test_tec_modificar_mediciones,"T-01, T-03, T-04, T-21, T-30",pasó
+TEC,mediciones,enviar,C2,politica/verdeazul/reglas.rego:34,enviar_medicion,app/negocio/sql/0004_reglas_en_la_base.sql:6,test_tec_enviar_mediciones,"T-01, T-03, T-04, T-21, T-30",pasó
+TEC,enmiendas,leer,C1,politica/verdeazul/reglas.rego:17,"enmiendas, enmienda",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0005_tec_inserta_medicion.sql:4; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,"T-01, T-02, T-27",pasó
+TEC,enmiendas,solicitar,C7,politica/verdeazul/reglas.rego:88,solicitar_enmienda,—,test_tec_solicitar_enmiendas,"T-11, T-21",pasó
+TEC,enmiendas,corregir,C9,politica/verdeazul/reglas.rego:105,corregir_enmienda,—,test_tec_corregir_enmiendas,T-13,pasó
+TEC,cuentas,modificar,C13,politica/verdeazul/reglas.rego:145,mis_vinculos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-35,pasó
+VER,fincas,leer,H,matriz.json,"fincas, finca",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+VER,periodos,leer,—,matriz.json,"periodos, periodo",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+VER,mediciones,leer,H,matriz.json,"mediciones, medicion",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+VER,mediciones,aprobar,C3,politica/verdeazul/reglas.rego:51,aprobar_medicion,app/negocio/sql/0004_reglas_en_la_base.sql:38,test_ver_aprobar_mediciones,"T-05, T-06, T-17, T-26, T-40",pasó
+VER,mediciones,devolver,C3,politica/verdeazul/reglas.rego:51,devolver_medicion,app/negocio/sql/0004_reglas_en_la_base.sql:38,test_ver_devolver_mediciones,"T-05, T-06, T-17, T-26, T-40",pasó
+VER,enmiendas,leer,—,matriz.json,"enmiendas, enmienda",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+VER,enmiendas,solicitar,C7,politica/verdeazul/reglas.rego:88,solicitar_enmienda,—,test_ver_solicitar_enmiendas,"T-11, T-21",pasó
+VER,enmiendas,revisar,C10,politica/verdeazul/reglas.rego:113,revisar_enmienda,app/negocio/sql/0004_reglas_en_la_base.sql:38,test_ver_revisar_enmiendas,"T-14, T-23",pasó
+VER,certificados,leer,H,matriz.json,"certificados, certificado, descargar_certificado",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+VER,cuentas,modificar,C13,politica/verdeazul/reglas.rego:145,mis_vinculos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-35,pasó
+SUP,fincas,leer,H,matriz.json,"fincas, finca",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+SUP,periodos,leer,—,matriz.json,"periodos, periodo",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+SUP,asignaciones,leer,—,matriz.json,asignaciones,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+SUP,asignaciones,crear,C19,politica/verdeazul/reglas.rego:185,crear_asignacion,app/negocio/sql/0004_reglas_en_la_base.sql:120; app/negocio/sql/0007_fecha_de_costa_rica.sql:2,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,"T-27, T-28, T-38, T-39",pasó
+SUP,asignaciones,modificar,C19,politica/verdeazul/reglas.rego:185,"asignacion, terminar_asignacion, renovar_asignacion",app/negocio/sql/0004_reglas_en_la_base.sql:120; app/negocio/sql/0007_fecha_de_costa_rica.sql:2,test_sup_modificar_asignaciones,"T-27, T-28, T-38, T-39",pasó
+SUP,mediciones,leer,H,matriz.json,"mediciones, medicion",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+SUP,enmiendas,leer,—,matriz.json,"enmiendas, enmienda",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+SUP,cuentas,modificar,C13,politica/verdeazul/reglas.rego:145,mis_vinculos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-35,pasó
+SUP,alertas,leer,C15,politica/verdeazul/reglas.rego:164,alertas,app/negocio/sql/0006_certificados_y_trabajos.sql:70,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-36,pasó
+SUP,alertas,resolver,C15,politica/verdeazul/reglas.rego:164,resolver_alerta,app/negocio/sql/0006_certificados_y_trabajos.sql:70,test_sup_resolver_alertas,T-36,pasó
+GER,fincas,leer,H,matriz.json,"fincas, finca",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,fincas,aprobar,C11,politica/verdeazul/reglas.rego:122,aprobar_catalogo,app/negocio/sql/0004_reglas_en_la_base.sql:89,test_ger_aprobar_fincas,T-15,pasó
+GER,datos_personales,leer,H,matriz.json,"titulares, titular",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,periodos,leer,—,matriz.json,"periodos, periodo",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,periodos,abrir,C14,politica/verdeazul/reglas.rego:149,abrir_periodo,app/negocio/sql/0004_reglas_en_la_base.sql:6,test_ger_abrir_periodos,"T-04, T-17, T-22",pasó
+GER,periodos,cerrar,C14,politica/verdeazul/reglas.rego:149,cerrar_periodo,app/negocio/sql/0004_reglas_en_la_base.sql:6,test_ger_cerrar_periodos,"T-04, T-17, T-22",pasó
+GER,asignaciones,leer,—,matriz.json,asignaciones,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,mediciones,leer,H,matriz.json,"mediciones, medicion",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,enmiendas,leer,—,matriz.json,"enmiendas, enmienda",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,enmiendas,solicitar,C7,politica/verdeazul/reglas.rego:88,solicitar_enmienda,—,test_ger_solicitar_enmiendas,"T-11, T-21",pasó
+GER,enmiendas,autorizar,C8,politica/verdeazul/reglas.rego:95,autorizar_enmienda,app/negocio/sql/0004_reglas_en_la_base.sql:38,test_ger_autorizar_enmiendas,"T-12, T-24",pasó
+GER,certificados,leer,H,matriz.json,"certificados, certificado, descargar_certificado",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,cuentas,leer,—,matriz.json,"cuentas, cuenta",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,cuentas,aprobar,C12,politica/verdeazul/reglas.rego:132,"aprobar_rol, aprobar_retiro",app/negocio/sql/0004_reglas_en_la_base.sql:110,test_ger_aprobar_cuentas,T-16,pasó
+GER,cuentas,modificar,C13,politica/verdeazul/reglas.rego:145,mis_vinculos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-35,pasó
+GER,bitacora,leer,—,matriz.json,bitacora,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,alertas,leer,—,matriz.json,alertas,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+GER,alertas,resolver,C15,politica/verdeazul/reglas.rego:164,resolver_alerta,app/negocio/sql/0006_certificados_y_trabajos.sql:70,test_ger_resolver_alertas,T-36,pasó
+ADM,fincas,leer,H,matriz.json,"fincas, finca",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+ADM,fincas,proponer,C11,politica/verdeazul/reglas.rego:122,"proponer_finca, proponer_titular, proponer_parcela",app/negocio/sql/0004_reglas_en_la_base.sql:89,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-15,pasó
+ADM,datos_personales,leer,H,matriz.json,"titulares, titular",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+ADM,datos_personales,crear,—,matriz.json,crear_titular,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+ADM,datos_personales,modificar,—,matriz.json,editar_titular,—,test_adm_modificar_datos_personales,—,pasó
+ADM,datos_personales,eliminar,C16,politica/verdeazul/reglas.rego:177,suprimir_titular,app/negocio/sql/0004_reglas_en_la_base.sql:153,test_adm_eliminar_datos_personales,T-37,pasó
+ADM,periodos,leer,—,matriz.json,"periodos, periodo",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+ADM,periodos,crear,—,matriz.json,crear_periodo,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+ADM,periodos,proponer,C14,politica/verdeazul/reglas.rego:149,proponer_periodo,app/negocio/sql/0004_reglas_en_la_base.sql:6,test_adm_proponer_periodos,"T-04, T-17, T-22",pasó
+ADM,cuentas,leer,—,matriz.json,"cuentas, cuenta",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+ADM,cuentas,crear,C12,politica/verdeazul/reglas.rego:132,crear_cuenta,app/negocio/sql/0004_reglas_en_la_base.sql:110,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-16,pasó
+ADM,cuentas,desactivar,C12,politica/verdeazul/reglas.rego:132,desactivar_cuenta,app/negocio/sql/0004_reglas_en_la_base.sql:110,test_adm_desactivar_cuentas,T-16,pasó
+ADM,cuentas,proponer,C12,politica/verdeazul/reglas.rego:132,proponer_rol,app/negocio/sql/0004_reglas_en_la_base.sql:110,test_adm_proponer_cuentas,T-16,pasó
+ADM,cuentas,modificar,C13,politica/verdeazul/reglas.rego:145,mis_vinculos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-35,pasó
+AUD,fincas,leer,C6,politica/verdeazul/reglas.rego:84,"fincas, finca",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,fincas,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_fincas,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+AUD,datos_personales,leer,C6,politica/verdeazul/reglas.rego:84,"titulares, titular",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,periodos,leer,C6,politica/verdeazul/reglas.rego:84,"periodos, periodo",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,periodos,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_periodos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+AUD,asignaciones,leer,C6,politica/verdeazul/reglas.rego:84,asignaciones,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,asignaciones,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_asignaciones,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+AUD,mediciones,leer,C6,politica/verdeazul/reglas.rego:84,"mediciones, medicion",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,mediciones,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_mediciones,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+AUD,enmiendas,leer,C6,politica/verdeazul/reglas.rego:84,"enmiendas, enmienda",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,enmiendas,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_enmiendas,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+AUD,certificados,leer,C6,politica/verdeazul/reglas.rego:84,"certificados, certificado, descargar_certificado",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,certificados,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_certificados,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+AUD,cuentas,leer,C6,politica/verdeazul/reglas.rego:84,"cuentas, cuenta",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,cuentas,modificar,C13,politica/verdeazul/reglas.rego:145,mis_vinculos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-35,pasó
+AUD,bitacora,leer,C6,politica/verdeazul/reglas.rego:84,bitacora,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,bitacora,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_bitacora,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+AUD,alertas,leer,C6,politica/verdeazul/reglas.rego:84,alertas,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-09,pasó
+AUD,alertas,exportar,C18,politica/verdeazul/reglas.rego:180,exportar_alertas,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-31,pasó
+DUE,fincas,leer,C5,politica/verdeazul/reglas.rego:72,"fincas, finca",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-08,pasó
+DUE,datos_personales,leer,C5,politica/verdeazul/reglas.rego:72,"titulares, titular",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-08,pasó
+DUE,periodos,leer,—,matriz.json,"periodos, periodo",—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,—,pasó
+DUE,asignaciones,leer,C5,politica/verdeazul/reglas.rego:72,asignaciones,app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-08,pasó
+DUE,mediciones,leer,C5,politica/verdeazul/reglas.rego:72,"mediciones, medicion",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-08,pasó
+DUE,enmiendas,leer,C5,politica/verdeazul/reglas.rego:72,"enmiendas, enmienda",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-08,pasó
+DUE,certificados,leer,C5,politica/verdeazul/reglas.rego:72,"certificados, certificado, descargar_certificado",app/negocio/sql/0003_seguridad_por_fila.sql:1; app/negocio/sql/0007_fecha_de_costa_rica.sql:1,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-08,pasó
+DUE,cuentas,modificar,C13,politica/verdeazul/reglas.rego:145,mis_vinculos,—,test_cada_rol_entra_a_lo_que_la_matriz_le_concede,T-35,pasó
+SIS,fincas,leer,—,matriz.json,emision/emitir.py (lee lo necesario para emitir con va_emision),—,test_emite_una_medicion_aprobada_con_contenido_firmado,—,pasó
+SIS,datos_personales,leer,—,matriz.json,emision/emitir.py (lee lo necesario para emitir con va_emision),—,test_emite_una_medicion_aprobada_con_contenido_firmado,—,pasó
+SIS,periodos,leer,—,matriz.json,emision/emitir.py (lee lo necesario para emitir con va_emision),—,test_emite_una_medicion_aprobada_con_contenido_firmado,—,pasó
+SIS,asignaciones,leer,—,matriz.json,emision/emitir.py (lee lo necesario para emitir con va_emision),—,test_emite_una_medicion_aprobada_con_contenido_firmado,—,pasó
+SIS,mediciones,leer,—,matriz.json,emision/emitir.py (lee lo necesario para emitir con va_emision),—,test_emite_una_medicion_aprobada_con_contenido_firmado,—,pasó
+SIS,enmiendas,leer,—,matriz.json,emision/emitir.py (lee lo necesario para emitir con va_emision),—,test_emite_una_medicion_aprobada_con_contenido_firmado,—,pasó
+SIS,certificados,emitir,C4,politica/verdeazul/reglas.rego:58,emision/emitir.py: emitir() (6.3),app/negocio/sql/0002_permisos.sql:24; app/negocio/sql/0006_certificados_y_trabajos.sql:1,test_emite_una_medicion_aprobada_con_contenido_firmado,"T-07, T-25",pasó
+SIS,certificados,revocar,C4,politica/verdeazul/reglas.rego:58,emision/emitir.py: reemitir() (6.5),app/negocio/sql/0002_permisos.sql:24; app/negocio/sql/0006_certificados_y_trabajos.sql:1,test_t25_una_enmienda_que_cambia_toneladas_revoca_y_reemite,"T-07, T-25",pasó
+SIS,bitacora,anexar,—,matriz.json,bitacora_anexar() en cada acción,—,test_la_cadena_de_la_semilla_esta_integra,—,pasó
+SIS,alertas,crear,—,matriz.json,autorizacion/historial.py: alertar() (alertas de H1 a H3),—,test_t18_h1_mas_fincas_que_el_umbral_pide_segundo_factor_y_motivo,—,pasó
+PUB,certificados,comprobar,C20,politica/verdeazul/reglas.rego:193,publico/servicio.py: /comprobar (6.7),app/negocio/sql/0006_certificados_y_trabajos.sql:2,test_un_codigo_vigente,T-32,pasó
