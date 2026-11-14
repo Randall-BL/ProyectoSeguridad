@@ -697,10 +697,19 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   - T-41: con OPA detenido, cualquier rol pide cualquier acción. Se frena con 503, no se ejecuta nada
     y queda en la bitácora (K-3).
   - 12-nov: `flujos.tests.CasosDeLaParte1`, con el motor real, cubre T-01, T-02, T-03, T-05, T-06, T-08, T-10, T-15, T-16, T-22, T-27, T-28, T-29, T-31, T-35, T-36, T-37, T-38 y T-40; T-41 está en nucleo y autorizacion. En Rego ya pasan T-01 a T-39. Faltan de punta a punta los demás.
+  - 13-nov: `flujos.tests_casos` agrega T-04, T-11, T-12, T-13, T-14, T-17, T-23, T-24, T-30 y T-39 por las rutas
+    con el motor real; T-07, T-25 y T-32 están en `flujos.tests_certificados` (contra la base con `va_emision`
+    y `va_publico`) y T-25 además de punta a punta, de la enmienda a la reemisión; T-09 en `cuentas.tests` y
+    en el trabajo diario. De punta a punta faltan T-18, T-19, T-33 y T-34 (controles de historial, que piden
+    simular muchas lecturas o la hora), T-20 (OPE no tiene cuenta), T-21 y T-26; los siete pasan en Rego.
 - [x] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
   - Cubierto en `politica/verdeazul/decision_test.rego`: toda combinación fuera de la matriz se deniega, y las 38 celdas vacías están contadas.
 - [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.
   - 12-nov: `flujos.tests.CadaPermisoTieneRuta` exige una ruta protegida para cada permiso de los siete roles de la aplicación. Falta el caso feliz uno por uno.
+  - 13-nov: `flujos.tests_casos.CasoFelizPorPermiso` se genera desde `matriz.json`: con cada rol, cada pantalla
+    sin objeto que la matriz le concede (listas, formularios de alta, exportaciones) responde 200 con el motor
+    real. Cubre 68 permisos; las acciones sobre un objeto tienen su caso feliz en los T-xx (aprobar,
+    corregir, revisar, autorizar, asignar, cerrar, resolver, suprimir…).
 - [ ] 8.4 Las mismas pruebas contra OPA (`opa test`) y contra la base (seguridad por fila y
   restricciones): las dos copias de la regla no pueden divergir (RR-10).
 - [ ] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una
