@@ -94,6 +94,8 @@ datos cargados dejan listos los casos de la matriz. `docker compose down -v` bor
 
 **URL pública:** https://verdeazul-app-708901712393.us-east1.run.app
 
+**Comprobación pública de certificados:** https://verdeazul-publico-708901712393.us-east1.run.app
+
 Proyecto de Google Cloud `verdeazul-ce1115-g6`, región `us-east1`. Base de datos en Neon, proyecto
 `verdeazul`. Hace falta gcloud con sesión en una cuenta con acceso al proyecto, y Git Bash o Cloud
 Shell para correr los scripts.
@@ -108,9 +110,12 @@ sh infra/crear-secretos.sh   # secretos, un usuario de base por componente y la 
 **Cada versión:**
 
 1. Commit y push (a `main` o a la rama `development-<nombre>`).
-2. `sh infra/publicar.sh app vX.Y.Z`: Cloud Build construye la imagen y la publica como
-   `app:vX.Y.Z` y `app:git-<commit>`, y pone la etiqueta `vX.Y.Z` en git, en el mismo commit.
-3. `sh infra/desplegar.sh app vX.Y.Z`: aplica `infra/app.service.yaml` con esa imagen.
+2. `sh infra/publicar.sh <componente> vX.Y.Z` para `app`, `politica`, `emision`, `publico` y `trabajos`:
+   Cloud Build construye la imagen y la publica como `<componente>:vX.Y.Z` y `<componente>:git-<commit>`,
+   y pone la etiqueta `vX.Y.Z` en git, en el mismo commit. Las cinco salen del mismo commit.
+3. `sh infra/desplegar.sh <componente> vX.Y.Z`, en este orden: `emision`, `publico`, `trabajos` y `app`
+   (que lleva `politica` como contenedor auxiliar). Aplica `infra/<componente>.service.yaml`; para
+   `trabajos`, `infra/trabajos.job.yaml` y el disparador diario de Cloud Scheduler.
 
 **Volver a una versión anterior:** `sh infra/desplegar.sh app vX.Y.Z` con la versión a la que se
 quiere volver. El registro conserva las últimas cinco versiones de cada imagen y todas las `v1.x`.
@@ -156,3 +161,4 @@ Cada etiqueta de git corresponde a la imagen con la misma etiqueta en
 | `v0.1.0` | `6a0a1f8` | 2026-11-06 | «Hola»: Django por HTTPS en Cloud Run, que lee Neon con la cadena de Secret Manager; imagen sin root |
 | `v0.2.0` | `383da2f` (`app`), `7b5df6e` (`politica`) | 2026-11-12 | Base con seguridad por fila y bitácora encadenada, Argon2id y TOTP obligatorio, sesión revocable, OPA como contenedor auxiliar que decide cada petición y frena todo si no responde (T-41), interfaz nueva. La imagen de la política salió de `7b5df6e`, que solo cambia `.gcloudignore`: los archivos de la política son los mismos de `383da2f` |
 | `v0.3.0` | `c8d05be` | 2026-11-12 | Los flujos de la fase 5 con una ruta protegida por cada permiso de los siete roles: catálogo, períodos, asignaciones, mediciones, enmiendas, cuentas, datos personales, alertas, bitácora y exportación del auditor. Corrige la seguridad por fila que impedía a un técnico registrar mediciones |
+| `v0.4.0` | `c9bc8a4` | 2026-11-13 | Certificados: el servicio privado de emisión firma con Ed25519, revoca y reemite cuando una enmienda cambia las toneladas, y sella los paquetes del auditor; comprobación pública por archivo y por código; verificador sin conexión. Trabajo diario con Cloud Scheduler: vencimientos, escalamiento de alertas, emisiones pendientes, verificación de la cadena y testigo RFC 3161. Las cinco imágenes (`app`, `politica`, `emision`, `publico`, `trabajos`) salen del mismo commit |
