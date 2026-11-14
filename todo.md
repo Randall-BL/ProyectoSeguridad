@@ -732,9 +732,14 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     `current_date` (UTC) y el motor la fecha de Costa Rica, así que de 18:00 a medianoche una temporal que
     vence hoy desaparecía en la base y no en el motor. Corregido en `negocio/sql/0007`; la prueba usa dos
     zonas horarias extremas para fallar a cualquier hora con el código viejo (comprobado).
-- [ ] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una
+- [x] 8.5 Pruebas de sistema: el motor caído frena todo (T-41, también con OPA lento y con una
   respuesta inválida); con la bitácora sin poder escribir, la operación se rechaza; un registro
   alterado rompe la cadena.
+  - 14-nov: el motor apagado, lento, con error, con algo que no es JSON, sin decisión o con un resultado
+    inventado están en `autorizacion.tests.FalloCerrado` (T-41). `bitacora.tests` agrega: con la bitácora sin
+    poder escribir, una aprobación no ocurre ni deja nada; nadie, ni el dueño, modifica, borra o vacía un
+    registro; y un registro alterado (desactivando antes el disparador, que exige ser dueño) lo delatan
+    `bitacora_verificar()`, la pantalla de GER y AUD y el trabajo diario, que termina con error.
 - [ ] 8.6 Cambio de identificador con cada rol (IDOR), a mano o con OWASP ZAP (criterio de aceptación 3).
 - [ ] 8.7 Generar la tabla de cobertura del informe a partir de `matriz.json` y del resultado de las
   pruebas: permiso, dónde está (regla Rego, vista, restricción de base) y qué prueba lo comprueba.
