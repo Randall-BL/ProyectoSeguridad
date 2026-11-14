@@ -688,7 +688,7 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 ## 8 · Pruebas de la matriz (continuo; cerrar el 15 nov)
 
-- [ ] 8.1 Los 37 casos T-01 a T-37 como pruebas automáticas, con el mismo identificador, más los
+- [x] 8.1 Los 37 casos T-01 a T-37 como pruebas automáticas, con el mismo identificador, más los
   cuatro de los cambios K-1 a K-3:
   - T-38: SUP intenta dar a un técnico con 20 asignaciones activas la número 21. Deniega (K-1, C19).
   - T-39: el técnico tiene 20 asignaciones, una temporal vence y SUP crea otra. Concede: las vencidas
@@ -704,6 +704,12 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     y `va_publico`) y T-25 además de punta a punta, de la enmienda a la reemisión; T-09 en `cuentas.tests` y
     en el trabajo diario. De punta a punta faltan T-18, T-19, T-33 y T-34 (controles de historial, que piden
     simular muchas lecturas o la hora), T-20 (OPE no tiene cuenta), T-21 y T-26; los siete pasan en Rego.
+  - 14-nov: completos los 41. `flujos.tests_casos` agrega T-18, T-19, T-21, T-26, T-33 y T-34; los de historial
+    ajustan los umbrales y la jornada en `ParametroRol` (los aprueba GER) en vez de cargar 60 lecturas o
+    depender de la hora. T-20 está en `cuentas.tests`. T-33 no estaba implementado: después de confirmar un H3
+    la política volvía a pedir motivo en vez de restringir. Ahora el hecho `h3_confirmada`
+    (`autorizacion/sql/0003`) y la regla `h3_repetida` restringen las fincas nuevas; prueba nueva en Rego
+    (71/71). Hay que publicar `politica` y `app` en la próxima versión.
 - [x] 8.2 Una prueba por cada una de las **38 celdas denegadas** (lo pide la Parte 1, §7).
   - Cubierto en `politica/verdeazul/decision_test.rego`: toda combinación fuera de la matriz se deniega, y las 38 celdas vacías están contadas.
 - [ ] 8.3 Una prueba por cada uno de los **102 permisos** concedidos: el caso feliz.

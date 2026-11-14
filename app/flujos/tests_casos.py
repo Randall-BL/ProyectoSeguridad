@@ -24,7 +24,19 @@ from django.utils import timezone
 from cuentas.models import Usuario
 from flujos.tests import MATRIZ, MOTIVO, _opa_disponible, _rutas
 from flujos.tests_certificados import como, emitir
-from negocio.models import Asignacion, Certificado, Enmienda, Finca, Medicion, Parcela, Periodo, PropuestaPeriodo
+from negocio.models import (
+    Alerta,
+    Asignacion,
+    Certificado,
+    Enmienda,
+    EventoLectura,
+    Finca,
+    Medicion,
+    ParametroRol,
+    Parcela,
+    Periodo,
+    PropuestaPeriodo,
+)
 
 if emitir is not None:
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -180,6 +192,115 @@ class CasosQueFaltaban(ConPersonajes):
         self._como("tec.ana", "TEC")
         respuesta = self.client.get(reverse("modificar_medicion", args=[borrador.pk]))
         self.assertIn(respuesta.status_code, (403, 404))  # C2; tras el cierre, A ya no tiene F-001 (C1)
+
+    def _cerrar_2026_ii(self):
+        self._como("adm.alberto", "ADM")
+        periodo = Periodo.objects.get(nombre="2026-II")
+        self.client.post(reverse("proponer_periodo", args=[periodo.pk]), {**MOTIVO, "accion": "cerrar"})
+        registro = PropuestaPeriodo.objects.get(periodo=periodo, accion="cerrar", estado="propuesto")
+        self._como("ger.gerardo", "GER")
+        self.client.post(reverse("cerrar_periodo", args=[registro.pk]), MOTIVO)
+        self.assertEqual(Periodo.objects.get(pk=periodo.pk).estado, "cerrado")
+
+    def test_t21_lo_devuelto_no_se_modifica_despues_del_cierre_procede_una_enmienda(self):
+        self._como("ver.diego", "VER")
+        m = self._medicion("F-001", "P-1", "2026-II")
+        self.client.post(reverse("devolver_medicion", args=[m.pk]), {**MOTIVO, "observaciones": "Revise el DAP"})
+        self.assertEqual(Medicion.objects.get(pk=m.pk).estado, "devuelta")
+        self._cerrar_2026_ii()
+        versiones = m.versiones.count()
+        self._como("tec.ana", "TEC")
+        v = m.version_vigente
+        respuesta = self.client.post(reverse("modificar_medicion", args=[m.pk]), {
+            **MOTIVO, "fecha_medicion": v.fecha_medicion.isoformat(), "arboles": v.arboles,
+            "dap_promedio_cm": v.dap_promedio_cm, "altura_promedio_m": v.altura_promedio_m, "toneladas_co2": "1.000"})
+        self.assertIn(respuesta.status_code, (403, 404))  # C2; tras el cierre, A ya no tiene F-001 (C1)
+        self.assertEqual(m.versiones.count(), versiones)
+        # Lo que procede es una enmienda (C7): lo devuelto con el período cerrado sí se puede enmendar.
+        e = self._solicitar("ger.gabriela", "GER", medicion=m)
+        self.assertEqual(e.estado, "solicitada")
+
+    def test_t26_con_habilitacion_registra_y_en_otra_sesion_no_aprueba(self):
+        carla = Usuario.objects.get(username="ver.carla")
+        self._como("sup.sofia", "SUP")
+        f025 = Finca.objects.get(codigo="F-025")
+        self.assertEqual(self.client.post(reverse("crear_asignacion"), {
+            **MOTIVO, "tecnico": carla.pk, "finca": f025.pk, "periodo": Periodo.objects.get(nombre="2026-II").pk,
+            "tipo": "ordinaria"}).status_code, 302)
+        self._como("ver.carla", "TEC")  # con la habilitación de técnica
+        parcela = Parcela.objects.get(finca=f025, codigo="P-1", activa=True)
+        self.assertEqual(self.client.post(reverse("nueva_medicion", args=[parcela.pk]), {
+            "fecha_medicion": timezone.localdate().isoformat(), "arboles": 90, "dap_promedio_cm": "18.0",
+            "altura_promedio_m": "11.0", "toneladas_co2": "30.000"}).status_code, 302)
+        m = Medicion.objects.get(parcela=parcela, creada_por=carla)
+        self.assertEqual(self.client.post(reverse("enviar_medicion", args=[m.pk]), MOTIVO).status_code, 302)
+        self._como("ver.carla", "VER")  # otra sesión, ya como verificadora
+        respuesta = self.client.post(reverse("aprobar_medicion", args=[m.pk]), MOTIVO)
+        self.assertEqual(respuesta.status_code, 403)
+        self.assertEqual(self._regla(respuesta), "C3")
+        self.assertEqual(Medicion.objects.get(pk=m.pk).estado, "enviada")
+
+    # H1, H2, H3: controles de historial ----------------------------------------------------------------
+    # Los umbrales y la jornada son parámetros que aprueba GER (P-02, ParametroRol): se ajustan para que
+    # el caso no dependa de cargar 60 lecturas ni de la hora en que corra la prueba.
+
+    def _parametros_ver(self, **valores):
+        hoy = timezone.localdate().isoweekday()
+        base = {"h1_aviso": 40, "h1_verificacion": 60, "h1_restriccion": 80, "h3_fincas_hora": 10,
+                "dias_laborales": "12345"}
+        if valores.pop("hoy_no_laboral", False):
+            base["dias_laborales"] = "".join(str(d) for d in range(1, 8) if d != hoy)
+        ParametroRol.objects.update_or_create(rol="VER", defaults={**base, **valores})
+
+    def _lecturas(self, usuario, *codigos):
+        for codigo in codigos:
+            EventoLectura.objects.create(usuario=usuario, finca=Finca.objects.get(codigo=codigo))
+
+    def _alerta(self, persona, control, nivel):
+        return Alerta.objects.filter(sujeto=persona, control=control, nivel=nivel).exists()
+
+    def test_t18_h1_mas_fincas_que_el_umbral_pide_segundo_factor_y_motivo(self):
+        self._parametros_ver(h1_aviso=2, h1_verificacion=3, h1_restriccion=50)
+        bruno = self._como("ver.bruno", "VER")
+        self._lecturas(bruno, "F-010", "F-011", "F-012", "F-013")
+        f001 = Finca.objects.get(codigo="F-001")
+        respuesta = self.client.get(reverse("finca", args=[f001.pk]))
+        self.assertTemplateUsed(respuesta, "autorizacion/motivo.html")
+        self.assertEqual(self._regla(respuesta), "H1")
+        respuesta = self.client.get(reverse("finca", args=[f001.pk]), {"motivo": "Revisión del lote de la semana"})
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTrue(self._alerta(bruno, "H1", "verificacion"))
+
+    def test_t19_t33_h3_fuera_de_jornada_confirma_y_despues_se_restringe(self):
+        self._parametros_ver(h3_fincas_hora=3, hoy_no_laboral=True)
+        bruno = self._como("ver.bruno", "VER")
+        self._lecturas(bruno, "F-010", "F-011", "F-012", "F-013")  # cuatro fincas nuevas en la última hora
+        # T-19: la siguiente finca nueva pide segundo factor y motivo, y avisa a GER.
+        f014 = Finca.objects.get(codigo="F-014")
+        self.assertTemplateUsed(self.client.get(reverse("finca", args=[f014.pk])), "autorizacion/motivo.html")
+        respuesta = self.client.get(reverse("finca", args=[f014.pk]), {"motivo": "Cierre de revisión del lote"})
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTrue(self._alerta(bruno, "H3", "verificacion"))
+        # T-33: después de confirmar, otra finca nueva se restringe y avisa.
+        f015 = Finca.objects.get(codigo="F-015")
+        respuesta = self.client.get(reverse("finca", args=[f015.pk]), {"motivo": "Sigo con el lote"})
+        self.assertEqual(respuesta.status_code, 403)
+        self.assertTrue(self._alerta(bruno, "H3", "restriccion"))
+        # Una que ya había consultado vuelve a pedir motivo; no se restringe.
+        f010 = Finca.objects.get(codigo="F-010")
+        self.assertTemplateUsed(self.client.get(reverse("finca", args=[f010.pk])), "autorizacion/motivo.html")
+
+    def test_t34_h2_aprobar_fuera_de_la_jornada_pide_motivo(self):
+        self._parametros_ver(hoy_no_laboral=True)
+        diego = self._como("ver.diego", "VER")
+        m = self._medicion("F-001", "P-1", "2026-II")
+        respuesta = self.client.post(reverse("aprobar_medicion", args=[m.pk]))
+        self.assertTemplateUsed(respuesta, "autorizacion/motivo.html")
+        self.assertEqual(self._regla(respuesta), "H2")
+        self.assertEqual(Medicion.objects.get(pk=m.pk).estado, "enviada")
+        self.assertEqual(self.client.post(reverse("aprobar_medicion", args=[m.pk]), MOTIVO).status_code, 302)
+        self.assertEqual(Medicion.objects.get(pk=m.pk).estado, "aprobada")
+        self.assertTrue(self._alerta(diego, "H2", "verificacion"))
 
     # C19, K-1 ----------------------------------------------------------------------------------------
 
