@@ -1,7 +1,7 @@
 # Imagen del motor de decisión, el componente «Motor de decisión (OPA)» de la Parte 1: la imagen
 # oficial de OPA, fijada por huella, con la política adentro. La variante -static no tiene shell ni
 # gestor de paquetes. Se construye desde la raíz del repositorio: docker build -f politica/Dockerfile .
-FROM openpolicyagent/opa:1.22.3-static@sha256:a6ccb6e0cc91b2d1807b1b65a844b189249b9ab33d126e0bca30c0cf43b0ae07
+FROM openpolicyagent/opa:1.22.4-static@sha256:12cecac5a174368f7d3f09d3a19d040ebe0c91d576e520335ae7a985a26e39d3
 
 ARG APP_VERSION=local
 ARG APP_COMMIT=""
