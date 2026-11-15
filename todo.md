@@ -816,6 +816,21 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   - 15-nov: `v1.0.0` desde `99067dc`, las cinco imágenes y la etiqueta de git. Neon main migrada (negocio 0007,
     autorizacion 0003). Desplegada: `verdeazul-app-00006`, `verdeazul-emision-00002`, `verdeazul-publico-00002` y el
     trabajo; su ejecución de prueba terminó bien. Fila en «Versiones publicadas» del README.
+- [ ] 9.7 Revisar e integrar las actualizaciones que Dependabot propuso el 14 y el 15 de noviembre (PRs #7,
+  #8, #11 y #12), y publicarlas como `v1.0.1` antes de la presentación.
+  - 15-nov, revisión: los cuatro pasan el CI y no chocan con main. Ninguna corrección de seguridad aplica a la
+    configuración de Verdeazul:
+    - allauth 65.22.0 trae diez correcciones (login social, proveedor de identidad, WebAuthn, tolerancia TOTP,
+      caché de los códigos de recuperación), pero aquí no hay login social ni WebAuthn, la tolerancia TOTP es 0
+      y toda página HTML ya va con `no-store`.
+    - OPA 1.22.4 corrige CVE-2026-97054, una caída del servidor HTTP de Go; el motor solo escucha a la
+      aplicación dentro de la instancia. No corrige CVE-2026-78661, que sigue en `politica/.trivyignore`.
+    - gunicorn 27 no impide arrancar, y psycopg 3.3.9 solo trae correcciones; los otros tres servicios ya
+      usaban esas versiones.
+    - Hallazgo aparte: la aplicación `v1.0.0` registraba `[ERROR] Control server error` en cada arranque, porque
+      gunicorn intenta crear su socket de control en una carpeta personal que no existe.
+  - Se integran con versiones algo más nuevas que las de Dependabot: allauth 65.22.1 y gunicorn 27.0.1, con
+    `infra/fijar-dependencias.sh` para no cambiar el formato del archivo.
 
 ---
 
