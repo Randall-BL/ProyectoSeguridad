@@ -862,8 +862,9 @@ En LaTeX, con la misma plantilla de los entregables de la Parte 1. Capturas en `
   haciendo lo suyo; un intento prohibido rechazado; emisión, verificación y certificado alterado que
   falla; la bitácora con esas acciones; la configuración de secretos y de Dependabot.
   - 15-nov: `docs/presentacion/guion.md`: minuto a minuto con los seis puntos, quién presenta cada uno y la preparación.
-- [ ] 11.2 El intento prohibido, enviado **sin la interfaz** (curl o las herramientas del navegador con
+- [x] 11.2 El intento prohibido, enviado **sin la interfaz** (curl o las herramientas del navegador con
   la cookie de un técnico que pide aprobar su propia medición): demuestra que decide el servidor.
+  - 15-nov: `infra/demo/intento-prohibido.sh`: con las cookies de sesión y CSRF del navegador, envía el POST que la interfaz no ofrece; distingue un 403 de la regla de una falla de CSRF.
 - [x] 11.3 Recorrido de casos en vivo con los personajes de la matriz (T-05, T-06, T-25, T-32…).
   - 15-nov: «Recorrido de los roles» del guion (T-05, T-08, T-16, T-28, T-38) y T-24, T-25 y T-32 en vivo con una enmienda preparada la noche anterior hasta «revisada».
 - [ ] 11.4 Calentar las instancias antes de presentar (Cloud Run y Neon se suspenden sin uso y la
