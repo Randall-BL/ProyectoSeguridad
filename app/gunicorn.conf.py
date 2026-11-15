@@ -7,3 +7,6 @@ workers = 1
 threads = 8
 timeout = 0
 accesslog = "-"
+# Sin la interfaz de control de gunicorn: el usuario del contenedor no tiene carpeta personal, y
+# nadie administra el proceso desde dentro. Sin esto, cada arranque deja un «Control server error».
+control_socket_disable = True
