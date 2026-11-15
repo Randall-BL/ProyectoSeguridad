@@ -38,9 +38,9 @@ Verdeazul Carbono es una aplicación web para gestionar información de **fincas
 | Quiero… | Ir a… |
 |---|---|
 | Abrir el sistema desplegado | [Aplicación pública en Cloud Run](https://verdeazul-app-708901712393.us-east1.run.app) |
-| Entender dónde está cada función | [Guía de carpetas](#-guía-de-carpetas-y-archivos) |
-| Conocer las herramientas y su propósito | [Tecnologías](#-tecnologías-qué-hace-cada-una) |
-| Consultar Versiones de Verdeazul | [Despliegue y versiones](#-despliegue-en-google-cloud) |
+| Entender dónde está cada función | [Guía de carpetas](#guía-de-carpetas-y-archivos) |
+| Conocer las herramientas y su propósito | [Tecnologías](#tecnologías-qué-hace-cada-una) |
+| Consultar versiones de Verdeazul | [Despliegue y versiones](#despliegue-en-google-cloud) |
 | Consultar la matriz y los documentos de diseño | [Parte 1: diseño original](https://github.com/Randall-BL/CE1115-Proyecto-P1-Verdeazul) |
 
 ##  ¿Qué permite hacer el sistema?
