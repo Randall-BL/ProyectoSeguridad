@@ -28,7 +28,7 @@ Artifact Registry son la misma, y se anota en «Versiones publicadas» del READM
 | 2 · Base, identidad y motor | 9–11 nov | 2, 3, 4 | `v0.2.0` | Usuarios de base, seguridad por fila, bitácora encadenada, Argon2id y TOTP; OPA como sidecar decidiendo; OPA caído frena todo (T-41) |
 | 3 · Flujos y matriz completa | 11–13 nov | 5, y 8.1 a 8.4 a la par | `v0.3.0` | Los 102 permisos se ejercitan desde la interfaz; T-01 a T-40 pasan |
 | 4 · Certificados y trabajos | 13–15 nov | 6, 7 | `v0.4.0` | Emitir, verificar, el alterado falla, comprobación pública, verificador de consola, trabajos programados **Hecho el 13-nov:** `v0.4.0` desplegada desde `c9bc8a4`; el trabajo diario ya emitió y selló en Cloud Run |
-| 5 · Endurecimiento | 16–17 nov | 9, y 8.5 a 8.9 | **`v1.0.0`** | Trivy, ZAP, gitleaks sobre la historia, alerta de Dependabot atendida, tabla de cobertura |
+| 5 · Endurecimiento | 16–17 nov | 9, y 8.5 a 8.9 | **`v1.0.0`** | Trivy, ZAP, gitleaks sobre la historia, alerta de Dependabot atendida, tabla de cobertura **Hecho el 15-nov:** `v1.0.0` desplegada desde `99067dc` |
 | 6 · Informe y defensa | 17–19 nov | 10, 11 | — | Informe, capturas, anexo de credenciales fuera del repo, ensayo, prueba desde otra red |
 
 ---
@@ -774,8 +774,11 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 ## 9 · Endurecimiento e higiene (meta: 16 nov)
 
-- [ ] 9.1 ⚠ Las cinco imágenes (`app`, `opa`, `emision`, `publico`, `trabajos`) sin root, fijadas por
+- [x] 9.1 ⚠ Las cinco imágenes (`app`, `opa`, `emision`, `publico`, `trabajos`) sin root, fijadas por
   huella, analizadas con Trivy y publicadas con versión. Cloud Run despliega por etiqueta de versión.
+  - 15-nov: las cinco corren sin root (`USER 10001`; OPA, `1000`), con la base fijada por huella, sin pip, con
+    los parches de Debian, y pasan Trivy en el CI. Publicadas como `v1.0.0` y `git-99067dc`; los YAML de Cloud
+    Run despliegan por etiqueta de versión.
 - [x] 9.2 Atender al menos una alerta de Dependabot y documentarla: qué paquete, qué vulnerabilidad, qué
   versión se subió, en qué commit y en qué etiqueta de imagen quedó. Si no aparece ninguna, documentar
   una actualización de versión que haya propuesto y cómo se revisó.
@@ -801,8 +804,11 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     tiene permisos sobre recursos concretos (sus secretos, el servicio que invoca), cada secreto un único lector,
     y nadie puede actuar como ninguna cuenta de servicio. Falta invitar a los otros tres (con `viewer`), que es
     acción del dueño.
-- [ ] 9.6 Etiqueta final `v1.0.0` de las cinco imágenes y de git en el mismo commit. Anotar la tabla de
+- [x] 9.6 Etiqueta final `v1.0.0` de las cinco imágenes y de git en el mismo commit. Anotar la tabla de
   versiones en el README.
+  - 15-nov: `v1.0.0` desde `99067dc`, las cinco imágenes y la etiqueta de git. Neon main migrada (negocio 0007,
+    autorizacion 0003). Desplegada: `verdeazul-app-00006`, `verdeazul-emision-00002`, `verdeazul-publico-00002` y el
+    trabajo; su ejecución de prueba terminó bien. Fila en «Versiones publicadas» del README.
 
 ---
 
