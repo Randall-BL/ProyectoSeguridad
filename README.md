@@ -19,6 +19,7 @@ están en [Randall-BL/CE1115-Proyecto-P1-Verdeazul](https://github.com/Randall-B
 | `trabajos/` | Trabajos programados | Sprint 4 |
 | `verificador/` | Formato del certificado y verificador sin conexión | Sprint 4 |
 | `infra/` | Scripts de Google Cloud, Cloud Build y Cloud Run (sin secretos) | Sprint 1 |
+| `docs/` | [Informe](docs/informe/P2_Informe_grupo6.pdf), [cobertura de la matriz](docs/cobertura.md), [escaneos](docs/escaneos.md), [IAM](docs/iam.md), [evidencia](docs/evidencia/), [demostración de certificados](docs/demostracion/LEEME.md) y [guion de la presentación](docs/presentacion/guion.md) | Entrega |
 
 ## Configuración del repositorio (una vez por clon)
 
