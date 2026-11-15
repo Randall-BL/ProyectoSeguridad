@@ -1,0 +1,16 @@
+$ python verificador/verificar.py docs/demostracion/certificado-valido.json
+Clave de Verdeazul: 5fb2e24fa692518552f64842ecdaa94af05f6b87d035f66efaa0513a1b166d0f
+  Forma de certificado: sí
+  Firma correcta: sí
+  Clave de Verdeazul: sí
+VÁLIDO: La firma es de Verdeazul y el contenido no fue modificado.
+(sale con 0)
+
+$ python verificador/verificar.py docs/demostracion/certificado-alterado.json
+Clave de Verdeazul: 5fb2e24fa692518552f64842ecdaa94af05f6b87d035f66efaa0513a1b166d0f
+  Forma de certificado: sí
+  Firma correcta: no
+  Clave de Verdeazul: no
+NO VÁLIDO: La firma no corresponde al contenido: el certificado fue modificado o la firma es falsa.
+(sale con 1)
+
