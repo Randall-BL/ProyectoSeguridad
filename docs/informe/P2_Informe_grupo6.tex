@@ -139,7 +139,7 @@ abre desde internet por HTTPS:
 Aplicación (siete roles) & \url{https://verdeazul-app-708901712393.us-east1.run.app} \\
 Comprobación pública de certificados & \url{https://verdeazul-publico-708901712393.us-east1.run.app} \\
 Repositorio (público) & \url{https://github.com/Randall-BL/ProyectoSeguridad} \\
-Versión desplegada & \cod{v1.0.0}: las cinco imágenes y la etiqueta de git salen del mismo commit \\
+Versión desplegada & \cod{v1.0.1}: las cinco imágenes y la etiqueta de git salen del mismo commit \\
 Credenciales de prueba & Anexo para el profesor, entregado aparte (nunca en el repositorio) \\
 \bottomrule
 \end{tabularx}
@@ -148,7 +148,7 @@ Credenciales de prueba & Anexo para el profesor, entregado aparte (nunca en el r
 Implementamos la matriz completa de la Parte 1: los 102 permisos concedidos de los diez roles y las 38
 celdas denegadas, con las reglas C1 a C20 y los controles de historial H1 a H4. Construimos en cuatro
 sprints, cada uno desplegado en la nube antes de seguir (\cod{v0.1.0} el 6 de noviembre, solo
-«hola»; \cod{v0.2.0} a \cod{v0.4.0}; \cod{v1.0.0} el 15). El \cod{README} explica cómo desplegar y
+«hola»; \cod{v0.2.0} a \cod{v0.4.0}; \cod{v1.0.0} y \cod{v1.0.1} el 15). El \cod{README} explica cómo desplegar y
 lista cada versión publicada.
 
 %=====================================================================
@@ -169,7 +169,7 @@ son las del documento de arquitectura.
   flecha/.style={-{Stealth[length=1.8mm]},thick},
   fr/.style={font=\scriptsize\bfseries,fill=white,inner sep=1pt}]
   % fila de arriba: de dónde llegan la imagen, la política y los secretos
-  \node[caja=2.4cm] (ar)  at (3.0,3.0) {Artifact Registry\\5 imágenes \texttt{v1.0.0}};
+  \node[caja=2.4cm] (ar)  at (3.0,3.0) {Artifact Registry\\5 imágenes \texttt{v1.0.1}};
   \node[caja=2.6cm] (opa) at (6.6,3.0) {\textbf{politica} (OPA)\\solo \texttt{localhost:8181}};
   \node[caja=2.6cm] (sm)  at (10.6,3.0) {\textbf{Secret Manager}\\un lector por secreto};
   % servicios
@@ -478,7 +478,7 @@ Las pruebas encontraron tres fallos reales, que corregimos antes de la versión 
 
 Generada con \arch{infra/cobertura.py}. «Pantalla» quiere decir que la prueba entra con ese rol a la
 ruta que lo ejerce; «objeto», que hay una prueba propia que hace la acción y comprueba el cambio. Todas
-pasaron en la corrida del CI de la versión \cod{v1.0.0}.
+pasaron en las corridas del CI de \cod{v1.0.0} y de \cod{v1.0.1}.
 
 \input{tabla-cobertura.tex}
 
