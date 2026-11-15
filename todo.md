@@ -28,7 +28,7 @@ Artifact Registry son la misma, y se anota en «Versiones publicadas» del READM
 | 2 · Base, identidad y motor | 9–11 nov | 2, 3, 4 | `v0.2.0` | Usuarios de base, seguridad por fila, bitácora encadenada, Argon2id y TOTP; OPA como sidecar decidiendo; OPA caído frena todo (T-41) |
 | 3 · Flujos y matriz completa | 11–13 nov | 5, y 8.1 a 8.4 a la par | `v0.3.0` | Los 102 permisos se ejercitan desde la interfaz; T-01 a T-40 pasan |
 | 4 · Certificados y trabajos | 13–15 nov | 6, 7 | `v0.4.0` | Emitir, verificar, el alterado falla, comprobación pública, verificador de consola, trabajos programados **Hecho el 13-nov:** `v0.4.0` desplegada desde `c9bc8a4`; el trabajo diario ya emitió y selló en Cloud Run |
-| 5 · Endurecimiento | 16–17 nov | 9, y 8.5 a 8.9 | **`v1.0.0`** | Trivy, ZAP, gitleaks sobre la historia, alerta de Dependabot atendida, tabla de cobertura **Hecho el 15-nov:** `v1.0.0` desplegada desde `99067dc` |
+| 5 · Endurecimiento | 16–17 nov | 9, y 8.5 a 8.9 | **`v1.0.0`** | Trivy, ZAP, gitleaks sobre la historia, alerta de Dependabot atendida, tabla de cobertura **Hecho el 15-nov:** `v1.0.0` desplegada desde `99067dc`, y `v1.0.1` (Dependabot, 9.7) desde `696e76b` |
 | 6 · Informe y defensa | 17–19 nov | 10, 11 | — | Informe, capturas, anexo de credenciales fuera del repo, ensayo, prueba desde otra red **Informe listo el 15-nov** (`docs/informe/`); falta el ensayo y la prueba desde otra red |
 
 ---
@@ -816,7 +816,7 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
   - 15-nov: `v1.0.0` desde `99067dc`, las cinco imágenes y la etiqueta de git. Neon main migrada (negocio 0007,
     autorizacion 0003). Desplegada: `verdeazul-app-00006`, `verdeazul-emision-00002`, `verdeazul-publico-00002` y el
     trabajo; su ejecución de prueba terminó bien. Fila en «Versiones publicadas» del README.
-- [ ] 9.7 Revisar e integrar las actualizaciones que Dependabot propuso el 14 y el 15 de noviembre (PRs #7,
+- [x] 9.7 Revisar e integrar las actualizaciones que Dependabot propuso el 14 y el 15 de noviembre (PRs #7,
   #8, #11 y #12), y publicarlas como `v1.0.1` antes de la presentación.
   - 15-nov, revisión: los cuatro pasan el CI y no chocan con main. Ninguna corrección de seguridad aplica a la
     configuración de Verdeazul:
@@ -831,6 +831,17 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
       gunicorn intenta crear su socket de control en una carpeta personal que no existe.
   - Se integran con versiones algo más nuevas que las de Dependabot: allauth 65.22.1 y gunicorn 27.0.1, con
     `infra/fijar-dependencias.sh` para no cambiar el formato del archivo.
+  - 15-nov:
+    - `v1.0.1` desde `696e76b`, con el CI verde: las cinco imágenes y la etiqueta de git.
+    - Desplegada: `verdeazul-app-00007`, `verdeazul-emision-00003`, `verdeazul-publico-00003` y el trabajo.
+    - Comprobado en la nube:
+      - la portada dice `v1.0.1`, con las cabeceras de 9.4 y la redirección a HTTPS;
+      - el servicio público da por vigente `VA-2026-I-QXWJWM9G`;
+      - la emisión sigue cerrada: 403 sin token y 403 a `/emitir` con la cuenta del dueño;
+      - el motor 1.22.4 pasó su sonda de arranque;
+      - una ejecución del trabajo terminó bien;
+      - el arranque de la aplicación ya no registra el error del socket de control (gunicorn 27.0.1).
+    - Los PRs #7, #8, #11 y #12 se cierran como reemplazados.
 
 ---
 
