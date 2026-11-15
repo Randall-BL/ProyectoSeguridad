@@ -784,8 +784,12 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
     con `fetch-depth: 0` (trabajo «gitleaks sobre toda la historia»), y el gancho local revisa cada commit.
 - [ ] 9.4 `check --deploy`, Mozilla HTTP Observatory sobre la URL pública y una pasada de OWASP ZAP en
   modo base (sin ataque masivo).
-- [ ] 9.5 IAM mínimo: quién del equipo tiene qué rol en el proyecto (esta es la fila OPE de la matriz).
+- [x] 9.5 IAM mínimo: quién del equipo tiene qué rol en el proyecto (esta es la fila OPE de la matriz).
   Nadie del equipo usa la cuenta de servicio de emisión.
+  - 15-nov: `docs/iam.md`. A nivel de proyecto solo el dueño y los agentes de Google; cada cuenta de servicio
+    tiene permisos sobre recursos concretos (sus secretos, el servicio que invoca), cada secreto un único lector,
+    y nadie puede actuar como ninguna cuenta de servicio. Falta invitar a los otros tres (con `viewer`), que es
+    acción del dueño.
 - [ ] 9.6 Etiqueta final `v1.0.0` de las cinco imágenes y de git en el mismo commit. Anotar la tabla de
   versiones en el README.
 
