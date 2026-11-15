@@ -776,9 +776,16 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 - [ ] 9.1 ⚠ Las cinco imágenes (`app`, `opa`, `emision`, `publico`, `trabajos`) sin root, fijadas por
   huella, analizadas con Trivy y publicadas con versión. Cloud Run despliega por etiqueta de versión.
-- [ ] 9.2 Atender al menos una alerta de Dependabot y documentarla: qué paquete, qué vulnerabilidad, qué
+- [x] 9.2 Atender al menos una alerta de Dependabot y documentarla: qué paquete, qué vulnerabilidad, qué
   versión se subió, en qué commit y en qué etiqueta de imagen quedó. Si no aparece ninguna, documentar
   una actualización de versión que haya propuesto y cómo se revisó.
+  - 15-nov: no hubo alertas de Dependabot (las seis listas de dependencias pasan pip-audit). Se revisó la
+    actualización que propuso, el PR #3 (Python 3.14 a 3.15 en `app`): las ruedas existen, pero es un cambio del
+    lenguaje sin corrección de seguridad, solo para una de las cuatro imágenes y a días de la entrega. Se cerró
+    con la revisión escrita en el PR, y `dependabot.yml` ignora los saltos de Python y sigue proponiendo las
+    huellas nuevas de 3.14 (`fa55df1`). Las vulnerabilidades reales las encontró Trivy: urllib3 y msgpack
+    dentro de pip, y zlib de Debian. Se corrigieron quitando pip, aplicando los parches de Debian y con la base
+    del 8-nov (`6ac3975`); quedan en las imágenes `v1.0.0`.
 - [x] 9.3 ⚠ Pasar gitleaks sobre **toda la historia** del repositorio, no solo sobre el último commit.
   - 15-nov: gitleaks 8.30.1 con `.gitleaks.toml` sobre los 98 commits: sin hallazgos. El CI lo repite en cada push
     con `fetch-depth: 0` (trabajo «gitleaks sobre toda la historia»), y el gancho local revisa cada commit.
