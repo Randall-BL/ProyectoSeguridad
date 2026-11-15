@@ -1,0 +1,35 @@
+# Configuración de las revisiones estáticas del CI (tarea 8.8). No es un paquete instalable: cada
+# componente tiene su requirements.txt con versiones y huellas fijas.
+
+[tool.ruff]
+line-length = 160
+target-version = "py313"
+extend-exclude = ["app/*/migrations"]
+
+[tool.ruff.lint]
+# Errores, pyflakes, avisos, orden de imports, bugbear y las reglas de seguridad de bandit (S).
+select = ["E", "F", "W", "I", "B", "S"]
+ignore = [
+    "S101",  # assert: las pruebas lo usan
+    "B904",  # raise ... from: donde importa ya se encadena
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Las pruebas usan contraseñas de prueba, SQL armado con nombres de rol fijos y archivos temporales.
+"**/tests*.py" = ["S105", "S106", "S107", "S108", "S310", "S311", "S608"]
+"**/test_*.py" = ["S105", "S106", "S107", "S108", "S310", "S311", "S608"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["autorizacion", "bitacora", "cuentas", "flujos", "negocio", "nucleo", "verdeazul",
+                     "verdeazul_certificado", "emitir", "servicio", "diario", "tsa", "verificar"]
+
+[tool.bandit]
+exclude_dirs = ["app/cuentas/migrations", "app/negocio/migrations", "app/nucleo/migrations",
+                "app/bitacora/migrations", "app/autorizacion/migrations"]
+skips = ["B101"]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true

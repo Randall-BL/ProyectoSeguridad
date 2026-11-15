@@ -1,0 +1,7 @@
+# Dependencias directas del servicio de emisión. requirements.txt sale de aquí, con la versión y la
+# huella de cada paquete fijadas: sh infra/fijar-dependencias.sh emision
+# Firma Ed25519 (verificador/verdeazul_certificado.py).
+cryptography
+flask
+gunicorn
+psycopg[binary]

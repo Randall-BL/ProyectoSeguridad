@@ -52,8 +52,9 @@ def _comparar_cuenta(sender, instance, raw=False, update_fields=None, **kwargs):
 
 @receiver(post_save, sender=Usuario)
 def _revocar_por_cuenta(sender, instance, raw=False, **kwargs):
-    if not raw and getattr(instance, "_revocar_por", ""):
-        cerrar_sesiones(instance.pk, instance._revocar_por)
+    revocar_por = getattr(instance, "_revocar_por", None)
+    if not raw and revocar_por:
+        cerrar_sesiones(instance.pk, revocar_por)
 
 
 @receiver(post_save, sender=PropuestaRol)

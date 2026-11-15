@@ -1,0 +1,50 @@
+# Servicio de emisión (componente SIS). Privado: no tiene allUsers; infra/desplegar.sh da
+# run.invoker solo a sa-app y a sa-trabajos, y el propio servicio vuelve a revisar la cuenta del
+# token (INVOCADORES). Es el único que lee la clave privada de firma.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: verdeazul-emision
+  labels:
+    cloud.googleapis.com/location: us-east1
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "1"
+    spec:
+      serviceAccountName: sa-emision@verdeazul-ce1115-g6.iam.gserviceaccount.com
+      containerConcurrency: 10
+      timeoutSeconds: 60
+      containers:
+        - name: emision
+          image: us-east1-docker.pkg.dev/verdeazul-ce1115-g6/verdeazul/emision:__VERSION__
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: INVOCADORES
+              value: sa-app@verdeazul-ce1115-g6.iam.gserviceaccount.com,sa-trabajos@verdeazul-ce1115-g6.iam.gserviceaccount.com
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-url-emision
+                  key: "1"
+            - name: FIRMA_CLAVE
+              valueFrom:
+                secretKeyRef:
+                  name: firma-clave-privada
+                  key: "1"
+          startupProbe:
+            httpGet:
+              path: /salud
+              port: 8080
+            periodSeconds: 2
+            failureThreshold: 15
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi

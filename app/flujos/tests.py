@@ -191,7 +191,9 @@ class CasosDeLaParte1(TestCase):
 
     def test_t31_la_auditora_exporta_con_huella(self):
         elena = self._como("aud.elena", "AUD")
-        respuesta = self.client.get(reverse("exportar_fincas"), MOTIVO)
+        # El sello real (6.10) se prueba en tests_certificados; aquí basta con que el servicio responda.
+        with mock.patch("nucleo.emision.sellar", return_value={"firma": "sello de prueba"}):
+            respuesta = self.client.get(reverse("exportar_fincas"), MOTIVO)
         self.assertEqual(respuesta.status_code, 200)
         huella = respuesta["X-Verdeazul-Huella"]
         self.assertTrue(ExportacionAuditoria.objects.filter(auditor=elena, objeto="fincas", huella=huella).exists())

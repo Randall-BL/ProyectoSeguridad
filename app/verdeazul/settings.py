@@ -184,6 +184,12 @@ TEMPLATES = [
 OPA_URL = os.environ.get("OPA_URL", "http://localhost:8181")
 OPA_LIMITE = float(os.environ.get("OPA_LIMITE", "1.5"))
 
+# --- Certificados (fase 6) ---------------------------------------------------------------------
+# El servicio privado de emisión, que la aplicación invoca con el token de identidad de sa-app, y
+# la comprobación pública, a la que se enlaza desde cada certificado. Sin EMISION_URL no se emite.
+EMISION_URL = os.environ.get("EMISION_URL", "")
+PUBLICO_URL = os.environ.get("PUBLICO_URL", "")
+
 # --- Archivos estáticos -----------------------------------------------------------------------
 # Estilos e imágenes propios (y los de allauth), servidos por WhiteNoise desde la misma imagen:
 # nombres con huella, comprimidos y con caché larga. Nada se carga de un CDN. collectstatic corre

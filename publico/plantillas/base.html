@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>{% block titulo %}Comprobar un certificado{% endblock %} · Verdeazul Carbono</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='publico.css') }}">
+</head>
+<body>
+  <a class="saltar" href="#contenido">Ir al contenido</a>
+  <header class="franja">
+    <div class="ancho franja-fila">
+      <a class="marca" href="{{ url_for('inicio') }}">Verdeazul Carbono</a>
+      <span>Comprobación pública de certificados</span>
+    </div>
+  </header>
+  <main id="contenido" class="ancho">
+    {% block contenido %}{% endblock %}
+  </main>
+  <footer class="pie ancho">
+    <p>Sin cuenta y sin datos de los titulares. Solo se responde por el código exacto de un certificado.</p>
+  </footer>
+</body>
+</html>

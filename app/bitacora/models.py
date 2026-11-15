@@ -27,3 +27,21 @@ class Registro(models.Model):
         managed = False
         db_table = "bitacora_registro"
         ordering = ["id"]
+
+
+class Testigo(models.Model):
+    """Testigo externo de la bitácora (tarea 7.5, decisión 0.6). Cada día el trabajo programado pide
+    a una autoridad de sellado de tiempo pública (RFC 3161) un sello sobre la huella del último
+    registro y lo guarda aquí. La cadena por sí sola no detecta que alguien con acceso a la base
+    quite los últimos registros; el sello, firmado por un tercero, prueba que esa huella ya existía
+    en esa fecha. Se comprueba sin Verdeazul con openssl ts -verify. Solo se agregan filas."""
+
+    id = models.BigAutoField(primary_key=True)
+    instante = models.DateTimeField()
+    registro = models.BigIntegerField(help_text="Número del último registro de la bitácora sellado.")
+    huella = models.CharField(max_length=64)
+    tsa = models.URLField()
+    sello = models.TextField(help_text="Respuesta de la TSA (TimeStampResp, DER) en base64.")
+
+    class Meta:
+        ordering = ["-id"]

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block head_title %}No se pudo sellar el paquete{% endblock head_title %}
+{% block content %}
+  <div class="error-pagina">
+    <p class="error-codigo" aria-hidden="true">503</p>
+    <span class="insignia">Error 503</span>
+    <h1>No se pudo sellar el paquete</h1>
+    <p>
+      El servicio que sella los paquetes de evidencia no respondió. Un paquete sin el sello de
+      Verdeazul no se entrega (C18), así que no se generó ninguno. Intente de nuevo en unos minutos.
+    </p>
+    <div class="acciones"><a class="boton boton-secundario" href="{% url 'inicio' %}">Volver al inicio</a></div>
+  </div>
+{% endblock content %}

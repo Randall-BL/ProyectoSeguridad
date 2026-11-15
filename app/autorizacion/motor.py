@@ -44,7 +44,8 @@ class Decision:
 def _pedir(ruta, cuerpo=None):
     url = settings.OPA_URL.rstrip("/") + ruta
     datos = json.dumps(cuerpo).encode() if cuerpo is not None else None
-    peticion = urllib.request.Request(
+    # OPA_URL es de la configuración (localhost en la misma instancia), nunca de la petición.
+    peticion = urllib.request.Request(  # noqa: S310  # nosec B310
         url,
         data=datos,
         method="POST" if datos is not None else "GET",

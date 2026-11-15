@@ -15,6 +15,7 @@ from autorizacion.proteccion import protegida
 from flujos import hechos as h
 from flujos.comun import accion, anotar, celda, escribir, nombre, tabla, verbos, volver
 from negocio.models import EstadoMedicion, Medicion, Parcela, VersionMedicion
+from nucleo import emision
 from nucleo.dias import dias_habiles
 
 DIAS_SIN_MOTIVO = 5
@@ -210,7 +211,10 @@ def aprobar(request, medicion):
         anotar(request, "aprobar", "mediciones", m.pk, antes={"estado": "enviada"}, despues={"estado": "aprobada"})
 
     if escribir(request, "aprobar", "mediciones", m.pk, aprobar_)[1]:
-        return volver(request, reverse("medicion", args=[m.pk]), "Medición aprobada.")
+        # C4: el certificado lo emite el sistema, no la persona que aprueba (6.3).
+        emision.despues_de_confirmar("/emitir", {"medicion": str(m.pk)})
+        return volver(request, reverse("medicion", args=[m.pk]),
+                      "Medición aprobada. El sistema emite su certificado firmado.")
     return redirect("medicion", m.pk)
 
 

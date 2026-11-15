@@ -1,0 +1,4 @@
+# Dependencias directas del trabajo diario. requirements.txt sale de aquí, con la versión y la
+# huella de cada paquete fijadas: sh infra/fijar-dependencias.sh trabajos
+# El sello RFC 3161 se arma a mano (trabajos/tsa.py): no hace falta otra biblioteca.
+psycopg[binary]
