@@ -867,10 +867,13 @@ En LaTeX, con la misma plantilla de los entregables de la Parte 1. Capturas en `
   - 15-nov: `infra/demo/intento-prohibido.sh`: con las cookies de sesión y CSRF del navegador, envía el POST que la interfaz no ofrece; distingue un 403 de la regla de una falla de CSRF.
 - [x] 11.3 Recorrido de casos en vivo con los personajes de la matriz (T-05, T-06, T-25, T-32…).
   - 15-nov: «Recorrido de los roles» del guion (T-05, T-08, T-16, T-28, T-38) y T-24, T-25 y T-32 en vivo con una enmienda preparada la noche anterior hasta «revisada».
-- [ ] 11.4 Calentar las instancias antes de presentar (Cloud Run y Neon se suspenden sin uso y la
+- [x] 11.4 Calentar las instancias antes de presentar (Cloud Run y Neon se suspenden sin uso y la
   primera petición tarda).
+  - 15-nov: `infra/demo/calentar.sh` despierta la aplicación, el servicio público con Neon y la emisión; probado: la tercera ronda responde 200 en menos de medio segundo.
 - [ ] 11.5 Prueba completa desde una red distinta la noche anterior.
+  - Pendiente del equipo, la noche del 18: probar con datos móviles (lista en el guion).
 - [ ] 11.6 Cada integrante explica una parte que no escribió: ensayo cruzado.
+  - Pendiente del equipo: ensayo cruzado con «Preguntas que pueden salir» del guion.
 
 ---
 
