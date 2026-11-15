@@ -1,6 +1,6 @@
 # Guion de la presentación (tareas 11.1 a 11.6)
 
-Jueves 19 de noviembre, 15 minutos, con el sistema corriendo en su URL pública (`v1.0.0`). El enunciado
+Jueves 19 de noviembre, 15 minutos, con el sistema corriendo en su URL pública (`v1.0.1`). El enunciado
 pide seis cosas; el guion las sigue en ese orden. Reparto por bloques de la defensa (decisión 0.7):
 Javier, arquitectura e infraestructura; Axel, motor de decisión y controles de historial; Julio,
 matriz, flujos y pruebas; Randall, base, bitácora, autenticación y certificados. **Cada quien tiene que
@@ -32,7 +32,7 @@ poder explicar cualquier parte**: ver la última sección.
 | 6:30–8:30 | Axel | 3. Lo que no le corresponde | La interfaz no muestra el botón; `infra/demo/intento-prohibido.sh` lo envía igual y el servidor responde 403 con la regla. La verificadora C intentando aprobar lo que escribió (C3, T-06). Un identificador ajeno responde 404, igual que uno que no existe. |
 | 8:30–11:30 | Randall | 4. Certificados | La emisión automática al aprobar (paso 2 del recorrido). Descargar el certificado, verificarlo en el servicio público y con `python verificador/verificar.py`; la copia alterada falla. T-25 en vivo: la gerente que solicitó no puede autorizar (C8, T-24), la otra sí, y el servicio revoca y reemite. El código viejo dice «revocado» y enlaza al nuevo (T-32). |
 | 11:30–12:30 | Randall | 5. Bitácora | Como GER, `/bitacora/`: las acciones de la demo, las denegaciones con su regla y «la cadena de huellas está íntegra». El testigo RFC 3161 diario. |
-| 12:30–14:15 | Javier | 6. Secretos y Dependabot | Secret Manager: los siete secretos, cada uno con un solo lector (`docs/evidencia/secret-manager.txt` o la consola). `secretKeyRef` con versión fija en `infra/app.service.yaml`. `dependabot.yml`, los PR que abrió y la revisión del #3. El CI: gitleaks sobre la historia y Trivy sobre las cinco imágenes. |
+| 12:30–14:15 | Javier | 6. Secretos y Dependabot | Secret Manager: los siete secretos, cada uno con un solo lector (`docs/evidencia/secret-manager.txt` o la consola). `secretKeyRef` con versión fija en `infra/app.service.yaml`. `dependabot.yml` y los PR que abrió: el #3 se cerró con su justificación, y el #7, #8, #11 y #12 se revisaron y se integraron en `v1.0.1`. El CI: gitleaks sobre la historia y Trivy sobre las cinco imágenes. |
 | 14:15–15:00 | Julio | Cierre | 102 de 102 permisos con su prueba (`docs/cobertura.md`); los tres errores que encontraron las pruebas antes de entregar. |
 
 ## Recorrido de los roles (punto 2)
@@ -60,8 +60,14 @@ de lunes a viernes de 6:00 a 19:00 también un motivo.
 - *¿Por qué cinco servicios?* Son los componentes de la Parte 1: aplicación, motor, emisión,
   comprobación pública y trabajos. Cada uno tiene su cuenta de servicio y su usuario de base con lo
   mínimo, así una falla en uno no da los permisos de los demás.
-- *¿Cómo se sabe qué versión corre?* Cada imagen tiene la etiqueta `v1.0.0` y `git-99067dc`, y la de git
-  apunta al mismo commit. Para volver atrás: `sh infra/desplegar.sh app v0.4.0`.
+- *¿Cómo se sabe qué versión corre?* Cada imagen tiene la etiqueta `v1.0.1` y `git-696e76b`, y la de git
+  apunta al mismo commit. Para volver atrás: `sh infra/desplegar.sh app v1.0.0`.
+- *¿Qué hicieron con lo que propuso Dependabot?* Revisar cada PR antes de integrarlo:
+  - qué corrige la versión nueva y si nos aplica;
+  - si pasa el CI;
+  - lo que el CI no prueba: que el contenedor arranque.
+  
+  El #3 (Python 3.15) se cerró: era un cambio de lenguaje sin corrección de seguridad, a días de la entrega. Los de allauth, gunicorn, psycopg y OPA se integraron en `v1.0.1` (tarea 9.7). Ninguna de sus correcciones de seguridad aplicaba a nuestra configuración, pero la revisión encontró un error de gunicorn en cada arranque, que se corrigió.
 - *¿Por qué no root?* `USER 10001` en cada Dockerfile: si alguien ejecuta código en el contenedor, no
   es administrador.
 
