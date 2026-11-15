@@ -37,6 +37,12 @@ updates:
       day: "monday"
       timezone: "America/Costa_Rica"
     open-pull-requests-limit: 5
+    # 9.2: cambiar la versión de Python (3.14 a 3.15) es un cambio del lenguaje, no un parche: se revisó
+    # en el PR #3 y se dejó para después de la entrega. Siguen llegando los cambios de huella de la
+    # misma versión, que son los que traen los parches de seguridad de la imagen base.
+    ignore:
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
