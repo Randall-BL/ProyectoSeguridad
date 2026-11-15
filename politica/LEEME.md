@@ -73,5 +73,5 @@ base filtra las filas (seguridad por fila).
 ## Comprobar
 
 ```bash
-docker run --rm -v "$PWD/politica:/politica" openpolicyagent/opa:1.22.3-static test --coverage /politica
+docker run --rm -v "$PWD/politica:/politica" openpolicyagent/opa:1.22.4-static test --coverage /politica
 ```
