@@ -789,8 +789,12 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 - [x] 9.3 ⚠ Pasar gitleaks sobre **toda la historia** del repositorio, no solo sobre el último commit.
   - 15-nov: gitleaks 8.30.1 con `.gitleaks.toml` sobre los 98 commits: sin hallazgos. El CI lo repite en cada push
     con `fetch-depth: 0` (trabajo «gitleaks sobre toda la historia»), y el gancho local revisa cada commit.
-- [ ] 9.4 `check --deploy`, Mozilla HTTP Observatory sobre la URL pública y una pasada de OWASP ZAP en
+- [x] 9.4 `check --deploy`, Mozilla HTTP Observatory sobre la URL pública y una pasada de OWASP ZAP en
   modo base (sin ataque masivo).
+  - 15-nov: `docs/escaneos.md`. `check --deploy` sin problemas (solo se silencia HSTS preload, que no aplica a
+    `*.run.app`). Observatory: la aplicación pasó de C (55) a A+ (155) con las cabeceras nuevas
+    (`nucleo/cabeceras.py`); el servicio público, A+. ZAP 2.17.0 en modo base: sin fallos; de 9 avisos a 5 en la
+    aplicación, y los que quedan están justificados. Informes en `docs/evidencia/escaneos/`.
 - [x] 9.5 IAM mínimo: quién del equipo tiene qué rol en el proyecto (esta es la fila OPE de la matriz).
   Nadie del equipo usa la cuenta de servicio de emisión.
   - 15-nov: `docs/iam.md`. A nivel de proyecto solo el dueño y los agentes de Google; cada cuenta de servicio
