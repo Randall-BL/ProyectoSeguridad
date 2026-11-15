@@ -157,6 +157,26 @@ class SinSitioDeAdministracion(TestCase):
         self.assertEqual(self.client.get("/admin/").status_code, 404)
 
 
+class CabecerasDeSeguridad(TestCase):
+    """9.4: cada respuesta lleva la política de contenido sin scripts, la de permisos del navegador y
+    la de recursos de otro origen, también las de error."""
+
+    def test_en_la_portada_y_en_un_404(self):
+        for ruta in ("/", "/no-existe-3f2a/"):
+            with self.subTest(ruta=ruta):
+                respuesta = self.client.get(ruta)
+                politica = respuesta["Content-Security-Policy"]
+                self.assertIn("default-src 'none'", politica)
+                self.assertIn("frame-ancestors 'none'", politica)
+                self.assertNotIn("script-src", politica)  # sin scripts: default-src 'none' los bloquea
+                self.assertNotIn("unsafe-inline", politica)
+                self.assertIn("camera=()", respuesta["Permissions-Policy"])
+                self.assertEqual(respuesta["Cross-Origin-Resource-Policy"], "same-origin")
+                self.assertEqual(respuesta["Cross-Origin-Embedder-Policy"], "require-corp")
+                self.assertIn("no-store", respuesta["Cache-Control"])
+                self.assertEqual(respuesta["X-Frame-Options"], "DENY")
+
+
 class PaginaNoEncontrada(TestCase):
     """5.15: la página 404 propia no dice más que la de Django. No repite la dirección pedida ni
     distingue lo que no existe de lo que el motor niega (T-08 responde lo mismo en los dos casos)."""

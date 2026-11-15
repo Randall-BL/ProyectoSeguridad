@@ -143,6 +143,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "nucleo.cabeceras.CabecerasDeSeguridad",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -229,6 +230,9 @@ SILENCED_SYSTEM_CHECKS = ["security.W021"]
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
+# WhiteNoise permite por omisión que cualquier origen lea los estilos (Access-Control-Allow-Origin: *);
+# nadie más los necesita (ZAP 10098, tarea 9.4).
+WHITENOISE_ALLOW_ALL_ORIGINS = False
 X_FRAME_OPTIONS = "DENY"
 
 SESSION_COOKIE_SECURE = not DEBUG
