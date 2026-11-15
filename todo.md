@@ -779,7 +779,9 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 - [ ] 9.2 Atender al menos una alerta de Dependabot y documentarla: qué paquete, qué vulnerabilidad, qué
   versión se subió, en qué commit y en qué etiqueta de imagen quedó. Si no aparece ninguna, documentar
   una actualización de versión que haya propuesto y cómo se revisó.
-- [ ] 9.3 ⚠ Pasar gitleaks sobre **toda la historia** del repositorio, no solo sobre el último commit.
+- [x] 9.3 ⚠ Pasar gitleaks sobre **toda la historia** del repositorio, no solo sobre el último commit.
+  - 15-nov: gitleaks 8.30.1 con `.gitleaks.toml` sobre los 98 commits: sin hallazgos. El CI lo repite en cada push
+    con `fetch-depth: 0` (trabajo «gitleaks sobre toda la historia»), y el gancho local revisa cada commit.
 - [ ] 9.4 `check --deploy`, Mozilla HTTP Observatory sobre la URL pública y una pasada de OWASP ZAP en
   modo base (sin ataque masivo).
 - [ ] 9.5 IAM mínimo: quién del equipo tiene qué rol en el proyecto (esta es la fila OPE de la matriz).
