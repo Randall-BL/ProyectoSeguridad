@@ -858,16 +858,22 @@ En LaTeX, con la misma plantilla de los entregables de la Parte 1. Capturas en `
 
 ## 11 · Presentación, 15 minutos (17 al 19 nov)
 
-- [ ] 11.1 Guion con los seis puntos que pide el enunciado: HTTPS desde internet; un usuario de cada rol
+- [x] 11.1 Guion con los seis puntos que pide el enunciado: HTTPS desde internet; un usuario de cada rol
   haciendo lo suyo; un intento prohibido rechazado; emisión, verificación y certificado alterado que
   falla; la bitácora con esas acciones; la configuración de secretos y de Dependabot.
-- [ ] 11.2 El intento prohibido, enviado **sin la interfaz** (curl o las herramientas del navegador con
+  - 15-nov: `docs/presentacion/guion.md`: minuto a minuto con los seis puntos, quién presenta cada uno y la preparación.
+- [x] 11.2 El intento prohibido, enviado **sin la interfaz** (curl o las herramientas del navegador con
   la cookie de un técnico que pide aprobar su propia medición): demuestra que decide el servidor.
-- [ ] 11.3 Recorrido de casos en vivo con los personajes de la matriz (T-05, T-06, T-25, T-32…).
-- [ ] 11.4 Calentar las instancias antes de presentar (Cloud Run y Neon se suspenden sin uso y la
+  - 15-nov: `infra/demo/intento-prohibido.sh`: con las cookies de sesión y CSRF del navegador, envía el POST que la interfaz no ofrece; distingue un 403 de la regla de una falla de CSRF.
+- [x] 11.3 Recorrido de casos en vivo con los personajes de la matriz (T-05, T-06, T-25, T-32…).
+  - 15-nov: «Recorrido de los roles» del guion (T-05, T-08, T-16, T-28, T-38) y T-24, T-25 y T-32 en vivo con una enmienda preparada la noche anterior hasta «revisada».
+- [x] 11.4 Calentar las instancias antes de presentar (Cloud Run y Neon se suspenden sin uso y la
   primera petición tarda).
+  - 15-nov: `infra/demo/calentar.sh` despierta la aplicación, el servicio público con Neon y la emisión; probado: la tercera ronda responde 200 en menos de medio segundo.
 - [ ] 11.5 Prueba completa desde una red distinta la noche anterior.
+  - Pendiente del equipo, la noche del 18: probar con datos móviles (lista en el guion).
 - [ ] 11.6 Cada integrante explica una parte que no escribió: ensayo cruzado.
+  - Pendiente del equipo: ensayo cruzado con «Preguntas que pueden salir» del guion.
 
 ---
 
