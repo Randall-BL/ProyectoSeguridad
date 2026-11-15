@@ -29,7 +29,7 @@ Artifact Registry son la misma, y se anota en «Versiones publicadas» del READM
 | 3 · Flujos y matriz completa | 11–13 nov | 5, y 8.1 a 8.4 a la par | `v0.3.0` | Los 102 permisos se ejercitan desde la interfaz; T-01 a T-40 pasan |
 | 4 · Certificados y trabajos | 13–15 nov | 6, 7 | `v0.4.0` | Emitir, verificar, el alterado falla, comprobación pública, verificador de consola, trabajos programados **Hecho el 13-nov:** `v0.4.0` desplegada desde `c9bc8a4`; el trabajo diario ya emitió y selló en Cloud Run |
 | 5 · Endurecimiento | 16–17 nov | 9, y 8.5 a 8.9 | **`v1.0.0`** | Trivy, ZAP, gitleaks sobre la historia, alerta de Dependabot atendida, tabla de cobertura **Hecho el 15-nov:** `v1.0.0` desplegada desde `99067dc` |
-| 6 · Informe y defensa | 17–19 nov | 10, 11 | — | Informe, capturas, anexo de credenciales fuera del repo, ensayo, prueba desde otra red |
+| 6 · Informe y defensa | 17–19 nov | 10, 11 | — | Informe, capturas, anexo de credenciales fuera del repo, ensayo, prueba desde otra red **Informe listo el 15-nov** (`docs/informe/`); falta el ensayo y la prueba desde otra red |
 
 ---
 
@@ -114,30 +114,37 @@ Neon, Secret Manager y Artifact Registry. Cada componente del diseño tiene que 
 
 Formato: qué cambió, por qué y qué implicación de seguridad tuvo. Completar al construir.
 
-- [ ] **D-01 Sin Caddy.** Cloud Run ya termina TLS y solo expone HTTPS. HSTS, redirección y cabeceras
+- [x] **D-01 Sin Caddy.** Cloud Run ya termina TLS y solo expone HTTPS. HSTS, redirección y cabeceras
   pasan a Django (`SECURE_*`); el límite de tamaño, a `DATA_UPLOAD_MAX_MEMORY_SIZE`; el de ritmo, a un
   middleware. Implicación: la frontera F1 la valida Google y no un componente propio.
-- [ ] **D-02 Neon en vez de PostgreSQL propio.** Lo exige el enunciado. Implicación: el superusuario
+- [x] **D-02 Neon en vez de PostgreSQL propio.** Lo exige el enunciado. Implicación: el superusuario
   real lo tiene el proveedor; se gana cifrado en reposo y recuperación a un punto en el tiempo.
-- [ ] **D-03 Secret Manager en vez de OpenBao.** La clave de firma llega al servicio de emisión como
+- [x] **D-03 Secret Manager en vez de OpenBao.** La clave de firma llega al servicio de emisión como
   variable de entorno: ese servicio la puede leer, cosa que la bóveda evitaba. Se acota dando acceso al
   secreto solo a la cuenta de servicio de emisión. Alternativa descartada o futura: Cloud KMS, que
   firma sin entregar la llave (tiene costo pequeño). Sube RR-7.
-- [ ] **D-04 Respaldos.** Los da Neon; se pierde el «respaldo en otro proveedor con llave propia».
-- [ ] **D-05 Cloud Run en vez de un servidor virtual.** Lo exige el enunciado. Se pierde SELinux y se
+- [x] **D-04 Respaldos.** Los da Neon; se pierde el «respaldo en otro proveedor con llave propia».
+- [x] **D-05 Cloud Run en vez de un servidor virtual.** Lo exige el enunciado. Se pierde SELinux y se
   gana el aislamiento de Cloud Run; el contenedor sigue sin root.
-- [ ] **D-06 Máximo de 20 asignaciones activas por técnico (K-1).** La Parte 1 no limitaba cuántas
+- [x] **D-06 Máximo de 20 asignaciones activas por técnico (K-1).** La Parte 1 no limitaba cuántas
   fincas puede tener asignadas un técnico. Se agrega para acotar cuánto alcanza una sola cuenta: un
   técnico comprometido o un error de asignación llega a 20 fincas, no a todo el catálogo. Es un
   parámetro, no una constante, por P-02.
-- [ ] **D-07 Segundo factor por código temporal para todos, por ahora.** POL-AU-05 prefiere llaves de
+- [x] **D-07 Segundo factor por código temporal para todos, por ahora.** POL-AU-05 prefiere llaves de
   acceso (WebAuthn) y las exige para GER, ADM y AUD. La versión entregada usa TOTP con códigos de
   recuperación para todos los roles: las cuentas de prueba tienen que poder usarse desde cualquier
   equipo, y una llave de acceso queda atada al dispositivo de quien la registra. Implicación: el código
   temporal se puede pedir en una página falsa (*phishing*), cosa que la llave de acceso evita; queda
   como mejora si da el tiempo (allauth ya la soporta). El secreto TOTP se guarda cifrado con una clave
   de Secret Manager, y nadie puede quitarse el segundo factor.
-- [ ] D-08… (las que aparezcan: testigo externo, versión de Python, etc.)
+- [x] **D-08 Testigo externo mínimo.** Sello RFC 3161 diario de una TSA pública sobre la huella de la bitácora,
+  sin buzón del auditor (decisión 0.6).
+- [x] **D-09 Comprobación pública por función.** `va_comprobar(codigo)` en vez de una vista: `va_publico` no lee
+  ninguna tabla. El límite de ritmo vive en la memoria de la única instancia.
+- [x] **D-10 Los trabajos también invocan la emisión**, para recuperar lo que quedó pendiente; la base vuelve a
+  exigir C4.
+- [x] **D-11 Sin versión del certificado en PDF con QR.** La versión legible la da el servicio público.
+  - 15-nov: las once van al informe (sección 6) con qué cambió, por qué y su implicación.
 
 ---
 
@@ -816,13 +823,16 @@ Interfaz sobria, con plantillas de Django. Lo que importa es que se pueda ejerci
 
 En LaTeX, con la misma plantilla de los entregables de la Parte 1. Capturas en `docs/evidencia/`.
 
-- [ ] 10.1 Arquitectura desplegada: diagrama de lo que realmente se construyó (servicios, imágenes,
+- [x] 10.1 Arquitectura desplegada: diagrama de lo que realmente se construyó (servicios, imágenes,
   cuentas de servicio, secretos, Neon) y cómo se comunican, con F1 a F5 marcadas.
-- [ ] 10.2 Controles implementados: por cada uno de los seis obligatorios, archivo y línea donde está y
+  - 15-nov: figura 1 del informe (TikZ): servicios, imágenes, cuentas de servicio, usuarios de base, Secret Manager, Neon, la TSA y F1 a F5.
+- [x] 10.2 Controles implementados: por cada uno de los seis obligatorios, archivo y línea donde está y
   cómo se verifica.
-- [ ] 10.3 Gestión de secretos: tabla con cada secreto, quién lo lee, cómo llega al contenedor y qué
+  - 15-nov: tabla de la sección 3 con archivo y línea de cada control y la prueba que lo verifica; se agregó `cuentas.tests.HashDeContrasenas`, la única que faltaba.
+- [x] 10.3 Gestión de secretos: tabla con cada secreto, quién lo lee, cómo llega al contenedor y qué
   versión usa.
-- [ ] 10.4 Seguridad heredada (media página por plataforma):
+  - 15-nov: sección 4 (siete secretos, lector único, `secretKeyRef` con versión fija) y `docs/iam.md`.
+- [x] 10.4 Seguridad heredada (media página por plataforma):
   - Neon: qué protege solo (cifrado en reposo y en tránsito, aislamiento del proyecto, respaldos y
     recuperación a un punto en el tiempo, autenticación de la conexión).
   - Qué configuramos: modo de conexión, direcciones de origen, usuario de la app y sus permisos, ramas.
@@ -832,12 +842,17 @@ En LaTeX, con la misma plantilla de los entregables de la Parte 1. Capturas en `
     contra qué.
   - Cloud Run: Google protege la infraestructura y termina el TLS; nosotros, el código, los permisos y
     los secretos.
-- [ ] 10.5 Desviaciones D-01 en adelante.
-- [ ] 10.6 Tabla de cobertura de la matriz (sale de 8.7).
-- [ ] 10.7 Evidencia: el sistema por HTTPS, la configuración de Secret Manager, Dependabot activo, un
+  - 15-nov: sección 5: Neon (lo que protege, lo que configuramos, IP sin restringir y por qué, lo que sigue siendo nuestro) y Cloud Run.
+- [x] 10.5 Desviaciones D-01 en adelante.
+  - 15-nov: sección 6, D-01 a D-11.
+- [x] 10.6 Tabla de cobertura de la matriz (sale de 8.7).
+  - 15-nov: resumen por regla en la sección 7 y la tabla completa en el Anexo A, generadas de la corrida del CI (192 pruebas de Django, 304 en total, 102 de 102 permisos en verde).
+- [x] 10.7 Evidencia: el sistema por HTTPS, la configuración de Secret Manager, Dependabot activo, un
   certificado verificado, uno alterado rechazado y el intento fallido de un rol.
-- [ ] 10.8 Anexo para el profesor, **fuera del repositorio**: URL pública y credenciales de prueba de
+  - 15-nov: `docs/evidencia/`: HTTPS (curl y TLS 1.3), Secret Manager, Dependabot, certificado válido y alterado en el servicio público, los dos intentos denegados y la bitácora. Las de los roles se tomaron en local con el mismo código: en la nube, entrar pide la contraseña y el TOTP del anexo.
+- [x] 10.8 Anexo para el profesor, **fuera del repositorio**: URL pública y credenciales de prueba de
   cada rol, con la semilla TOTP de cada cuenta.
+  - 15-nov: `Seguridad/Credenciales-Verdeazul/Anexo_Credenciales_grupo6.pdf` (fuera de los repos): URL, usuario, rol, contraseña, semilla y QR de las 12 cuentas. La contraseña de aud.elena se rotó ese día.
 
 ---
 

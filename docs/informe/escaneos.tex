@@ -1,0 +1,24 @@
+Pasadas sin ataque sobre las dos direcciones públicas, antes y después de agregar las cabeceras que
+faltaban (\arch{app/nucleo/cabeceras.py}). El detalle y los informes de ZAP están en
+\cod{docs/escaneos.md} y \cod{docs/evidencia/escaneos/}.
+
+\begin{center}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}L{3.6cm} L{3.6cm} Y@{}}
+\toprule
+\cab{Revisión} & \cab{Antes (\cod{v0.4.0})} & \cab{Con \cod{v1.0.0}} \\
+\midrule
+\cod{manage.py check --deploy} & — & Sin problemas. Solo se silencia HSTS \emph{preload}, que no aplica a \cod{*.run.app}. \\
+HTTP Observatory, aplicación & C (55): sin política de contenido & \textbf{A+ (155)}: 12 pruebas pasan, ninguna resta \\
+HTTP Observatory, comprobación pública & A+ (135) & \textbf{A+ (135)} \\
+ZAP 2.17.0 en modo base, aplicación & 0 fallos, 9 avisos & 0 fallos, 5 avisos justificados \\
+ZAP 2.17.0 en modo base, comprobación pública & — & 0 fallos, 4 avisos justificados \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Los avisos que quedan son informativos (ZAP reconoce el formulario de entrada, la cookie de sesión y
+las páginas que no se guardan en caché), o no aplican al servicio público, que no tiene sesión y no
+cambia nada (no tiene marca CSRF ni COEP). El aviso 10031 sobre \cod{/cuentas/login/} es un falso
+positivo: el formulario muestra de nuevo el usuario escrito, escapado por Django y sin ningún script
+que lo interprete.

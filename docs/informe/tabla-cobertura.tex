@@ -1,0 +1,114 @@
+\begin{center}
+\scriptsize
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{0.6cm} p{1.7cm} p{1.2cm} p{0.9cm} p{3.4cm} p{2.6cm} p{3.4cm} p{0.8cm}@{}}
+\toprule
+\cab{Rol} & \cab{Objeto} & \cab{Verbo} & \cab{Reglas} & \cab{Dónde (ruta o componente)} & \cab{Motor y base} & \cab{Prueba} & \cab{Resultado} \\
+\midrule
+\endhead
+TEC & fincas & leer & C1 & fincas, \allowbreak{}finca & reglas.rego:17; negocio 0003, negocio 0005, negocio 0007 & (pantalla) & pasó \\
+TEC & datos\_\allowbreak{}personales & leer & C1 & titulares, \allowbreak{}titular & reglas.rego:17; negocio 0003, negocio 0005, negocio 0007 & (pantalla) & pasó \\
+TEC & periodos & leer & — & periodos, \allowbreak{}periodo & matriz.json & (pantalla) & pasó \\
+TEC & asignaciones & leer & C1 & asignaciones & reglas.rego:17; negocio 0003, negocio 0005, negocio 0007 & (pantalla) & pasó \\
+TEC & mediciones & leer & C1 & mediciones, \allowbreak{}medicion & reglas.rego:17; negocio 0003, negocio 0005, negocio 0007 & (pantalla) & pasó \\
+TEC & mediciones & crear & C2 & nueva\_medicion & reglas.rego:34; negocio 0004 & test\_\allowbreak{}tec\_\allowbreak{}crear\_\allowbreak{}mediciones & pasó \\
+TEC & mediciones & modificar & C2 & modificar\_medicion & reglas.rego:34; negocio 0004 & test\_\allowbreak{}tec\_\allowbreak{}modificar\_\allowbreak{}mediciones & pasó \\
+TEC & mediciones & enviar & C2 & enviar\_medicion & reglas.rego:34; negocio 0004 & test\_\allowbreak{}tec\_\allowbreak{}enviar\_\allowbreak{}mediciones & pasó \\
+TEC & enmiendas & leer & C1 & enmiendas, \allowbreak{}enmienda & reglas.rego:17; negocio 0003, negocio 0005, negocio 0007 & (pantalla) & pasó \\
+TEC & enmiendas & solicitar & C7 & solicitar\_enmienda & reglas.rego:88 & test\_\allowbreak{}tec\_\allowbreak{}solicitar\_\allowbreak{}enmiendas & pasó \\
+TEC & enmiendas & corregir & C9 & corregir\_enmienda & reglas.rego:105 & test\_\allowbreak{}tec\_\allowbreak{}corregir\_\allowbreak{}enmiendas & pasó \\
+TEC & cuentas & modificar & C13 & mis\_vinculos & reglas.rego:145 & (pantalla) & pasó \\
+VER & fincas & leer & H & fincas, \allowbreak{}finca & matriz.json & (pantalla) & pasó \\
+VER & periodos & leer & — & periodos, \allowbreak{}periodo & matriz.json & (pantalla) & pasó \\
+VER & mediciones & leer & H & mediciones, \allowbreak{}medicion & matriz.json & (pantalla) & pasó \\
+VER & mediciones & aprobar & C3 & aprobar\_medicion & reglas.rego:51; negocio 0004 & test\_\allowbreak{}ver\_\allowbreak{}aprobar\_\allowbreak{}mediciones & pasó \\
+VER & mediciones & devolver & C3 & devolver\_medicion & reglas.rego:51; negocio 0004 & test\_\allowbreak{}ver\_\allowbreak{}devolver\_\allowbreak{}mediciones & pasó \\
+VER & enmiendas & leer & — & enmiendas, \allowbreak{}enmienda & matriz.json & (pantalla) & pasó \\
+VER & enmiendas & solicitar & C7 & solicitar\_enmienda & reglas.rego:88 & test\_\allowbreak{}ver\_\allowbreak{}solicitar\_\allowbreak{}enmiendas & pasó \\
+VER & enmiendas & revisar & C10 & revisar\_enmienda & reglas.rego:113; negocio 0004 & test\_\allowbreak{}ver\_\allowbreak{}revisar\_\allowbreak{}enmiendas & pasó \\
+VER & certificados & leer & H & certificados, \allowbreak{}certificado, \allowbreak{}descargar\_certificado & matriz.json & (pantalla) & pasó \\
+VER & cuentas & modificar & C13 & mis\_vinculos & reglas.rego:145 & (pantalla) & pasó \\
+SUP & fincas & leer & H & fincas, \allowbreak{}finca & matriz.json & (pantalla) & pasó \\
+SUP & periodos & leer & — & periodos, \allowbreak{}periodo & matriz.json & (pantalla) & pasó \\
+SUP & asignaciones & leer & — & asignaciones & matriz.json & (pantalla) & pasó \\
+SUP & asignaciones & crear & C19 & crear\_asignacion & reglas.rego:185; negocio 0004, negocio 0007 & (pantalla) & pasó \\
+SUP & asignaciones & modificar & C19 & asignacion, \allowbreak{}terminar\_asignacion, \allowbreak{}renovar\_asignacion & reglas.rego:185; negocio 0004, negocio 0007 & test\_\allowbreak{}sup\_\allowbreak{}modificar\_\allowbreak{}asignaciones & pasó \\
+SUP & mediciones & leer & H & mediciones, \allowbreak{}medicion & matriz.json & (pantalla) & pasó \\
+SUP & enmiendas & leer & — & enmiendas, \allowbreak{}enmienda & matriz.json & (pantalla) & pasó \\
+SUP & cuentas & modificar & C13 & mis\_vinculos & reglas.rego:145 & (pantalla) & pasó \\
+SUP & alertas & leer & C15 & alertas & reglas.rego:164; negocio 0006 & (pantalla) & pasó \\
+SUP & alertas & resolver & C15 & resolver\_alerta & reglas.rego:164; negocio 0006 & test\_\allowbreak{}sup\_\allowbreak{}resolver\_\allowbreak{}alertas & pasó \\
+GER & fincas & leer & H & fincas, \allowbreak{}finca & matriz.json & (pantalla) & pasó \\
+GER & fincas & aprobar & C11 & aprobar\_catalogo & reglas.rego:122; negocio 0004 & test\_\allowbreak{}ger\_\allowbreak{}aprobar\_\allowbreak{}fincas & pasó \\
+GER & datos\_\allowbreak{}personales & leer & H & titulares, \allowbreak{}titular & matriz.json & (pantalla) & pasó \\
+GER & periodos & leer & — & periodos, \allowbreak{}periodo & matriz.json & (pantalla) & pasó \\
+GER & periodos & abrir & C14 & abrir\_periodo & reglas.rego:149; negocio 0004 & test\_\allowbreak{}ger\_\allowbreak{}abrir\_\allowbreak{}periodos & pasó \\
+GER & periodos & cerrar & C14 & cerrar\_periodo & reglas.rego:149; negocio 0004 & test\_\allowbreak{}ger\_\allowbreak{}cerrar\_\allowbreak{}periodos & pasó \\
+GER & asignaciones & leer & — & asignaciones & matriz.json & (pantalla) & pasó \\
+GER & mediciones & leer & H & mediciones, \allowbreak{}medicion & matriz.json & (pantalla) & pasó \\
+GER & enmiendas & leer & — & enmiendas, \allowbreak{}enmienda & matriz.json & (pantalla) & pasó \\
+GER & enmiendas & solicitar & C7 & solicitar\_enmienda & reglas.rego:88 & test\_\allowbreak{}ger\_\allowbreak{}solicitar\_\allowbreak{}enmiendas & pasó \\
+GER & enmiendas & autorizar & C8 & autorizar\_enmienda & reglas.rego:95; negocio 0004 & test\_\allowbreak{}ger\_\allowbreak{}autorizar\_\allowbreak{}enmiendas & pasó \\
+GER & certificados & leer & H & certificados, \allowbreak{}certificado, \allowbreak{}descargar\_certificado & matriz.json & (pantalla) & pasó \\
+GER & cuentas & leer & — & cuentas, \allowbreak{}cuenta & matriz.json & (pantalla) & pasó \\
+GER & cuentas & aprobar & C12 & aprobar\_rol, \allowbreak{}aprobar\_retiro & reglas.rego:132; negocio 0004 & test\_\allowbreak{}ger\_\allowbreak{}aprobar\_\allowbreak{}cuentas & pasó \\
+GER & cuentas & modificar & C13 & mis\_vinculos & reglas.rego:145 & (pantalla) & pasó \\
+GER & bitacora & leer & — & bitacora & matriz.json & (pantalla) & pasó \\
+GER & alertas & leer & — & alertas & matriz.json & (pantalla) & pasó \\
+GER & alertas & resolver & C15 & resolver\_alerta & reglas.rego:164; negocio 0006 & test\_\allowbreak{}ger\_\allowbreak{}resolver\_\allowbreak{}alertas & pasó \\
+ADM & fincas & leer & H & fincas, \allowbreak{}finca & matriz.json & (pantalla) & pasó \\
+ADM & fincas & proponer & C11 & proponer\_finca, \allowbreak{}proponer\_titular, \allowbreak{}proponer\_parcela & reglas.rego:122; negocio 0004 & (pantalla) & pasó \\
+ADM & datos\_\allowbreak{}personales & leer & H & titulares, \allowbreak{}titular & matriz.json & (pantalla) & pasó \\
+ADM & datos\_\allowbreak{}personales & crear & — & crear\_titular & matriz.json & (pantalla) & pasó \\
+ADM & datos\_\allowbreak{}personales & modificar & — & editar\_titular & matriz.json & test\_\allowbreak{}adm\_\allowbreak{}modificar\_\allowbreak{}datos\_\allowbreak{}personales & pasó \\
+ADM & datos\_\allowbreak{}personales & eliminar & C16 & suprimir\_titular & reglas.rego:177; negocio 0004 & test\_\allowbreak{}adm\_\allowbreak{}eliminar\_\allowbreak{}datos\_\allowbreak{}personales & pasó \\
+ADM & periodos & leer & — & periodos, \allowbreak{}periodo & matriz.json & (pantalla) & pasó \\
+ADM & periodos & crear & — & crear\_periodo & matriz.json & (pantalla) & pasó \\
+ADM & periodos & proponer & C14 & proponer\_periodo & reglas.rego:149; negocio 0004 & test\_\allowbreak{}adm\_\allowbreak{}proponer\_\allowbreak{}periodos & pasó \\
+ADM & cuentas & leer & — & cuentas, \allowbreak{}cuenta & matriz.json & (pantalla) & pasó \\
+ADM & cuentas & crear & C12 & crear\_cuenta & reglas.rego:132; negocio 0004 & (pantalla) & pasó \\
+ADM & cuentas & desactivar & C12 & desactivar\_cuenta & reglas.rego:132; negocio 0004 & test\_\allowbreak{}adm\_\allowbreak{}desactivar\_\allowbreak{}cuentas & pasó \\
+ADM & cuentas & proponer & C12 & proponer\_rol & reglas.rego:132; negocio 0004 & test\_\allowbreak{}adm\_\allowbreak{}proponer\_\allowbreak{}cuentas & pasó \\
+ADM & cuentas & modificar & C13 & mis\_vinculos & reglas.rego:145 & (pantalla) & pasó \\
+AUD & fincas & leer & C6 & fincas, \allowbreak{}finca & reglas.rego:84 & (pantalla) & pasó \\
+AUD & fincas & exportar & C18 & exportar\_fincas & reglas.rego:180 & (pantalla) & pasó \\
+AUD & datos\_\allowbreak{}personales & leer & C6 & titulares, \allowbreak{}titular & reglas.rego:84 & (pantalla) & pasó \\
+AUD & periodos & leer & C6 & periodos, \allowbreak{}periodo & reglas.rego:84 & (pantalla) & pasó \\
+AUD & periodos & exportar & C18 & exportar\_periodos & reglas.rego:180 & (pantalla) & pasó \\
+AUD & asignaciones & leer & C6 & asignaciones & reglas.rego:84 & (pantalla) & pasó \\
+AUD & asignaciones & exportar & C18 & exportar\_asignaciones & reglas.rego:180 & (pantalla) & pasó \\
+AUD & mediciones & leer & C6 & mediciones, \allowbreak{}medicion & reglas.rego:84 & (pantalla) & pasó \\
+AUD & mediciones & exportar & C18 & exportar\_mediciones & reglas.rego:180 & (pantalla) & pasó \\
+AUD & enmiendas & leer & C6 & enmiendas, \allowbreak{}enmienda & reglas.rego:84 & (pantalla) & pasó \\
+AUD & enmiendas & exportar & C18 & exportar\_enmiendas & reglas.rego:180 & (pantalla) & pasó \\
+AUD & certificados & leer & C6 & certificados, \allowbreak{}certificado, \allowbreak{}descargar\_certificado & reglas.rego:84 & (pantalla) & pasó \\
+AUD & certificados & exportar & C18 & exportar\_certificados & reglas.rego:180 & (pantalla) & pasó \\
+AUD & cuentas & leer & C6 & cuentas, \allowbreak{}cuenta & reglas.rego:84 & (pantalla) & pasó \\
+AUD & cuentas & modificar & C13 & mis\_vinculos & reglas.rego:145 & (pantalla) & pasó \\
+AUD & bitacora & leer & C6 & bitacora & reglas.rego:84 & (pantalla) & pasó \\
+AUD & bitacora & exportar & C18 & exportar\_bitacora & reglas.rego:180 & (pantalla) & pasó \\
+AUD & alertas & leer & C6 & alertas & reglas.rego:84 & (pantalla) & pasó \\
+AUD & alertas & exportar & C18 & exportar\_alertas & reglas.rego:180 & (pantalla) & pasó \\
+DUE & fincas & leer & C5 & fincas, \allowbreak{}finca & reglas.rego:72; negocio 0003, negocio 0007 & (pantalla) & pasó \\
+DUE & datos\_\allowbreak{}personales & leer & C5 & titulares, \allowbreak{}titular & reglas.rego:72; negocio 0003, negocio 0007 & (pantalla) & pasó \\
+DUE & periodos & leer & — & periodos, \allowbreak{}periodo & matriz.json & (pantalla) & pasó \\
+DUE & asignaciones & leer & C5 & asignaciones & reglas.rego:72; negocio 0003, negocio 0007 & (pantalla) & pasó \\
+DUE & mediciones & leer & C5 & mediciones, \allowbreak{}medicion & reglas.rego:72; negocio 0003, negocio 0007 & (pantalla) & pasó \\
+DUE & enmiendas & leer & C5 & enmiendas, \allowbreak{}enmienda & reglas.rego:72; negocio 0003, negocio 0007 & (pantalla) & pasó \\
+DUE & certificados & leer & C5 & certificados, \allowbreak{}certificado, \allowbreak{}descargar\_certificado & reglas.rego:72; negocio 0003, negocio 0007 & (pantalla) & pasó \\
+DUE & cuentas & modificar & C13 & mis\_vinculos & reglas.rego:145 & (pantalla) & pasó \\
+SIS & fincas & leer & — & emision/emitir.py (lee lo necesario para emitir con va\_emision) & matriz.json & test\_\allowbreak{}emite\_\allowbreak{}una\_\allowbreak{}medicion\_\allowbreak{}aprobada\_\allowbreak{}con\_\allowbreak{}contenido\_\allowbreak{}firmado & pasó \\
+SIS & datos\_\allowbreak{}personales & leer & — & emision/emitir.py (lee lo necesario para emitir con va\_emision) & matriz.json & test\_\allowbreak{}emite\_\allowbreak{}una\_\allowbreak{}medicion\_\allowbreak{}aprobada\_\allowbreak{}con\_\allowbreak{}contenido\_\allowbreak{}firmado & pasó \\
+SIS & periodos & leer & — & emision/emitir.py (lee lo necesario para emitir con va\_emision) & matriz.json & test\_\allowbreak{}emite\_\allowbreak{}una\_\allowbreak{}medicion\_\allowbreak{}aprobada\_\allowbreak{}con\_\allowbreak{}contenido\_\allowbreak{}firmado & pasó \\
+SIS & asignaciones & leer & — & emision/emitir.py (lee lo necesario para emitir con va\_emision) & matriz.json & test\_\allowbreak{}emite\_\allowbreak{}una\_\allowbreak{}medicion\_\allowbreak{}aprobada\_\allowbreak{}con\_\allowbreak{}contenido\_\allowbreak{}firmado & pasó \\
+SIS & mediciones & leer & — & emision/emitir.py (lee lo necesario para emitir con va\_emision) & matriz.json & test\_\allowbreak{}emite\_\allowbreak{}una\_\allowbreak{}medicion\_\allowbreak{}aprobada\_\allowbreak{}con\_\allowbreak{}contenido\_\allowbreak{}firmado & pasó \\
+SIS & enmiendas & leer & — & emision/emitir.py (lee lo necesario para emitir con va\_emision) & matriz.json & test\_\allowbreak{}emite\_\allowbreak{}una\_\allowbreak{}medicion\_\allowbreak{}aprobada\_\allowbreak{}con\_\allowbreak{}contenido\_\allowbreak{}firmado & pasó \\
+SIS & certificados & emitir & C4 & emision/emitir.py: emitir() (6.3) & reglas.rego:58; negocio 0002, negocio 0006 & test\_\allowbreak{}emite\_\allowbreak{}una\_\allowbreak{}medicion\_\allowbreak{}aprobada\_\allowbreak{}con\_\allowbreak{}contenido\_\allowbreak{}firmado & pasó \\
+SIS & certificados & revocar & C4 & emision/emitir.py: reemitir() (6.5) & reglas.rego:58; negocio 0002, negocio 0006 & test\_\allowbreak{}t25\_\allowbreak{}una\_\allowbreak{}enmienda\_\allowbreak{}que\_\allowbreak{}cambia\_\allowbreak{}toneladas\_\allowbreak{}revoca\_\allowbreak{}y\_\allowbreak{}reemite & pasó \\
+SIS & bitacora & anexar & — & bitacora\_anexar() en cada acción & matriz.json & test\_\allowbreak{}la\_\allowbreak{}cadena\_\allowbreak{}de\_\allowbreak{}la\_\allowbreak{}semilla\_\allowbreak{}esta\_\allowbreak{}integra & pasó \\
+SIS & alertas & crear & — & autorizacion/historial.py: alertar() (alertas de H1 a H3) & matriz.json & test\_\allowbreak{}t18\_\allowbreak{}h1\_\allowbreak{}mas\_\allowbreak{}fincas\_\allowbreak{}que\_\allowbreak{}el\_\allowbreak{}umbral\_\allowbreak{}pide\_\allowbreak{}segundo\_\allowbreak{}factor\_\allowbreak{}y\_\allowbreak{}motivo & pasó \\
+PUB & certificados & comprobar & C20 & publico/servicio.py: /comprobar (6.7) & reglas.rego:193; negocio 0006 & test\_\allowbreak{}un\_\allowbreak{}codigo\_\allowbreak{}vigente & pasó \\
+\bottomrule
+\end{longtable}
+\end{center}
