@@ -455,3 +455,20 @@ class VentanaDeLaCuenta(TestCase):
     def test_cuenta_sin_rol_no_entra(self):
         _persona("sin.rol", "")
         self.assertContains(self._entrar("sin.rol"), "no está vigente")
+
+
+class HashDeContrasenas(TestCase):
+    """Control obligatorio 1 (tarea 3.2): la contraseña se guarda con Argon2id y una sal propia; nunca
+    en claro ni con un hash rápido."""
+
+    def test_argon2id_con_sal_propia(self):
+        clave = "Una-clave-larga-de-prueba-2026"
+        a = Usuario.objects.create_user("tec.hash1", password=clave)
+        b = Usuario.objects.create_user("tec.hash2", password=clave)
+        self.assertTrue(a.password.startswith("argon2$argon2id$"))
+        self.assertNotIn(clave, a.password)
+        self.assertNotEqual(a.password, b.password)  # misma contraseña, distinta sal
+        self.assertTrue(a.check_password(clave))
+        self.assertFalse(a.check_password(clave + "x"))
+        parametros = a.password.split("$")[3]  # m=...,t=...,p=...
+        self.assertGreaterEqual(int(dict(p.split("=") for p in parametros.split(","))["m"]), 65536)

@@ -1,0 +1,5 @@
+# Archivos auxiliares de pdflatex
+*.aux
+*.log
+*.toc
+*.out

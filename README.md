@@ -1,220 +1,182 @@
-<h1 align="center"> Verdeazul Carbono</h1>
+# Verdeazul Carbono · Proyecto Parte 2
 
-<p align="center">
-  <strong>Sistema seguro de registro, verificación y certificación de carbono</strong><br>
-  CE-1115 · Seguridad de la Información · Instituto Tecnológico de Costa Rica<br>
-</p>
+CE-1115 Seguridad de la Información, TEC · Grupo 6: Randall Bolaños, Javier Tenorio, Julio Varela y
+Axel Flores. Implementación y despliegue en Google Cloud Run y Neon del sistema de control de acceso
+diseñado en la Parte 1. Entrega: 19 de noviembre de 2026.
 
-<div align="center">
+El plan de trabajo, tarea por tarea, está en [todo.md](todo.md). Los documentos del diseño (Parte 1)
+están en [Randall-BL/CE1115-Proyecto-P1-Verdeazul](https://github.com/Randall-BL/CE1115-Proyecto-P1-Verdeazul).
 
-<a href="https://verdeazul-app-708901712393.us-east1.run.app"><img alt="Aplicación pública" src="https://img.shields.io/badge/ABRIR_APLICACI%C3%93N-Cloud_Run-0B6E4F?style=for-the-badge&amp;logo=googlecloud&amp;logoColor=white"></a>
-<a href="todo.md"><img alt="Seguimiento" src="https://img.shields.io/badge/PLAN_DE_TRABAJO-todo.md-455A64?style=for-the-badge&amp;logo=github&amp;logoColor=white"></a>
-<a href="https://github.com/Randall-BL/CE1115-Proyecto-P1-Verdeazul"><img alt="Diseño" src="https://img.shields.io/badge/DISE%C3%91O_ORIGINAL-Parte_1-455A64?style=for-the-badge&amp;logo=github&amp;logoColor=white"></a>
+## Estructura
 
-<strong>Tecnologías principales</strong>
+| Carpeta | Componente de la Parte 1 | Estado |
+|---|---|---|
+| `app/` | Aplicación Django, punto de cumplimiento | Sprint 1 |
+| `politica/` | Motor de decisión OPA: la matriz como política | Sprint 2 |
+| `db/` | Usuarios de base, permisos, seguridad por fila, bitácora | Sprint 2 |
+| `emision/` | Servicio de emisión de certificados (SIS) | Sprint 4: firma, revoca y reemite |
+| `publico/` | Comprobación pública de certificados (PUB) | Sprint 4: por archivo y por código |
+| `trabajos/` | Trabajos programados | Sprint 4 |
+| `verificador/` | Formato del certificado y verificador sin conexión | Sprint 4 |
+| `infra/` | Scripts de Google Cloud, Cloud Build y Cloud Run (sin secretos) | Sprint 1 |
+| `docs/` | [Informe](docs/informe/P2_Informe_grupo6.pdf), [cobertura de la matriz](docs/cobertura.md), [escaneos](docs/escaneos.md), [IAM](docs/iam.md), [evidencia](docs/evidencia/), [demostración de certificados](docs/demostracion/LEEME.md) y [guion de la presentación](docs/presentacion/guion.md) | Entrega |
 
-<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/PYTHON-3.14-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white"></a>
-<a href="https://www.djangoproject.com/"><img alt="Django" src="https://img.shields.io/badge/DJANGO-5.2_LTS-092E20?style=for-the-badge&amp;logo=django&amp;logoColor=white"></a>
-<a href="https://www.docker.com/"><img alt="Docker" src="https://img.shields.io/badge/DOCKER-CONTENEDORES-2496ED?style=for-the-badge&amp;logo=docker&amp;logoColor=white"></a>
-<a href="https://www.openpolicyagent.org/"><img alt="OPA" src="https://img.shields.io/badge/OPA-REGO-D52B1E?style=for-the-badge"></a>
-<a href="https://www.postgresql.org/"><img alt="PostgreSQL" src="https://img.shields.io/badge/POSTGRESQL-18-4169E1?style=for-the-badge&amp;logo=postgresql&amp;logoColor=white"></a>
-<a href="https://postgis.net/"><img alt="PostGIS" src="https://img.shields.io/badge/POSTGIS-DATOS_GEOESPACIALES-3E7C17?style=for-the-badge"></a>
-<a href="https://cloud.google.com/run"><img alt="Google Cloud" src="https://img.shields.io/badge/GOOGLE_CLOUD-Cloud_Run-4285F4?style=for-the-badge&amp;logo=googlecloud&amp;logoColor=white"></a>
-<a href="https://neon.tech/"><img alt="Neon" src="https://img.shields.io/badge/NEON-BASE_DE_DATOS-00A67D?style=for-the-badge"></a>
-<a href="https://github.com/features/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/GITHUB_ACTIONS-CI-2088FF?style=for-the-badge&amp;logo=githubactions&amp;logoColor=white"></a>
+## Configuración del repositorio (una vez por clon)
 
-</div>
+1. Instalar gitleaks 8.30 o superior:
+   - Windows: `winget install --id Gitleaks.Gitleaks -e`, y abrir una terminal nueva.
+   - macOS: `brew install gitleaks`.
+   - Comprobar con `gitleaks version`.
+2. Activar los ganchos del repositorio:
+   ```
+   git config core.hooksPath .githooks
+   ```
+3. Hacer los commits con su propia identidad, la que está vinculada a su cuenta de GitHub:
+   ```
+   git config user.name "Su nombre"
+   git config user.email "su-correo@estudiantec.cr"
+   ```
+   Si ese correo no está agregado en GitHub (Settings → Emails), los commits no quedan a su nombre.
 
----
+Con eso, cada commit pasa por dos revisiones antes de crearse:
 
-##  ¿Qué es Verdeazul Carbono?
-
-Verdeazul Carbono es una aplicación web para gestionar información de **fincas, parcelas, mediciones y certificados de carbono**. Su objetivo central es aplicar controles de seguridad reales: que cada persona pueda hacer **solo lo que le corresponde**, que las operaciones sean auditables y que los certificados puedan comprobarse sin confiar únicamente en la interfaz.
-
-**Ejemplo de flujo:** un técnico registra una medición → un verificador independiente la revisa y aprueba → el servicio de emisión genera un certificado firmado con Ed25519 → un tercero verifica el archivo o consulta el certificado por su código mediante el servicio público. Si una enmienda autorizada modifica las toneladas, el sistema puede revocar y reemitir el certificado, manteniendo el vínculo entre ambos.
-
-###  Accesos rápidos
-
-| Quiero… | Ir a… |
+| Gancho | Qué rechaza |
 |---|---|
-| Abrir el sistema desplegado | [Aplicación pública en Cloud Run](https://verdeazul-app-708901712393.us-east1.run.app) |
-| Entender dónde está cada función | [Guía de carpetas](#guía-de-carpetas-y-archivos) |
-| Conocer las herramientas y su propósito | [Tecnologías](#tecnologías-qué-hace-cada-una) |
-| Consultar versiones de Verdeazul | [Despliegue y versiones](#despliegue-en-google-cloud) |
-| Consultar la matriz y los documentos de diseño | [Parte 1: diseño original](https://github.com/Randall-BL/CE1115-Proyecto-P1-Verdeazul) |
+| `.githooks/pre-commit` | Cualquier secreto en lo preparado: llaves privadas, tokens, cadenas de conexión con contraseña, semillas TOTP. Usa las reglas de gitleaks y las de `.gitleaks.toml` |
+| `.githooks/commit-msg` | Co-autores que no sean del equipo (`@estudiantec.cr` o el noreply de GitHub), cuentas `[bot]` y pies «Generated with» |
 
-##  ¿Qué permite hacer el sistema?
+El flujo `.github/workflows/seguridad.yml` repite las dos revisiones sobre toda la historia en cada
+push a `main` y en cada PR, por si alguien no instaló los ganchos.
 
-- **Registrar y gestionar fincas y parcelas** con información geoespacial.
-- **Capturar, enviar, revisar y aprobar mediciones**, manteniendo su historial.
-- **Administrar cuentas, roles, asignaciones, períodos y alertas**, según los permisos definidos.
-- **Proteger las operaciones** mediante autenticación multifactor, reglas de acceso y restricciones en la base de datos.
-- **Registrar acciones en una bitácora encadenada** para detectar modificaciones no autorizadas.
-- **Emitir, revocar y reemitir certificados firmados digitalmente** con Ed25519; verificar su integridad desde el servicio público o con un verificador independiente de línea de comandos.
-- **Ejecutar trabajos programados** para vencimientos, escalamiento de alertas, revisión de auditoría y sellado temporal de la bitácora (RFC 3161).
+## Ramas
 
-### Roles principales
+- Cada integrante trabaja en su rama `development-<nombre>` (por ejemplo, `development-yitan`) y
+  hace un commit por tarea del [todo.md](todo.md), con su número al inicio del mensaje («2.7: …»).
+- A `main` se llega por PR desde esa rama, fusionando con **merge commit**, no con squash: así los
+  commits etiquetados (`v0.2.0`, …) siguen en la historia de `main`.
+- El CI corre en cada push a `main` y a las ramas `development-*`, y en cada PR.
 
-| Rol | ¿Qué hace? |
-|---|---|
-| **TEC** — Técnico | Registra y envía mediciones de fincas asignadas. |
-| **VER** — Verificador | Revisa y aprueba o devuelve mediciones; no aprueba las que registró. |
-| **SUP** — Supervisor | Gestiona asignaciones de técnicos y atiende alertas. |
-| **GER** — Gerencia | Autoriza decisiones y aprueba cambios sensibles. |
-| **ADM** — Administrador | Gestiona cuentas y propuestas de cambios administrativos. |
-| **AUD** — Auditor | Consulta y exporta información de auditoría dentro de su ventana autorizada. |
-| **DUE** — Dueño | Consulta únicamente sus datos y operaciones permitidas. |
-| **SIS / PUB / OPE** | Servicios de emisión y consulta pública / operador de infraestructura. No son cuentas humanas comunes de la aplicación. |
+## Reglas del repositorio
 
-El diseño define 102 permisos concedidos y 38 celdas denegadas. Según el seguimiento del 14 de noviembre, se completaron los casos T-01 a T-41 y las pruebas de los 102 permisos (91 de los roles humanos, 10 de SIS y 1 de PUB). También se comprobaron 174 combinaciones de acceso indebido por identificador (IDOR) y la equivalencia de reglas entre OPA y la base. 
+- **Ningún secreto en el repositorio, nunca.** El repositorio es público. Las credenciales viven en
+  Secret Manager; para desarrollar en local se copia `.env.example` a `.env`, que git ignora. Si un
+  secreto llega a subirse, se rota de inmediato: borrarlo del repositorio no basta.
+- **`main` no admite force push ni se puede borrar.**
+- **Las etiquetas `v*` son inmutables:** una vez publicada, `v1.0.0` no se mueve ni se borra. Si hay
+  un error, se publica `v1.0.1`. Cada etiqueta de git corresponde a la imagen con la misma etiqueta en
+  Artifact Registry.
+- **Dependabot** revisa cada lunes las dependencias de pip, las imágenes base de Docker y las acciones
+  de GitHub (`.github/dependabot.yml`), y abre PR de seguridad cuando hay una alerta.
 
-##  Tecnologías: ¿qué hace cada una?
+## Desarrollo local
 
-| Tecnología | Función dentro de Verdeazul |
-|---|---|
-| **Python + Django** | Backend principal, autenticación, vistas, formularios, reglas de negocio y generación de páginas. |
-| **Flask + Gunicorn** | Servicios separados de emisión y comprobación pública de certificados. |
-| **HTML + CSS + plantillas Django** | Frontend: pantallas y navegación según la sesión y el rol. |
-| **Open Policy Agent (OPA) + Rego** | Motor que evalúa las decisiones de acceso usando la matriz de roles, acciones y condiciones. |
-| **PostgreSQL + PostGIS** | Almacenamiento de usuarios, fincas, geometrías, mediciones, permisos y auditoría. |
-| **Docker + Docker Compose** | Contenedores reproducibles para ejecutar el sistema y sus dependencias. |
-| **Google Cloud Run** | Ejecución de la aplicación y de los servicios de emisión y comprobación pública; el servicio de emisión está restringido a invocadores autorizados. |
-| **Cloud Run Jobs + Cloud Scheduler** | Ejecución diaria de vencimientos, alertas, verificación de la bitácora y tareas de emisión pendientes. |
-| **Neon** | Servicio administrado que aloja PostgreSQL en la nube. |
-| **Secret Manager** | Almacena claves de Django y MFA, conexiones independientes por servicio y la clave privada Ed25519 de firma, con permisos de lectura restringidos. |
-| **Ed25519 + RFC 3161** | Firma y comprobación de certificados y exportaciones; sellado de tiempo externo de la bitácora. |
-| **Artifact Registry + Cloud Build** | Construcción y almacenamiento de imágenes Docker con versiones identificables. |
-| **GitHub Actions + Dependabot** | Pruebas automatizadas y revisión de dependencias mediante integración continua. |
-| **Ruff, Bandit, mypy, pip-audit y Trivy** | Análisis de código y dependencias, y revisión de vulnerabilidades en las cinco imágenes de contenedor. |
-| **Gitleaks** | Detección de posibles secretos antes de los commits y en la integración continua. |
+Con Docker Desktop abierto:
 
-##  Arquitectura resumida del sistema
-
-```mermaid
-flowchart TD
-    U[Usuario / navegador] -->|HTTPS| D
-    subgraph RUN[Cloud Run · verdeazul-app]
-        D[Django · backend y frontend] <-->|decisiones| O[OPA · Rego]
-    end
-    D -->|invocación autenticada| E[Cloud Run · emisión / Ed25519]
-    X[Usuario externo] -->|HTTPS| P[Cloud Run · 
-    comprobación 
-    pública]
-    C[Cloud Scheduler] --> J[Cloud Run Jobs · tareas diarias]
-    J -->|emisión pendiente| E
-    D -->|TLS| N[(Neon · PostgreSQL + PostGIS)]
-    E -->|TLS| N
-    P -->|consulta restringida| N
-    J -->|TLS| N
-    S[Secret Manager] -.->|secretos autorizados| D
-    S -.-> E
-    S -.-> P
-    S -.-> J
-    B[Cloud Build] --> R[Artifact Registry]
-    R -->|imágenes versionadas| D
-    R --> E
-    R --> P
-    R --> J
+```
+DJANGO_SECRET_KEY=<cualquier valor largo> docker compose up --build
 ```
 
-**Una operación típica:** la persona inicia sesión → Django identifica su rol → consulta a OPA → la aplicación autoriza o rechaza → PostgreSQL aplica restricciones adicionales → la acción y su resultado quedan registrados cuando corresponde. En la emisión, Django invoca el servicio de firma con una identidad autorizada; el servicio público comprueba archivos o códigos sin revelar datos personales.
+La app queda en http://127.0.0.1:8000 y la base (PostGIS 18, sin contraseña, solo local) en
+`127.0.0.1:15432`. La llave se puede poner en `.env`, que git ignora.
 
-##  Guía de carpetas y archivos
+Para crear las tablas y cargar los personajes de los casos de prueba (una sola vez por base):
 
-### Backend, frontend y controles
+```
+docker compose exec app python manage.py migrate
+docker compose exec app python manage.py sembrar
+```
 
-| Ruta | ¿Qué encontrarás ahí? |
-|---|---|
-| `app/cuentas/` | Usuarios, roles, contraseñas, sesiones, autenticación y segundo factor (TOTP). |
-| `app/negocio/` | Modelos y reglas de fincas, parcelas, mediciones, asignaciones, períodos y certificados. |
-| `app/flujos/vistas/` | Vistas y acciones del negocio: fincas, cuentas, asignaciones, mediciones, alertas, etc. |
-| `app/autorizacion/` | Conexión con OPA, hechos obtenidos desde la base y aplicación de permisos. |
-| `app/nucleo/` | Configuración compartida, conexión/contexto de base y componentes de Django. |
-| `app/nucleo/static/verdeazul/` | Archivos estáticos del frontend (CSS, marca y estilos). |
-| `app/bitacora/` | Registro de eventos, bitácora encadenada y verificación de integridad. |
-| `app/nucleo/emision.py` | Comunicación autenticada de Django con el servicio de emisión; recuperación de operaciones pendientes por el trabajo diario. |
-| `app/requirements.in` | Dependencias directas de Python; se fijan mediante el script de infraestructura. |
+`sembrar` genera una contraseña por cuenta y la imprime una sola vez en la terminal. Con
+`--salida RUTA` la escribe en un archivo nuevo, que no puede quedar dentro del repositorio, y con la
+variable `SEMILLA_CONTRASENA` todas las cuentas usan esa. `db/pruebas/semilla.sql` comprueba que los
+datos cargados dejan listos los casos de la matriz. `docker compose down -v` borra la base local.
 
-### Política, infraestructura y servicios complementarios
+## Pruebas
 
-| Ruta | ¿Para qué sirve? |
-|---|---|
-| `politica/matriz.json` | Fuente de verdad de los permisos de la matriz. |
-| `politica/verdeazul/*.rego` | Reglas y pruebas de autorización del motor OPA. |
-| `politica/Dockerfile` | Construcción de la imagen del motor de políticas. |
-| `db/` | Scripts SQL, usuarios de base, restricciones y comprobaciones de datos. |
-| `infra/app.service.yaml` | Configuración declarativa del despliegue en Cloud Run. |
-| `infra/` | Scripts de preparación, creación de secretos, construcción y despliegue. |
-| `infra/trabajos.job.yaml` | Configuración del trabajo diario en Cloud Run Jobs. |
-| `infra/cobertura.py` y `docs/cobertura.md` | Generación y documentación de la cobertura de los 102 permisos, reglas y 41 casos de prueba. |
-| `docker-compose.yml` | Contenedores y puertos para desarrollo local. |
-| `.github/workflows/seguridad.yml` | Revisiones de seguridad ejecutadas por GitHub Actions. |
-| `.github/dependabot.yml` | Configuración de revisión automática de dependencias. |
-| `.githooks/` y `.gitleaks.toml` | Comprobaciones locales para evitar filtrar secretos. |
-| `emision/` | Servicio Flask que firma, emite, revoca y reemite certificados; también sella exportaciones de auditoría. |
-| `publico/` | Servicio Flask de verificación de archivos firmados y comprobación por código, sin mostrar datos personales. |
-| `trabajos/` | Tareas diarias de vencimientos, alertas, integridad de bitácora, sellos RFC 3161 y emisiones pendientes. |
-| `verificador/` | Herramienta de línea de comandos que verifica certificados y exportaciones sin conectarse a Verdeazul. |
-| `docs/verdeazul-clave-publica.pem` y `docs/demostracion/` | Clave pública de verificación y ejemplos de certificado válido y alterado para la demostración. |
+- **Aplicación** (en `app/`, con la base de compose y OPA en `OPA_URL`): `python manage.py test`.
+  `OPA_PRUEBAS=1` activa además la prueba de punta a punta del motor. Son 190 pruebas: los 41 casos
+  T-01 a T-41, el caso feliz de los 102 permisos, la equivalencia entre el motor y la base, el cambio
+  de identificador con cada rol, la bitácora, la emisión y el trabajo diario. Algunas toman los roles
+  `va_app`, `va_emision`, `va_publico` y `va_trabajos`, así que el usuario de las pruebas tiene que
+  ser superusuario de la base local.
+- **Servicios:** `python -m unittest -v` dentro de `verificador/`, `emision/`, `publico/` y `trabajos/`.
+- **Política:** `opa test politica` (71 pruebas, cobertura mínima de 95 %).
+- **Tabla de cobertura de la matriz:** [docs/cobertura.md](docs/cobertura.md), generada con
+  `infra/cobertura.py` a partir del código y de los registros de una corrida.
+- **CI** (`.github/workflows/seguridad.yml`): en cada push corre todo lo anterior, además de gitleaks
+  sobre la historia, ruff, bandit, mypy, pip-audit y Trivy sobre las cinco imágenes.
 
-##  Seguridad y buenas prácticas
+## Despliegue
 
-El proyecto aplica controles en diferentes capas:
-
-| Control | Dónde se aplica o administra |
-|---|---|
-| Contraseñas con hash lento (Argon2id) | `app/cuentas/` |
-| Autenticación multifactor TOTP | `app/cuentas/`, secreto `mfa-clave` |
-| Control de acceso del lado del servidor | `app/autorizacion/` + OPA/Rego |
-| Seguridad por fila (RLS) y restricciones SQL | PostgreSQL, scripts y migraciones del proyecto |
-| Bitácora encadenada | `app/bitacora/` y funciones de PostgreSQL |
-| Firma digital Ed25519 y verificación independiente | `emision/`, `publico/`, `verificador/` y clave pública en `docs/` |
-| Testigo externo de tiempo RFC 3161 | `trabajos/tsa.py` y registros de la bitácora en PostgreSQL |
-| Revocación y reemisión de certificados | `emision/emitir.py` y restricciones de PostgreSQL |
-| Permisos por componente y credenciales separadas | Cuentas `sa-*` de Cloud Run y usuarios `va_*` en PostgreSQL |
-| HTTPS y cabeceras de seguridad | Google Cloud Run y configuración de Django |
-| Gestión de secretos | Google Cloud Secret Manager |
-| Revisión de secretos y dependencias | Gitleaks, GitHub Actions, Dependabot, pip-audit y Trivy |
-| Pruebas de permisos, equivalencia e IDOR | `flujos/tests_casos.py`, `flujos/tests_equivalencia.py`, `flujos/tests_idor.py` y `docs/cobertura.md` |
-
-
-##  Despliegue en Google Cloud
-
-**Aplicación pública:** https://verdeazul-app-708901712393.us-east1.run.app
+**URL pública:** https://verdeazul-app-708901712393.us-east1.run.app
 
 **Comprobación pública de certificados:** https://verdeazul-publico-708901712393.us-east1.run.app
 
-| Recurso | Identificación |
-|---|---|
-| Proyecto de Google Cloud | `verdeazul-ce1115-g6` |
-| Región de Cloud Run | `us-east1` |
-| Proyecto de Neon | `verdeazul` |
-| Registro de imágenes | `us-east1-docker.pkg.dev/verdeazul-ce1115-g6/verdeazul` |
-| Configuración del servicio | `infra/app.service.yaml` |
-| Otros servicios | `verdeazul-emision` (acceso restringido) y `verdeazul-publico` (comprobación pública) |
-| Trabajo programado | `verdeazul-trabajos`, disparador `verdeazul-diario` (02:30, hora de Costa Rica) |
-| Secretos de conexión | `db-url-app`, `db-url-emision`, `db-url-publico`, `db-url-trabajos` (lectores distintos) |
-| Clave de firma | `firma-clave-privada`, solo accesible a `sa-emision`; clave pública en `docs/verdeazul-clave-publica.pem` |
+Proyecto de Google Cloud `verdeazul-ce1115-g6`, región `us-east1`. Base de datos en Neon, proyecto
+`verdeazul`. Hace falta gcloud con sesión en una cuenta con acceso al proyecto, y Git Bash o Cloud
+Shell para correr los scripts.
 
-###  Versiones documentadas
+**Una sola vez** (ya está hecho; los scripts solo crean lo que falta):
 
-| Versión | Commit / imagen | Fecha | Cambios principales |
+```
+sh infra/preparar-gcp.sh     # registro de imágenes, cuentas de servicio, bucket de Cloud Build
+sh infra/crear-secretos.sh   # secretos, un usuario de base por componente y la clave de firma
+```
+
+**Cada versión:**
+
+1. Commit y push (a `main` o a la rama `development-<nombre>`).
+2. `sh infra/publicar.sh <componente> vX.Y.Z` para `app`, `politica`, `emision`, `publico` y `trabajos`:
+   Cloud Build construye la imagen y la publica como `<componente>:vX.Y.Z` y `<componente>:git-<commit>`,
+   y pone la etiqueta `vX.Y.Z` en git, en el mismo commit. Las cinco salen del mismo commit.
+3. `sh infra/desplegar.sh <componente> vX.Y.Z`, en este orden: `emision`, `publico`, `trabajos` y `app`
+   (que lleva `politica` como contenedor auxiliar). Aplica `infra/<componente>.service.yaml`; para
+   `trabajos`, `infra/trabajos.job.yaml` y el disparador diario de Cloud Scheduler.
+
+**Volver a una versión anterior:** `sh infra/desplegar.sh app vX.Y.Z` con la versión a la que se
+quiere volver. El registro conserva las últimas cinco versiones de cada imagen y todas las `v1.x`.
+
+**Dependencias:** se editan en `app/requirements.in` y se fijan con
+`sh infra/fijar-dependencias.sh app` (requiere `pip install uv`).
+
+## Certificados: clave pública y verificación
+
+Cada certificado es un JSON canónico (claves ordenadas, sin espacios, UTF-8) firmado con **Ed25519**,
+con la clave pública y su huella incrustadas (decisión 0.3). Lo firma solo el servicio de emisión, que
+es el único que lee la clave privada en Secret Manager. Una firma correcta no basta: la clave
+incrustada tiene que ser **esta**, la publicada por Verdeazul.
+
+- Huella SHA-256 de la clave pública (sus 32 bytes): `5fb2e24fa692518552f64842ecdaa94af05f6b87d035f66efaa0513a1b166d0f`
+- Archivo: [docs/verdeazul-clave-publica.pem](docs/verdeazul-clave-publica.pem), la misma copia que trae
+  el verificador y que sirve el servicio público en `/.well-known/verdeazul-clave.pem`.
+
+```
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEA4W/eeOeYlcyBg2bBdLpiTTdILrdZ1FpAusrTS2VKaHY=
+-----END PUBLIC KEY-----
+```
+
+**Verificar sin conexión** (lo que haría un comprador en otro país; también verifica los paquetes
+sellados que exporta el auditor):
+
+```
+pip install cryptography
+python verificador/verificar.py certificado.json
+```
+
+**Comprobar en línea**, con el archivo o con el código del certificado:
+https://verdeazul-publico-708901712393.us-east1.run.app
+
+## Versiones publicadas
+
+Cada etiqueta de git corresponde a la imagen con la misma etiqueta en
+`us-east1-docker.pkg.dev/verdeazul-ce1115-g6/verdeazul`.
+
+| Versión | Commit | Fecha | Qué trae |
 |---|---|---|---|
-| **`v0.1.0`** | `6a0a1f8` | 2026-11-06 | Primera página pública con Django, HTTPS, conexión a Neon y ejecución sin root. |
-| **`v0.2.0`** | App: `383da2f` · Política: `7b5df6e` | 2026-11-12 | RLS, bitácora, Argon2id, TOTP, sesiones revocables, OPA como sidecar y nueva interfaz. La imagen de política solo cambia `.gcloudignore` respecto al código de política de `383da2f`. |
-| **`v0.3.0`** | `c8d05be` | 2026-11-12 | Flujos de catálogo, períodos, asignaciones, mediciones, enmiendas, cuentas, alertas, bitácora y exportación de auditoría; corrección de RLS para registrar mediciones. |
-| **`v0.4.0`** | `c9bc8a4` | 2026-11-13 | Emisión y verificación pública de certificados Ed25519, revocación y reemisión, exportaciones selladas, verificador independiente y trabajo diario con testigo RFC 3161. Desplegada en Cloud Run según el seguimiento. |
-
-
-##  Equipo de desarrollo
-
-**Grupo 6 — CE-1115**  
-Randall Bolaños · Javier Tenorio · Julio Varela · Axel Flores
-
-Instituto Tecnológico de Costa Rica · II semestre de 2026.
-
----
-
-<div align="center">
-  <sub>Proyecto académico. La seguridad debe verificarse en el código, en el servidor, en la base de datos y mediante pruebas; las insignias y el README son documentación, no evidencia de cumplimiento.</sub>
-</div>
+| `v0.1.0` | `6a0a1f8` | 2026-11-06 | «Hola»: Django por HTTPS en Cloud Run, que lee Neon con la cadena de Secret Manager; imagen sin root |
+| `v0.2.0` | `383da2f` (`app`), `7b5df6e` (`politica`) | 2026-11-12 | Base con seguridad por fila y bitácora encadenada, Argon2id y TOTP obligatorio, sesión revocable, OPA como contenedor auxiliar que decide cada petición y frena todo si no responde (T-41), interfaz nueva. La imagen de la política salió de `7b5df6e`, que solo cambia `.gcloudignore`: los archivos de la política son los mismos de `383da2f` |
+| `v0.3.0` | `c8d05be` | 2026-11-12 | Los flujos de la fase 5 con una ruta protegida por cada permiso de los siete roles: catálogo, períodos, asignaciones, mediciones, enmiendas, cuentas, datos personales, alertas, bitácora y exportación del auditor. Corrige la seguridad por fila que impedía a un técnico registrar mediciones |
+| `v0.4.0` | `c9bc8a4` | 2026-11-13 | Certificados: el servicio privado de emisión firma con Ed25519, revoca y reemite cuando una enmienda cambia las toneladas, y sella los paquetes del auditor; comprobación pública por archivo y por código; verificador sin conexión. Trabajo diario con Cloud Scheduler: vencimientos, escalamiento de alertas, emisiones pendientes, verificación de la cadena y testigo RFC 3161. Las cinco imágenes (`app`, `politica`, `emision`, `publico`, `trabajos`) salen del mismo commit |
+| `v1.0.0` | `99067dc` | 2026-11-15 | Fase 8: los 41 casos T, el caso feliz de los 102 permisos, la equivalencia motor–base, IDOR con cada rol y la tabla de cobertura; corrige la fecha UTC en la base, T-33 y las respuestas que revelaban qué existe. Fase 9: cabeceras de seguridad (HTTP Observatory de C a A+), imágenes sin pip, con los parches de Debian y analizadas con Trivy. Las cinco imágenes salen del mismo commit |
+| **`v1.0.1`** | `696e76b` | 2026-11-15 | **Versión de entrega.** Las actualizaciones que propuso Dependabot, revisadas: django-allauth 65.22.1, gunicorn 27.0.1 y psycopg 3.3.9 en la aplicación, y OPA 1.22.4 en el motor y en el CI. La aplicación ya no registra un error de gunicorn en cada arranque. Mismo código de negocio que `v1.0.0` |

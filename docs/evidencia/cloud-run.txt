@@ -1,0 +1,16 @@
+$ gcloud run services list (revisión, cuenta de servicio e imágenes en uso)
+  verdeazul-app      verdeazul-app-00007-rtk  sa-app
+    imagen: app:v1.0.1
+    imagen: politica:v1.0.1
+  verdeazul-emision  verdeazul-emision-00003-446  sa-emision
+    imagen: emision:v1.0.1
+  verdeazul-publico  verdeazul-publico-00003-xws  sa-publico
+    imagen: publico:v1.0.1
+  verdeazul-trabajos (Cloud Run Job)  trabajos:v1.0.1
+$ gcloud artifacts docker tags list (etiqueta v1.0.1)
+
+  app       git-696e76b v1.0.1
+  politica  git-696e76b v1.0.1
+  emision   git-696e76b v1.0.1
+  publico   git-696e76b v1.0.1
+  trabajos  git-696e76b v1.0.1

@@ -1,0 +1,17 @@
+$ curl -s -D - -o /dev/null http://verdeazul-app-708901712393.us-east1.run.app/
+HTTP/1.1 302 Found
+location: https://verdeazul-app-708901712393.us-east1.run.app/
+
+$ curl -s -D - -o /dev/null https://verdeazul-app-708901712393.us-east1.run.app/
+HTTP/1.1 200 OK
+x-frame-options: DENY
+content-security-policy: default-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'none'
+permissions-policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+cross-origin-resource-policy: same-origin
+cross-origin-embedder-policy: require-corp
+strict-transport-security: max-age=31536000; includeSubDomains
+cross-origin-opener-policy: same-origin
+
+$ openssl s_client -connect verdeazul-app-708901712393.us-east1.run.app:443
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Verify return code: 0 (ok)

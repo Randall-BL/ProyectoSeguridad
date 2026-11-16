@@ -5,7 +5,7 @@ las pruebas. No se edita a mano: se vuelve a generar.
 
 - Permisos concedidos: **102** (91 de los siete roles de la aplicación, 11 de SIS y PUB). Con su prueba en verde: **102**.
 - Celdas denegadas: **38**.
-- Pruebas encontradas en el repositorio: 302; con resultado en esta corrida: 302.
+- Pruebas encontradas en el repositorio: 304; con resultado en esta corrida: 304.
 
 ## Reglas y casos de la Parte 1
 
@@ -46,11 +46,11 @@ las pruebas. No se edita a mano: se vuelve a generar.
 | T-02 | `flujos.tests.CasosDeLaParte1.test_t02_t27_fuera_de_sus_fincas_no_existe`<br>`rego.test_t02_detalle_de_una_finca_sin_asignar` | pasó |
 | T-03 | `flujos.tests.CasosDeLaParte1.test_t03_una_medicion_enviada_ya_no_se_modifica`<br>`rego.test_t03_modificar_una_medicion_ya_enviada` | pasó |
 | T-04 | `flujos.tests_casos.CasosQueFaltaban.test_t04_despues_del_cierre_un_borrador_ya_no_se_modifica`<br>`rego.test_t04_modificar_un_borrador_despues_del_cierre` | pasó |
-| T-05 | `autorizacion.tests.HechosDesdeLaBase.test_con_el_motor_real_t05_y_t06`<br>`flujos.tests.CasosDeLaParte1.test_t05_otro_verificador_aprueba`<br>`rego.test_t05_b_aprueba_lo_que_registro_a` | pasó |
+| T-05 | `flujos.tests.CasosDeLaParte1.test_t05_otro_verificador_aprueba`<br>`autorizacion.tests.HechosDesdeLaBase.test_con_el_motor_real_t05_y_t06`<br>`rego.test_t05_b_aprueba_lo_que_registro_a` | pasó |
 | T-06 | `flujos.tests.CasosDeLaParte1.test_t06_quien_escribio_una_version_no_aprueba`<br>`rego.test_t06_c_escribio_la_version_1` | pasó |
 | T-07 | `flujos.tests_certificados.EmisionDeCertificados.test_t07_emitir_dos_veces_no_duplica`<br>`rego.test_t07_no_emite_si_ya_hay_uno_vigente` | pasó |
-| T-08 | `autorizacion.tests.Decorador.test_t08_lo_ajeno_responde_igual_que_lo_inexistente`<br>`flujos.tests.CasosDeLaParte1.test_t08_el_dueno_solo_ve_lo_suyo`<br>`rego.test_t08_el_dueno_pide_el_certificado_de_otro` | pasó |
-| T-09 | `cuentas.tests.VentanaDeLaCuenta.test_t09_una_semana_despues_de_su_ventana`<br>`flujos.tests_trabajos.TrabajoDiario.test_t09_la_ventana_vencida_y_45_dias_sin_uso_dan_de_baja`<br>`rego.test_t09_auditora_fuera_de_su_ventana` | pasó |
+| T-08 | `flujos.tests.CasosDeLaParte1.test_t08_el_dueno_solo_ve_lo_suyo`<br>`autorizacion.tests.Decorador.test_t08_lo_ajeno_responde_igual_que_lo_inexistente`<br>`rego.test_t08_el_dueno_pide_el_certificado_de_otro` | pasó |
+| T-09 | `flujos.tests_trabajos.TrabajoDiario.test_t09_la_ventana_vencida_y_45_dias_sin_uso_dan_de_baja`<br>`cuentas.tests.VentanaDeLaCuenta.test_t09_una_semana_despues_de_su_ventana`<br>`rego.test_t09_auditora_fuera_de_su_ventana` | pasó |
 | T-10 | `flujos.tests.CasosDeLaParte1.test_t10_la_auditora_no_escribe`<br>`rego.test_t10_la_auditora_no_modifica_nada` | pasó |
 | T-11 | `flujos.tests_casos.CasosQueFaltaban.test_t11_un_tecnico_no_pide_enmienda_de_lo_que_midio_otro`<br>`rego.test_t11_el_tecnico_pide_enmienda_de_lo_que_midio_otro` | pasó |
 | T-12 | `flujos.tests_casos.CasosQueFaltaban.test_t24_t12_t25_la_que_solicito_no_autoriza_otra_gerente_si_y_se_reemite`<br>`rego.test_t12_la_gerente_autoriza` | pasó |
@@ -82,7 +82,7 @@ las pruebas. No se edita a mano: se vuelve a generar.
 | T-38 | `flujos.tests.CasosDeLaParte1.test_t38_el_maximo_de_asignaciones`<br>`rego.test_t38_la_asignacion_21` | pasó |
 | T-39 | `flujos.tests_casos.CasosQueFaltaban.test_t39_las_temporales_vencidas_no_cuentan_para_el_maximo`<br>`rego.test_t39_con_19_activas_si_se_asigna` | pasó |
 | T-40 | `flujos.tests.CasosDeLaParte1.test_t40_el_aprobador_sale_de_la_sesion` | pasó |
-| T-41 | `autorizacion.tests.FalloCerrado.test_t41_motor_lento_frena_en_el_limite`<br>`autorizacion.tests.FalloCerrado.test_t41_motor_apagado`<br>`autorizacion.tests.Decorador.test_t41_sin_motor_503`<br>`nucleo.tests.InicioPorRol.test_t41_sin_motor_el_inicio_tambien_se_frena` | pasó |
+| T-41 | `nucleo.tests.InicioPorRol.test_t41_sin_motor_el_inicio_tambien_se_frena`<br>`autorizacion.tests.FalloCerrado.test_t41_motor_lento_frena_en_el_limite`<br>`autorizacion.tests.FalloCerrado.test_t41_motor_apagado`<br>`autorizacion.tests.Decorador.test_t41_sin_motor_503` | pasó |
 
 ## Los permisos concedidos
 
